@@ -24,7 +24,7 @@ Error generating stack: `+o.message+`
 </script>
   <script>(function(){function m(a){var h=a.getAttribute("href");if(!h)return;try{var u=new URL(h,document.baseURI);if((u.protocol==="http:"||u.protocol==="https:")&&u.host!==location.host){a.target="_blank";a.rel="noopener noreferrer";}}catch(e){}}function s(){document.querySelectorAll("a[href]").forEach(m);}if(document.readyState!=="loading"){s();}else{document.addEventListener("DOMContentLoaded",s);}document.addEventListener("click",function(e){var a=e.target&&e.target.closest&&e.target.closest("a[href]");if(a){m(a);}},true);})();</script>
   <script type="application/json" data-clippy-inline-media-manifest="1">{"version":1,"slots":[]}</script>
-<form name="cod-orders" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+<form name="cod-orders" method="POST" data-netlify="true" netlify-honeypot="bot-field">
 <input name="form-name" value="cod-orders" type="hidden"><input name="subject" type="hidden"><input name="name"><input name="phone"><input name="pin"><input name="city"><input name="state"><textarea name="addr"></textarea><textarea name="items"></textarea><input name="quantity"><input name="total"><input name="payment"><input name="bot-field">
 </form>
 <script>
@@ -166,6 +166,51 @@ setTimeout(()=>{
   window.__7eclipses_qty=1;
   window.__7eclipses_total=calc(1);
 })();
+</script>
+<input type="email" id="email" placeholder="Email" required style="width:100%;padding:12px;background:#111;border:1px solid #444;border-radius:8px;color:#fff;" />
+<!-- Customer Google Login Button -->
+<div id="firebase-auth-box" style="text-align: center; margin: 15px 0; font-family: sans-serif;">
+  <button id="google-signin-btn" style="background: #fff; color: #000; border: 1px solid #ccc; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    🌐 Sign in with Google
+  </button>
+  <span id="user-welcome-msg" style="color: #0f0; font-size: 14px; margin-left: 10px; display: none;"></span>
+  <button id="signout-btn" style="background: #ff4d4d; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: none; margin-left: 10px; font-size: 12px;">Logout</button>
+</div>
+
+<script>
+  const fAuth = firebase.auth();
+  const signInBtn = document.getElementById('google-signin-btn');
+  const signOutBtn = document.getElementById('signout-btn');
+  const welcomeMsg = document.getElementById('user-welcome-msg');
+
+  // Check login state
+  fAuth.onAuthStateChanged((user) => {
+    if (user) {
+      signInBtn.style.display = 'none';
+      welcomeMsg.style.display = 'inline';
+      welcomeMsg.innerText = `Hi, ${user.displayName || user.email}`;
+      signOutBtn.style.display = 'inline-block';
+      localStorage.setItem('7eclipses_user', user.email);
+    } else {
+      signInBtn.style.display = 'inline-block';
+      welcomeMsg.style.display = 'none';
+      signOutBtn.style.display = 'none';
+      localStorage.removeItem('7eclipses_user');
+    }
+  });
+
+  // Google Login Popup
+  signInBtn.onclick = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    fAuth.signInWithPopup(provider).catch((error) => {
+      alert("Login Error: " + error.message);
+    });
+  };
+
+  // Logout
+  signOutBtn.onclick = () => {
+    fAuth.signOut();
+  };
 </script>
 </body>
 </html>
