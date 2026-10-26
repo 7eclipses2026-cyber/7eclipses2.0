@@ -8,7 +8,6 @@ module.exports = async function handler(req, res) {
   try {
     const body = req.body;
 
-    // Handle private key formatting safely (replaces escaped newlines if any)
     let credentials;
     try {
       const rawJson = process.env.GOOG_JSON;
@@ -49,25 +48,3 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: err.message });
   }
 };
-      body.email || '',
-      body.address || '',
-      body.product || 'T-shirt',
-      body.size || 'M',
-      body.payment || 'COD',
-      body.amount || 649
-    ]];
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: process.env.SHEET_ID,
-      range: 'A:I',
-      valueInputOption: 'USER_ENTERED',
-      requestBody: { values },
-    });
-    return res.status(200).json({ success: true });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: err.message });
-  }
-}
-    return res.status(500).json({ error: err.message });
-  }
-}
