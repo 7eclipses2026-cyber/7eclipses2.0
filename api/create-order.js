@@ -56,8 +56,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message, details: String(err) });
   }
 }
-    return res.status(200).json(order);
-  } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
