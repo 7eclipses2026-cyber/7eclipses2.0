@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
       amount: Math.round(amount*100),
       currency: "INR",
       receipt: "7E_"+Date.now(),
-      notes: { qty: qty||1, total: amount }
+      notes: { qty: qty||1, amount: amount }
     });
     return res.status(200).json(order);
   } catch(err){
