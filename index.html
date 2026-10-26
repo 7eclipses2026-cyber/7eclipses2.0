@@ -166,51 +166,28 @@ setTimeout(()=>{
   window.__7eclipses_qty=1;
   window.__7eclipses_total=calc(1);
 })();
-</script>
-<input type="email" id="email" placeholder="Email" required style="width:100%;padding:12px;background:#111;border:1px solid #444;border-radius:8px;color:#fff;" />
-<!-- Customer Google Login Button -->
-<div id="firebase-auth-box" style="text-align: center; margin: 15px 0; font-family: sans-serif;">
-  <button id="google-signin-btn" style="background: #fff; color: #000; border: 1px solid #ccc; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    🌐 Sign in with Google
-  </button>
-  <span id="user-welcome-msg" style="color: #0f0; font-size: 14px; margin-left: 10px; display: none;"></span>
-  <button id="signout-btn" style="background: #ff4d4d; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: none; margin-left: 10px; font-size: 12px;">Logout</button>
-</div>
+</script><script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-<script>
-  const fAuth = firebase.auth();
-  const signInBtn = document.getElementById('google-signin-btn');
-  const signOutBtn = document.getElementById('signout-btn');
-  const welcomeMsg = document.getElementById('user-welcome-msg');
-
-  // Check login state
-  fAuth.onAuthStateChanged((user) => {
-    if (user) {
-      signInBtn.style.display = 'none';
-      welcomeMsg.style.display = 'inline';
-      welcomeMsg.innerText = `Hi, ${user.displayName || user.email}`;
-      signOutBtn.style.display = 'inline-block';
-      localStorage.setItem('7eclipses_user', user.email);
-    } else {
-      signInBtn.style.display = 'inline-block';
-      welcomeMsg.style.display = 'none';
-      signOutBtn.style.display = 'none';
-      localStorage.removeItem('7eclipses_user');
-    }
-  });
-
-  // Google Login Popup
-  signInBtn.onclick = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    fAuth.signInWithPopup(provider).catch((error) => {
-      alert("Login Error: " + error.message);
-    });
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJ2KbU4YlhrXz2loHdhC_E8nEXVDIaSwE",
+    authDomain: "eclipses-1bf5c.firebaseapp.com",
+    projectId: "eclipses-1bf5c",
+    storageBucket: "eclipses-1bf5c.firebasestorage.app",
+    messagingSenderId: "6227080265",
+    appId: "1:6227080265:web:f2107e6e8ab3b9b3e0fb98",
+    measurementId: "G-BVEJ0NJ7DY"
   };
 
-  // Logout
-  signOutBtn.onclick = () => {
-    fAuth.signOut();
-  };
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
 </script>
 </body>
 </html>
