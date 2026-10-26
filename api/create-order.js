@@ -31,8 +31,4 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
-  } catch (err) {
-    console.error("Razorpay Error:", err);
-    return res.status(500).json({ error: err.message, details: String(err) });
-  }
 }
