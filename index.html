@@ -158,23 +158,61 @@ setInterval(updatePriceUI,1000);
         }
       };
 
-      // Insert before the bag/profile icons if possible
-      if(target.firstChild){
-        target.insertBefore(loginTab, target.firstChild);
-      } else {
-        target.appendChild(loginTab);
+     // 7ECLIPSES LOGIN TAB - FIXED V6 - NO DUPLICATE, REACT SAFE
+function addLoginTabInHeader(){
+  try{
+    // Agar pehle se hai to dobara mat banao
+    if(document.getElementById('eclipses-login-tab')) return;
+    
+    var header = document.querySelector('header');
+    if(!header) return;
+    
+    // Bag/profile icons ka container dhoondo
+    var allDivs = header.querySelectorAll('div');
+    var target = null;
+    for(var i=0; i<allDivs.length; i++){
+      var div = allDivs[i];
+      if(div.innerHTML && (div.innerHTML.indexOf('bag')>-1 || div.innerHTML.indexOf('profile')>-1) && div.querySelectorAll('button').length>=1){
+        target = div;
+        break;
       }
-      console.log('LOGIN tab added in header');
-    }catch(e){ console.log('header login error', e); }
+    }
+    if(!target) target = header.querySelector('nav') || header;
+
+    var loginTab = document.createElement('button');
+    loginTab.id = 'eclipses-login-tab';
+    loginTab.innerText = localStorage.getItem('7eclipses_user') ? 'Hi, ' + localStorage.getItem('7eclipses_user').split('@')[0].substring(0,6).toUpperCase() : 'LOGIN';
+    loginTab.style.cssText = 'font-family:Bebas Neue,sans-serif; font-size:18px; letter-spacing:1px; padding:8px 16px; border:1px solid black; border-radius:9999px; margin-right:8px; background:white; cursor:pointer;';
+    
+    loginTab.onclick = function(){
+      var modal = document.getElementById('eclipses-login-modal');
+      if(modal){
+        modal.style.display = 'flex';
+      } else {
+        if(window.firebaseLogin) window.firebaseLogin();
+        else alert('Login modal not found - check Firebase setup');
+      }
+    };
+    if(target.firstChild){
+      target.insertBefore(loginTab, target.firstChild);
+    } else {
+      target.appendChild(loginTab);
+    }
+    
+  console.log('LOGIN tab added in header');
+    
+  }catch(e){
+    console.log('header login error', e);
   }
-  // Try multiple times as React re-renders header
-  setInterval(addLoginTabInHeader, 1000);
-  setTimeout(addLoginTabInHeader, 500);
-  setTimeout(addLoginTabInHeader, 2000);
-  // Also on page load
-  if(document.readyState==='complete') addLoginTabInHeader();
-  else window.addEventListener('load', addLoginTabInHeader);
-})();
+}
+
+let headerObserver = new MutationObserver(function(){ addLoginTabInHeader(); });
+let headerEl = document.querySelector('header');
+if(headerEl) headerObserver.observe(headerEl, {childList:true, subtree:true});
+
+addLoginTabInHeader();
+setTimeout(addLoginTabInHeader, 500);
+setTimeout(addLoginTabInHeader, 1500);
 </script>
 
 </body>
