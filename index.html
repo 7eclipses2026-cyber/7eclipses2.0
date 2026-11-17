@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7 Eclipses </title>
+<style>
+body{font-family:Arial;background:#111;color:#fff;padding:20px}
+input,select,textarea{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:none}
+button{background:#d4af37;color:#000;padding:14px;width:100%;border:none;border-radius:10px;font-weight:bold;font-size:16px}
+.card{background:#222;padding:20px;border-radius:15px}
+</style>
+</head>
+<body>
+<div class="card">
+<h2>🌑 7 Eclipses - Order Now</h2>
+<input id="name" placeholder="Apna Naam">
+<input id="phone" placeholder="Phone Number">
+<select id="product">
+<option>Oversized Tee - Rs 999</option>
+<option>Hoodie - Rs 1499</option>
+<option>Cap - Rs 499</option>
+</select>
+<select id="size"><option>M</option><option>L</option><option>XL</option></select>
+<textarea id="address" placeholder="Poora Address"></textarea>
+<input id="amount" placeholder="Amount - jaise 999">
+<button onclick="placeOrder()">Order Place Karo</button>
+<p id="msg"></p>
+</div>
+<script>
+function placeOrder(){
+  let data = {
+    name: document.getElementById('name').value,
+    phone: document.getElementById('phone').value,
+    product: document.getElementById('product').value,
+    size: document.getElementById('size').value,
+    address: document.getElementById('address').value,
+    payment_id: "COD / UPI",
+    amount: document.getElementById('amount').value
+  };
+  fetch("https://script.google.com/macros/s/AKfycbzpP86PTnuofyAtX2j0mBsTu99lE2dSKrXokzLBGj-bYymZmx418B08LMp-SzsEVk2V-g/exec", {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify(data)
+  }).then(()=>{
+    document.getElementById('msg').innerText = "✅ Order ho gaya! Hum jaldi contact karenge.";
+  });
+}
+</script>
+</body>
+</html>
