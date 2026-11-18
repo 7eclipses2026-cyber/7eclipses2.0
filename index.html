@@ -318,8 +318,76 @@ img.src=p.images[color];img.alt=`${p.name} - ${color}`;card.querySelectorAll("[d
 });
 }
 document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderProducts(b.dataset.filter)});
+let gallerySlides = [];
+let gallerySlideIndex = 0;
+
 let selectedProduct = null;
 
+
+
+function showGallerySlide() {
+  const slide = gallerySlides[gallerySlideIndex];
+
+  document.getElementById("choiceImage").src = slide.src;
+  document.getElementById("galleryLabel").textContent = slide.label;
+
+  const thumbnails = document.getElementById("galleryThumbnails");
+
+  thumbnails.innerHTML = gallerySlides.map((item, index) =>
+    `<img class="gallery-thumb ${index === gallerySlideIndex ? "active" : ""}"
+      src="${item.src}" alt="${item.label}" data-gallery-index="${index}">`
+  ).join("");
+
+  thumbnails.querySelectorAll(".gallery-thumb").forEach(thumb => {
+    thumb.onclick = () => {
+      gallerySlideIndex = Number(thumb.dataset.galleryIndex);
+      showGallerySlide();
+    };
+  });
+}
+
+function updateChoiceImage() {
+  const color = document.getElementById("choiceColor").value;
+
+  const backImageFiles = {
+    Lavender: "Lavender back.jpg",
+    Black: "Black back.jpg",
+    White: "White back.jpg",
+    Brown: "Brown back.jpg"
+  };
+
+  const fabricImageFiles = {
+    Lavender: "leavender feb.info.jpg",
+    Black: "Black feb.info.jpg",
+    White: "White feb.info.jpg",
+    Brown: "Brown feb.info.jpg"
+  };
+
+  gallerySlides = [
+    { src: selectedProduct.images[color], label: "FRONT VIEW" },
+    {
+      src: "/public/images/" + encodeURIComponent(backImageFiles[color]),
+      label: "BACK VIEW"
+    },
+    {
+      src: "/public/images/" + encodeURIComponent(fabricImageFiles[color]),
+      label: "FABRIC DETAILS"
+    }
+  ];
+
+  gallerySlideIndex = 0;
+  showGallerySlide();
+}
+
+function changeGallerySlide(direction) {
+  gallerySlideIndex =
+    (gallerySlideIndex + direction + gallerySlides.length) %
+    gallerySlides.length;
+
+  showGallerySlide();
+}
+
+document.getElementById("choiceColor").onchange = updateChoiceImage;
 function addItem(id) {
   selectedProduct = products.find(p => p.id === id);
 
@@ -339,19 +407,35 @@ function addItem(id) {
   document.getElementById("productModal").classList.add("show");
 }
 
-function updateChoiceImage() {
-  const color = document.getElementById("choiceColor").value;
+// Gallery Previous and Next buttons
+document.getElementById("galleryPrev").onclick = () =>
+  changeGallerySlide(-1);
 
-  document.getElementById("choiceImage").src =
-    selectedProduct.images[color];
-}
+document.getElementById("galleryNext").onclick = () =>
+  changeGallerySlide(1);
 
-document.getElementById("choiceColor").onchange = updateChoiceImage;
+// Mobile swipe support
+let galleryTouchStartX = 0;
 
+document.querySelector(".gallery-main").addEventListener("touchstart", event => {
+  galleryTouchStartX = event.changedTouches[0].screenX;
+}, { passive: true });
+
+document.querySelector(".gallery-main").addEventListener("touchend", event => {
+  const difference =
+    event.changedTouches[0].screenX - galleryTouchStartX;
+
+  if (Math.abs(difference) > 40) {
+    changeGallerySlide(difference < 0 ? 1 : -1);
+  }
+}, { passive: true });
+
+// Close product popup
 document.getElementById("choiceClose").onclick = () => {
   document.getElementById("productModal").classList.remove("show");
 };
 
+// Add product to cart
 document.getElementById("choiceAdd").onclick = () => {
   const color = document.getElementById("choiceColor").value;
   const size = document.getElementById("choiceSize").value;
@@ -384,6 +468,7 @@ document.getElementById("choiceAdd").onclick = () => {
   updateCart();
   notify("Your favourite tee has been added to your bag!");
 };
+
 function totals(){
   let qty = cart.reduce((s,x) => s+x.qty, 0);
   let sub = qty * 599;
