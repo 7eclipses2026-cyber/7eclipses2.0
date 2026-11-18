@@ -12,7 +12,7 @@
   border: none;
   border-radius: 50%;
   background: white;
-  color: #111;
+  color: #0077B6 !important;
   font-size: 26px;
   cursor: pointer;
   display: flex;
@@ -21,7 +21,7 @@
 }
 
 .wishlist-btn.active {
-  color: #0077B6;
+  color: #0077B6 !important;
 }
 }<!DOCTYPE html>
 <html lang="en">
@@ -227,7 +227,15 @@
 </main>
 <footer class="footer"><div class="footer-inner"><div><div class="footer-brand">7ECLIPSES</div><p>Be the strongest version of yourself.<br>Est. 2026 · Created by Shikha</p></div><div><div class="kicker">Explore</div><p><a href="#shop">Shop collection</a><br><a href="#fabric">Fabric & fit</a><br><a href="#size">Size chart</a><br><a href="#story">Our story</a></p></div><div><div class="kicker">Connect</div><p><a href="https://www.instagram.com/7__eclipses/" target="_blank" rel="noopener">@7__eclipses</a><br><a href="https://wa.me/919220657676" target="_blank" rel="noopener">WhatsApp: +91 92206 57676</a><br><a href="https://tinyurl.com/7-eclipses" target="_blank" rel="noopener">Google Order Form</a></p></div></div><div class="copyright">© 2026 7ECLIPSES. ALL RIGHTS RESERVED. · COMFORT OF TEE'S OF 7ECLIPSES</div></footer>
 
-<div class="overlay" id="overlay"></div><aside class="cart-drawer" id="cartDrawer" aria-label="Shopping bag"><div class="drawer-head"><h3>Your bag <span style="font:12px 'DM Sans';color:#8ca6b7" id="bagSub"></span></h3><button class="close" id="cartClose" aria-label="Close bag">×</button></div><div class="cart-items" id="cartItems"><div class="empty">Your bag is waiting for its first frequency.</div></div><div class="cart-foot"><div id="giftMessage" class="gift-note" style="display:none"></div><div class="cart-line"><span>Subtotal</span><span id="subtotal">₹0</span></div><div class="cart-line"><span>Delivery</span><span id="delivery">₹0</span></div><div class="cart-line total"><span>Total</span><span id="total">₹0</span></div><button class="btn" id="checkoutBtn">Continue to checkout</button></div></aside>
+<div class="overlay" id="overlay"></div><aside class="cart-drawer" id="cartDrawer" aria-label="Shopping bag"><div class="drawer-head"><h3>Your bag <span style="font:12px 'DM Sans';color:#8ca6b7" id="bagSub"></span></h3><button class="close" id="cartClose" aria-label="Close bag">×</button></div><div class="cart-items" id="cartItems"><div class="empty">Your bag is waiting for its first frequency.</div></div><div class="cart-foot"><div id="giftMessage" class="gift-note" style="display:none"></div><div class="cart-line"><span>Subtotal</span><span id="subtotal">₹0</span></div><div class="cart-line"><span>Delivery</span><span id="delivery">₹0</span></div><div class="cart-line total"><span>Total</span><span id="total">₹0</span></div><button class="btn" id="checkoutBtn">Continue to checkout</button></div></aside><aside class="cart-drawer" id="wishlistDrawer" aria-label="Wishlist">
+  <div class="drawer-head">
+    <h3>Your Wishlist ♡</h3>
+    <button class="close" id="wishlistClose" aria-label="Close wishlist">×</button>
+  </div>
+  <div class="cart-items" id="wishlistItems">
+    <div class="empty">Your wishlist is waiting for its first favourite.</div>
+  </div>
+</aside>
 <div class="modal" id="productModal">
   <div class="modal-box">
     <div class="modal-head">
@@ -413,7 +421,7 @@ let wishlist = JSON.parse(localStorage.getItem("7eclipsesWishlist") || "[]");
 grid.innerHTML=products.filter(p=>filter==="all"||p.group===filter).map(card).join("");
 grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addItem(Number(b.dataset.add)));grid.querySelectorAll("[data-wishlist]").forEach(b=>{
   const id = Number(b.dataset.wishlist);
-  b.textContent = wishlist.includes(id) ? "♥" : "♡";
+  b.textContent = wishlist.includes(id) ? "♥︎" : "♡";
   b.classList.toggle("active", wishlist.includes(id));
 
   b.onclick = () => {
