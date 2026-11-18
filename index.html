@@ -166,14 +166,14 @@ const grid=document.getElementById("productGrid");
 function card(p){
 let firstColor=p.colors[0], image=p.images[firstColor];
 let swatches=p.colors.map(c=>`<button type="button" class="swatch" title="${c}" aria-label="Show ${c} ${p.name}" data-color="${c}" style="background:${({Black:"#101114",White:"#f4f1e9",Lavender:"#bca8cc",Brown:"#795443"})[c]}"></button>`).join("");
-return `<article class="product-card" data-product="${p.id}"><div class="product-image"><img class="product-photo" src="${image}" alt="${p.name} - ${firstColor}" loading="lazy" onerror="this.parentElement.classList.add('photo-error')"><span class="product-tag">200 GSM · UNISEX</span></div><div class="product-info"><h3>${p.name}</h3><div class="product-meta">Loose fit · Drop shoulder · DTF print</div><div class="price">₹599</div><div class="product-bottom"><div class="swatches">${swatches}</div><button class="add-btn" data-add="${p.id}">Add to bag +</button></div></div></article>`
+return `<article class="product-card" data-product="${p.id}"><div class="product-image"><img class="product-photo" src="${encodeURI(image)}" alt="${p.name} - ${firstColor}" loading="lazy" onerror="this.parentElement.classList.add('photo-error')"><span class="product-tag">200 GSM · UNISEX</span></div><div class="product-info"><h3>${p.name}</h3><div class="product-meta">Loose fit · Drop shoulder · DTF print</div><div class="price">₹599</div><div class="product-bottom"><div class="swatches">${swatches}</div><button class="add-btn" data-add="${p.id}">Add to bag +</button></div></div></article>`
 }
 function renderProducts(filter="all"){
 grid.innerHTML=products.filter(p=>filter==="all"||p.group===filter).map(card).join("");
 grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addItem(Number(b.dataset.add)));
 grid.querySelectorAll("[data-color]").forEach(b=>b.onclick=()=>{
 const card=b.closest(".product-card"),p=products.find(x=>x.id===Number(card.dataset.product)),color=b.dataset.color,img=card.querySelector(".product-photo");
-img.src=p.images[color];img.alt=`${p.name} - ${color}`;card.querySelectorAll("[data-color]").forEach(x=>x.style.outline=x===b?"2px solid #8ecfff":"none");
+img.src=encodeURI(p.images[color]);img.alt=`${p.name} - ${color}`;card.querySelectorAll("[data-color]").forEach(x=>x.style.outline=x===b?"2px solid #8ecfff":"none");
 });
 }
 document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderProducts(b.dataset.filter)});
