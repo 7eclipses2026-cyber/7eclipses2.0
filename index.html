@@ -58,19 +58,109 @@
 <div class="modal-actions"><button class="btn" type="button" id="googleOrder">Google Order Form</button><button class="btn outline" type="submit">Order on WhatsApp</button></div></form></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const products=[
-{id:1,name:"BORA",group:"lavender",images:{Lavender:"/images/BORA Leavender.jpg",White:"/images/BORA white.jpg"}},
-{id:2,name:"FLY WITH 52",group:"lavender",images:{White:"/images/FLY WITH-52.jpg"}},
-{id:3,name:"BE STRONG",group:"lavender",images:{Lavender:"/images/BE STRONG-Lavender.jpg",White:"/images/BE STRONG-white.jpg"}},
-{id:4,name:"A HUGE WE ALL WAITED FOR",group:"lavender",images:{Lavender:"/images/A HUGE WE ALL WAITED FOR-leavender.jpg",White:"/images/A HUGE WE ALL WAITED FOR-White.jpg"}},
-{id:5,name:"RAINY DAYS",group:"black",images:{Black:"/images/RAINY DAYS-Black.jpg",White:"/images/RAINY DAYS-White.jpg"}},
-{id:6,name:"MY EGO IS MY PROTECTION -2.18-",group:"black",images:{Black:"/images/MY EGO IS MY PROTECTION -2.18-black.jpg",White:"/images/MY EGO IS MY PROTECTION -2.18-white.jpg"}},
-{id:7,name:"APNA HAQ MANGA H AAPKI JAYDAD NAHI",group:"black",images:{Black:"/images/APNA HAQ-black.jpg",White:"/images/APNA HAQ-white.jpg"}},
-{id:8,name:"JUST BE YOURSELF",group:"black",images:{Black:"/images/JUST BE YOURSELF.jpg",White:"/images/JUST BE YOURSELF-white.jpg"}},
-{id:9,name:"DONE PLEASING PEOPLE",group:"black",images:{Black:"/images/DONE PLEASING PEOPLE-Black.jpg",Brown:"/images/DONE PLEASING PEOPLE-Brown.jpg"}},
-{id:10,name:"SMALL WHALE",group:"black",images:{Black:"/images/Whale52hz-black.jpg",White:"/images/Whale52hz-white.jpg"}},
-{id:11,name:"Gentle Man",group:"black",images:{White:"/images/Gentle Man-1.jpg",Black:"/images/Gentle Man-black.jpg"}}
-].map(p=>({...p,colors:Object.keys(p.images)}));
+const products = [
+  {
+    id: 1,
+    name: "BORA",
+    group: "lavender",
+    images: {
+      Lavender: "/public/images/BORA Leavender.jpg",
+      White: "/public/images/BORA white.jpg"
+    }
+  },
+  {
+    id: 2,
+    name: "FLY WITH 52",
+    group: "lavender",
+    images: {
+      White: "/public/images/FLY WITH-52.jpg"
+    }
+  },
+  {
+    id: 3,
+    name: "BE STRONG",
+    group: "lavender",
+    images: {
+      Lavender: "/public/images/BE STRONG-Lavender.jpg",
+      White: "/public/images/BE STRONG-white.jpg"
+    }
+  },
+  {
+    id: 4,
+    name: "A HUGE WE ALL WAITED FOR",
+    group: "lavender",
+    images: {
+      Lavender: "/public/images/A HUGE WE ALL WAITED FOR-leavender.jpg",
+      White: "/public/images/A HUGE WE ALL WAITED FOR-White.jpg"
+    }
+  },
+  {
+    id: 5,
+    name: "RAINY DAYS",
+    group: "black",
+    images: {
+      Black: "/public/images/RAINY DAYS-Black.jpg",
+      White: "/public/images/RAINY DAYS-White.jpg"
+    }
+  },
+  {
+    id: 6,
+    name: "MY EGO IS MY PROTECTION -2.18-",
+    group: "black",
+    images: {
+      Black: "/public/images/MY EGO IS MY PROTECTION -2.18-black.jpg",
+      White: "/public/images/MY EGO IS MY PROTECTION -2.18-white.jpg"
+    }
+  },
+  {
+    id: 7,
+    name: "APNA HAQ MANGA H AAPKI JAYDAD NAHI",
+    group: "black",
+    images: {
+      Black: "/public/images/APNA HAQ-black.jpg",
+      White: "/public/images/APNA HAQ-white.jpg"
+    }
+  },
+  {
+    id: 8,
+    name: "JUST BE YOURSELF",
+    group: "black",
+    images: {
+      Black: "/public/images/JUST BE YOURSELF.jpg",
+      White: "/public/images/JUST BE YOURSELF-white.jpg"
+    }
+  },
+  {
+    id: 9,
+    name: "DONE PLEASING PEOPLE",
+    group: "black",
+    images: {
+      Black: "/public/images/DONE PLEASING PEOPLE-Black.jpg",
+      Brown: "/public/images/DONE PLEASING PEOPLE-Brown.jpg"
+    }
+  },
+  {
+    id: 10,
+    name: "SMALL WHALE",
+    group: "black",
+    images: {
+      Black: "/public/images/Whale52hz-black.jpg",
+      White: "/public/images/Whale52hz-white.jpg"
+    }
+  },
+  {
+    id: 11,
+    name: "Gentle Man",
+    group: "black",
+    images: {
+      White: "/public/images/Gentle Man-1.jpg",
+      Black: "/public/images/Gentle Man-black.jpg"
+    }
+  }
+].map(p => ({
+  ...p,
+  colors: Object.keys(p.images)
+}));
 const cart=[];const rupee=n=>"₹"+n.toLocaleString("en-IN");
 const grid=document.getElementById("productGrid");
 function card(p){
