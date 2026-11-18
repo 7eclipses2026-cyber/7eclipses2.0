@@ -149,14 +149,14 @@ const products = [
     }
   },
   {
-    id: 11,
-    name: "Gentle Man",
-    group: "black",
-    images: {
-      White: "/public/images/Gentle Man-1.jpg",
-      Black: "/public/images/Gentle Man-black.jpg"
-    }
+  id: 11,
+  name: "Gentle Man",
+  group: "black",
+  images: {
+    White: "/public/images/Gentle%20Man-1.jpg",
+    Black: "/public/images/Gentle%20Man-black.jpg"
   }
+}
 ].map(p => ({
   ...p,
   colors: Object.keys(p.images)
