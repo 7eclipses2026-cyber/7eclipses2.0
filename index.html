@@ -32,7 +32,84 @@
 #choiceColor, #choiceSize {
   cursor: pointer;
 } 
- </style>
+/* 7ECLIPSES swipeable product gallery */
+
+.product-gallery {
+  text-align: center;
+  margin: 22px 0;
+}
+
+.gallery-main {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  background: #211d29;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#choiceImage {
+  width: 80%;
+  height: 235px;
+  object-fit: contain;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: 1px solid #8d79a5;
+  border-radius: 50%;
+  background: #17151e;
+  color: white;
+  font-size: 25px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+#galleryPrev {
+  left: 10px;
+}
+
+#galleryNext {
+  right: 10px;
+}
+
+.gallery-label {
+  color: #c9a9e8;
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin: 12px 0;
+}
+
+.gallery-thumbnails {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.gallery-thumb {
+  width: 62px;
+  height: 65px;
+  object-fit: contain;
+  background: #211d29;
+  border: 1px solid #51445f;
+  border-radius: 8px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.gallery-thumb.active {
+  border: 2px solid #c9a9e8;
+} </style>
 </head>
 <body>
 <div class="announcement">Free delivery + a little something extra on orders of 2 or 3 tees</div>
@@ -82,11 +159,18 @@
       <button class="close" id="choiceClose">×</button>
     </div>
 
-    <div style="text-align:center;margin:22px 0">
-      <img id="choiceImage" src="" alt="Selected T-shirt"
-        style="width:150px;height:170px;object-fit:contain;background:#fff">
-      <p id="choicePrice" style="font-weight:bold;margin-top:12px">₹599</p>
-    </div>
+    <div class="product-gallery">
+  <div class="gallery-main">
+    <button type="button" id="galleryPrev" class="gallery-arrow">‹</button>
+    <img id="choiceImage" src="" alt="Product image">
+    <button type="button" id="galleryNext" class="gallery-arrow">›</button>
+  </div>
+
+  <div id="galleryLabel" class="gallery-label">FRONT VIEW</div>
+  <div id="galleryThumbnails" class="gallery-thumbnails"></div>
+
+  <p id="choicePrice" style="font-weight:bold;margin-top:12px">₹599</p>
+</div>
 
     <div class="form-grid">
       <div class="field">
