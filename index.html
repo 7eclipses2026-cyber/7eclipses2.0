@@ -524,6 +524,7 @@ document.getElementById("addressForm").onsubmit=e=>{e.preventDefault();let d=get
 document.getElementById("googleOrder").onclick=()=>{let d=getDetails();if(!d)return;let msg=orderText(d);window.open("https://tinyurl.com/7-eclipses","_blank","noopener");notify("Google Form opened — use your bag summary and delivery details to complete it.");};
 document.getElementById("menuBtn").onclick=()=>document.getElementById("navlinks").classList.toggle("open");document.querySelectorAll(".navlinks a").forEach(a=>a.onclick=()=>document.getElementById("navlinks").classList.remove("open"));
 renderProducts();updateCart();
+  </script>
 
 <!-- 7ECLIPSES ACCOUNT POPUP -->
 <style>
