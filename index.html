@@ -524,5 +524,219 @@ document.getElementById("addressForm").onsubmit=e=>{e.preventDefault();let d=get
 document.getElementById("googleOrder").onclick=()=>{let d=getDetails();if(!d)return;let msg=orderText(d);window.open("https://tinyurl.com/7-eclipses","_blank","noopener");notify("Google Form opened — use your bag summary and delivery details to complete it.");};
 document.getElementById("menuBtn").onclick=()=>document.getElementById("navlinks").classList.toggle("open");document.querySelectorAll(".navlinks a").forEach(a=>a.onclick=()=>document.getElementById("navlinks").classList.remove("open"));
 renderProducts();updateCart();
+
+<!-- 7ECLIPSES ACCOUNT POPUP -->
+<style>
+  #accountModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    background: rgba(0,0,0,.85);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  #accountModal.show {
+    display: flex;
+  }
+
+  .account-box {
+    width: 100%;
+    max-width: 390px;
+    background: #17151e;
+    color: white;
+    padding: 26px;
+    border-radius: 14px;
+    position: relative;
+  }
+
+  .account-box input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 12px 0;
+    padding: 13px;
+    background: #211d29;
+    color: white;
+    border: 1px solid #665777;
+    border-radius: 7px;
+  }
+
+  .account-box button {
+    padding: 11px 15px;
+    margin: 5px 3px 5px 0;
+    border: 1px solid #c9a9e8;
+    border-radius: 7px;
+    background: #c9a9e8;
+    color: #17151e;
+    cursor: pointer;
+  }
+
+  .account-box .account-close {
+    position: absolute;
+    right: 12px;
+    top: 10px;
+    background: transparent;
+    color: white;
+    border: none;
+    font-size: 22px;
+  }
+
+  #accountMessage {
+    font-size: 13px;
+    margin-top: 12px;
+    overflow-wrap: anywhere;
+  }
+</style>
+
+<div id="accountModal">
+  <div class="account-box">
+    <button type="button" class="account-close" id="accountClose">×</button>
+
+    <h2>My Account</h2>
+    <p id="accountStatus">Sign in or create your 7ECLIPSES account.</p>
+
+    <div id="accountForm">
+      <input id="accountEmail" type="email" placeholder="Email address" autocomplete="email">
+      <input id="accountPassword" type="password" placeholder="Password (minimum 6 characters)" autocomplete="current-password">
+
+      <button type="button" id="loginBtn">Log in</button>
+      <button type="button" id="signupBtn">Create account</button>
+      <button type="button" id="resetBtn">Forgot password?</button>
+    </div>
+
+    <div id="loggedInArea" style="display:none">
+      <button type="button" id="logoutBtn">Log out</button>
+    </div>
+
+    <p id="accountMessage"></p>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJ2KbU4YlhrXz2loHdhC_E8nEXVDIaSwE",
+    authDomain: "eclipses-1bf5c.firebaseapp.com",
+    projectId: "eclipses-1bf5c",
+    storageBucket: "eclipses-1bf5c.firebasestorage.app",
+    messagingSenderId: "6227080265",
+    appId: "1:6227080265:web:dcb578bf5f4df67ee0fb98",
+    measurementId: "G-F6CGLG3D4D"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const accountModal = document.getElementById("accountModal");
+  const accountMessage = document.getElementById("accountMessage");
+
+  function showMessage(message) {
+    accountMessage.textContent = message;
+  }
+
+  function getCredentials() {
+    return {
+      email: document.getElementById("accountEmail").value.trim(),
+      password: document.getElementById("accountPassword").value
+    };
+  }
+
+  document.getElementById("accountOpen").onclick = () => {
+    accountModal.classList.add("show");
+    showMessage("");
+  };
+
+  document.getElementById("accountClose").onclick = () => {
+    accountModal.classList.remove("show");
+  };
+
+  accountModal.onclick = event => {
+    if (event.target === accountModal) {
+      accountModal.classList.remove("show");
+    }
+  };
+
+  document.getElementById("signupBtn").onclick = async () => {
+    const { email, password } = getCredentials();
+
+    if (!email || !password) {
+      showMessage("Please enter your email and password.");
+      return;
+    }
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      showMessage("Your account has been created!");
+    } catch (error) {
+      showMessage(error.message);
+    }
+  };
+
+  document.getElementById("loginBtn").onclick = async () => {
+    const { email, password } = getCredentials();
+
+    if (!email || !password) {
+      showMessage("Please enter your email and password.");
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showMessage("You are now logged in!");
+    } catch (error) {
+      showMessage(error.message);
+    }
+  };
+
+  document.getElementById("resetBtn").onclick = async () => {
+    const email = document.getElementById("accountEmail").value.trim();
+
+    if (!email) {
+      showMessage("Enter your email address first.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showMessage("Password reset email sent. Please check your inbox.");
+    } catch (error) {
+      showMessage(error.message);
+    }
+  };
+
+  document.getElementById("logoutBtn").onclick = async () => {
+    try {
+      await signOut(auth);
+      showMessage("You have logged out.");
+    } catch (error) {
+      showMessage(error.message);
+    }
+  };
+
+  onAuthStateChanged(auth, user => {
+    const form = document.getElementById("accountForm");
+    const loggedInArea = document.getElementById("loggedInArea");
+    const status = document.getElementById("accountStatus");
+
+    form.style.display = user ? "none" : "block";
+    loggedInArea.style.display = user ? "block" : "none";
+
+    status.textContent = user
+      ? "Logged in as " + user.email
+      : "Sign in or create your 7ECLIPSES account.";
+  });
 </script>
 </body></html>
