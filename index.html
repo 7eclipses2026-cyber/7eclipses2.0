@@ -2,7 +2,8 @@
   position: relative;
 }
 
-.wishlist-btn {
+.wishlist-btn,
+.wishlist-btn.active {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -13,15 +14,13 @@
   border-radius: 50%;
   background: white;
   color: #0077B6 !important;
+  -webkit-text-fill-color: #0077B6 !important;
+  font-family: Arial, sans-serif;
   font-size: 26px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.wishlist-btn.active {
-  color: #0077B6 !important;
 }
 }<!DOCTYPE html>
 <html lang="en">
@@ -432,7 +431,7 @@ grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addItem(Number(b.da
     }
 
     localStorage.setItem("7eclipsesWishlist", JSON.stringify(wishlist));
-    b.textContent = wishlist.includes(id) ? "♥" : "♡";
+    b.textContent = wishlist.includes(id) ? "♥︎" : "♡";
     b.classList.toggle("active", wishlist.includes(id));
   };
 });
@@ -609,7 +608,52 @@ function totals(){
 let el=document.getElementById("cartItems");el.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-item"><img   class="mini-tee"   src="${products.find(p=>p.id===x.id).images[x.color]}"   alt="${x.name}"   loading="lazy" ><div><h4>${x.name}</h4><small>${x.color} · Size ${x.size}</small><div class="qty-controls"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></div><div><b>${rupee(x.qty*599)}</b><div class="qty-controls"><button class="remove" data-del="${i}">Remove</button></div></div></div>`).join(""):'<div class="empty">Your bag is waiting for its first frequency.</div>';
 el.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{cart[+b.dataset.inc].qty++;updateCart()});el.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart[+b.dataset.dec];x.qty--;if(x.qty<=0)cart.splice(+b.dataset.dec,1);updateCart()});el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{cart.splice(+b.dataset.del,1);updateCart()})}
 function notify(s){let t=document.getElementById("toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
-const overlay=document.getElementById("overlay"),drawer=document.getElementById("cartDrawer");function openCart(){overlay.classList.add("show");drawer.classList.add("show")}function closeCart(){overlay.classList.remove("show");drawer.classList.remove("show")}
+const overlay = document.getElementById("overlay");
+const drawer = document.getElementById("cartDrawer");
+const wishlistDrawer = document.getElementById("wishlistDrawer");function openCart(){overlay.classList.add("show");drawer.classList.add("show")}function closeCart()function renderWishlist() {
+  const items = document.getElementById("wishlistItems");
+  const savedProducts = products.filter(p => wishlist.includes(p.id));
+
+  if (savedProducts.length === 0) {
+    items.innerHTML = '<div class="empty">Your wishlist is waiting for its first favourite.</div>';
+    return;
+  }
+
+  items.innerHTML = savedProducts.map(p => `
+    <div style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #444">
+      <img src="${p.images[p.colors[0]]}" alt="${p.name}" style="width:75px;height:90px;object-fit:cover;border-radius:6px">
+      <div style="flex:1">
+        <strong>${p.name}</strong>
+        <div>₹599</div>
+        <button type="button" data-wishlist-remove="${p.id}">Remove</button>
+      </div>
+    </div>
+  `).join("");
+
+  items.querySelectorAll("[data-wishlist-remove]").forEach(b => {
+    b.onclick = () => {
+      const id = Number(b.dataset.wishlistRemove);
+      wishlist = wishlist.filter(x => x !== id);
+      localStorage.setItem("7eclipsesWishlist", JSON.stringify(wishlist));
+      renderWishlist();
+      renderProducts();
+    };
+  });
+}
+
+function openWishlist() {
+  renderWishlist();
+  overlay.classList.add("show");
+  wishlistDrawer.classList.add("show");
+}
+
+function closeWishlist() {
+  overlay.classList.remove("show");
+  wishlistDrawer.classList.remove("show");
+}
+
+document.getElementById("wishlistOpen").onclick = openWishlist;
+document.getElementById("wishlistClose").onclick = closeWishlist;{overlay.classList.remove("show");drawer.classList.remove("show")}
 document.getElementById("cartOpen").onclick=openCart;document.getElementById("cartClose").onclick=closeCart;overlay.onclick=closeCart;
 const modal=document.getElementById("checkoutModal");document.getElementById("checkoutBtn").onclick=()=>{if(!cart.length){notify("Add a tee to your bag first.");return}closeCart();modal.classList.add("show")};document.getElementById("modalClose").onclick=()=>modal.classList.remove("show");modal.onclick=e=>{if(e.target===modal)modal.classList.remove("show")};
 function orderText(d){let t=totals();return `Hello 7ECLIPSES! I'd like to place an order.\\n\\n${cart.map(x=>`${x.name} | ${x.color} | Size ${x.size} | Qty ${x.qty} | ${rupee(x.qty*599)}`).join("\\n")}\\n\\nSubtotal: ${rupee(t.sub)}\\nDelivery: ${rupee(t.delivery)}\\nTotal: ${rupee(t.total)}\\n\\nName: ${d.name}\\nPhone: ${d.phone}\\nAddress: ${d.address}\\nCity: ${d.city}\\nPIN: ${d.pin}\\nNotes: ${d.notes||"—"}\\n\\n${t.qty>=2&&t.qty<=3?"Please include my free gift.":""}`}
