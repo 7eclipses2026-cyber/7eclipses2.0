@@ -109,7 +109,37 @@
 
 .gallery-thumb.active {
   border: 2px solid #c9a9e8;
-} </style>
+} 
+/* 7ECLIPSES PRODUCT POPUP FIX */
+
+#productModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.85);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+#productModal.show {
+  display: flex;
+}
+
+#productModal .modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #17151e;
+  border-radius: 12px;
+  padding: 24px;
+  margin: auto;
+}
+</style>
 </head>
 <body>
 <div class="announcement">Free delivery + a little something extra on orders of 2 or 3 tees</div>
