@@ -1205,7 +1205,7 @@ renderProducts();updateCart();
 
 <style id="profile-editor-style">
 .profile-editor{display:grid;grid-template-columns:82px 1fr;gap:16px;align-items:start;margin:18px 0;padding:16px;background:#211d29;border:1px solid #665777;border-radius:12px}
-.profile-preview{width:76px;height:76px;border-radius:50%;background:#0b3045;border:2px solid #8ecfff;display:flex;align-items:center;justify-content:center;font-size:34px;overflow:hidden;flex-shrink:0}
+.profile-avatar-stack{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}.profile-preview{width:76px;height:76px;border-radius:50%;background:#0b3045;border:2px solid #8ecfff;display:flex;align-items:center;justify-content:center;font-size:34px;overflow:hidden;flex-shrink:0}.profile-name-under-avatar{max-width:112px;text-align:center;color:#fff;font-size:13px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
 .profile-preview img{width:100%;height:100%;object-fit:cover}
 .profile-fields label,.emoji-label{display:block;font-size:12px;color:#d9efff;margin:8px 0 4px}
 .profile-fields input[type="text"]{margin:5px 0 10px}
@@ -1357,7 +1357,7 @@ renderProducts();updateCart();
 
     <div id="loggedInArea" style="display:none">
       <div class="profile-editor">
-        <div class="profile-preview" id="profilePreview">🌊</div>
+        <div class="profile-avatar-stack"><div class="profile-preview" id="profilePreview">🌊</div><div class="profile-name-under-avatar" id="profileNameUnderAvatar">Your name</div></div>
         <div class="profile-fields">
           <label for="profileName">Your display name</label><input id="profileName" type="text" maxlength="40" placeholder="Name or nickname">
           <label for="profilePhoto">Profile picture</label><input id="profilePhoto" type="file" accept="image/*">
@@ -1578,6 +1578,12 @@ renderProducts();updateCart();
 
   let selectedProfileAvatar = { type: "emoji", value: "🌊" };
   const profilePreview = document.getElementById("profilePreview");
+  const profileNameInput = document.getElementById("profileName");
+  const profileNameUnderAvatar = document.getElementById("profileNameUnderAvatar");
+  function updateProfileNamePreview(name) {
+    profileNameUnderAvatar.textContent = name.trim() || "Your name";
+  }
+  profileNameInput.addEventListener("input", () => updateProfileNamePreview(profileNameInput.value));
   function showProfileAvatar(avatar) {
     selectedProfileAvatar = avatar && avatar.type && avatar.value ? avatar : { type: "emoji", value: "🌊" };
     if (selectedProfileAvatar.type === "image") {
@@ -1628,6 +1634,7 @@ renderProducts();updateCart();
       await updateProfile(currentUser,{displayName:name});
       await setDoc(doc(db,"users",currentUser.uid),{displayName:name,profileAvatar:selectedProfileAvatar,updatedAt:serverTimestamp()},{merge:true});
       window.customerAccountName=name;
+      updateProfileNamePreview(name);
       showMessage("Your profile has been saved!");
       document.getElementById("accountStatus").textContent="Logged in as "+name+" · "+currentUser.email;
       document.getElementById("accountOpen").textContent=selectedProfileAvatar.type==="emoji"?selectedProfileAvatar.value:"👤";
@@ -1699,6 +1706,7 @@ renderProducts();updateCart();
 
       const cloudData = snapshot.exists() ? snapshot.data() : {};
       document.getElementById("profileName").value = cloudData.displayName || user.displayName || "";
+      updateProfileNamePreview(document.getElementById("profileName").value);
       showProfileAvatar(cloudData.profileAvatar || {type:"emoji",value:"🌊"});
       document.getElementById("accountOpen").textContent = cloudData.profileAvatar && cloudData.profileAvatar.type==="emoji" ? cloudData.profileAvatar.value : "👤";
       const mergedBag = mergeBags(guestBag, cloudData.bag || []);
