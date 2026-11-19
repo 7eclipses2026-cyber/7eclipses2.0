@@ -29,8 +29,8 @@ module.exports = async function handler(req, res) {
 
     // Validate the promotional code and calculate the discount on the server.
     const couponCode = String(body.couponCode || "").trim().toUpperCase();
-    const discount = couponCode === "ECLIPSES5" ? Math.round(quantity * 599 * 0.05) : 0;
-    if (couponCode && couponCode !== "ECLIPSES5") {
+    const discount = couponCode === "7ECLIPSES10" ? Math.round(quantity * 599 * 0.10) : 0;
+    if (couponCode && couponCode !== "7ECLIPSES10") {
       return res.status(400).json({ error: "Invalid coupon code." });
     }
     // Never accept a payable amount or discount from the browser.
