@@ -29,9 +29,15 @@
   border-radius: 12px;
 }
 
-#choiceColor, #choiceSize {
+#choiceColor {
   cursor: pointer;
-} 
+}
+.size-options{display:flex;gap:9px;flex-wrap:wrap;margin-top:9px}
+.size-option{min-width:48px;height:46px;padding:0 13px;border:1px solid rgba(142,207,255,.35);border-radius:7px;background:#0b2232;color:#d8efff;font-weight:700;font-size:13px;transition:background .18s,border-color .18s,color .18s,transform .18s}
+.size-option:hover{border-color:#8ecfff;transform:translateY(-1px)}
+.size-option.active,.size-option[aria-pressed="true"]{background:#8ecfff;border-color:#8ecfff;color:#03111d;box-shadow:0 0 0 2px rgba(142,207,255,.16)}
+.size-option:focus-visible{outline:2px solid #fff;outline-offset:3px}
+@media(max-width:650px){.size-option{flex:1;min-width:0;height:48px}}
 /* 7ECLIPSES swipeable product gallery */
 
 .product-gallery {
@@ -610,13 +616,12 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
       </div>
       <div class="field">
         <label>Choose size</label>
-        <select id="choiceSize">
-          <option value="">Select size</option>
-          <option>S</option>
-          <option>M</option>
-          <option>L</option>
-          <option>XL</option>
-        </select>
+        <div class="size-options" id="choiceSizeOptions" role="group" aria-label="Choose T-shirt size">
+          <button type="button" class="size-option" data-size="S" aria-pressed="false">S</button>
+          <button type="button" class="size-option" data-size="M" aria-pressed="false">M</button>
+          <button type="button" class="size-option" data-size="L" aria-pressed="false">L</button>
+          <button type="button" class="size-option" data-size="XL" aria-pressed="false">XL</button>
+        </div>
       </div>
     </div>
 
@@ -828,6 +833,7 @@ let gallerySlides = [];
 let gallerySlideIndex = 0;
 
 let selectedProduct = null;
+let selectedSize = "";
 
 
 
@@ -894,6 +900,16 @@ function changeGallerySlide(direction) {
 }
 
 document.getElementById("choiceColor").onchange = updateChoiceImage;
+document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
+  button.addEventListener("click", () => {
+    selectedSize = button.dataset.size;
+    document.querySelectorAll("#choiceSizeOptions .size-option").forEach(option => {
+      const isSelected = option === button;
+      option.classList.toggle("active", isSelected);
+      option.setAttribute("aria-pressed", String(isSelected));
+    });
+  });
+});
 function addItem(id) {
   selectedProduct = products.find(p => p.id === id);
 
@@ -906,7 +922,11 @@ function addItem(id) {
     `<option value="${c}">${c}</option>`
   ).join("");
 
-  document.getElementById("choiceSize").value = "";
+  selectedSize = "";
+  document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
+    button.classList.remove("active");
+    button.setAttribute("aria-pressed", "false");
+  });
 
   updateChoiceImage();
 
@@ -1013,7 +1033,7 @@ document.getElementById("choiceClose").onclick = () => {
 // Add product to cart
 document.getElementById("choiceAdd").onclick = () => {
   const color = document.getElementById("choiceColor").value;
-  const size = document.getElementById("choiceSize").value;
+  const size = selectedSize;
 
   if (!size) {
     notify("Please select your size.");
