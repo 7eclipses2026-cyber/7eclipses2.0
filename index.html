@@ -476,12 +476,27 @@
 </style>
 
 <style id="52hz-swimming-whale-style">
+/* The whale travels as one body while a clipped rear-fluke layer gently strokes up and down. */
 #sevenEclipsesSwimmingWhale{
- position:fixed; z-index:15; left:-190px; top:46vh;
- width:clamp(130px,19vw,250px); height:auto; max-height:28vh;
- object-fit:contain; pointer-events:none; user-select:none;
+ position:fixed;z-index:15;left:-190px;top:46vh;
+ width:clamp(130px,19vw,250px);height:auto;aspect-ratio:2.1/1;
+ pointer-events:none;user-select:none;opacity:.94;
  filter:drop-shadow(0 10px 20px rgba(125,190,255,.24));
- opacity:.94; animation:sevenEclipsesWhaleSwim 38s linear infinite;
+ animation:sevenEclipsesWhaleSwim 38s linear infinite;
+}
+#sevenEclipsesSwimmingWhale .whale-body,
+#sevenEclipsesSwimmingWhale .whale-tail{
+ position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+ pointer-events:none;
+}
+#sevenEclipsesSwimmingWhale .whale-body{
+ /* Leave the rear fluke free to move independently. */
+ clip-path:polygon(0 0,100% 0,100% 29%,84% 39%,78% 50%,84% 61%,100% 71%,100% 100%,0 100%);
+}
+#sevenEclipsesSwimmingWhale .whale-tail{
+ clip-path:polygon(73% 25%,100% 16%,100% 84%,73% 75%);
+ transform-origin:77% 50%;
+ animation:sevenEclipsesWhaleTail 1.8s ease-in-out infinite;
 }
 @keyframes sevenEclipsesWhaleSwim{
  0%{transform:translate3d(0,0,0) rotate(-3deg)}
@@ -491,11 +506,16 @@
  80%{transform:translate3d(160vw,3vh,0) rotate(-1deg)}
  100%{transform:translate3d(200vw,0,0) rotate(-3deg)}
 }
+@keyframes sevenEclipsesWhaleTail{
+ 0%,100%{transform:rotate(-7deg)}
+ 50%{transform:rotate(7deg)}
+}
 @media(max-width:650px){
  #sevenEclipsesSwimmingWhale{width:145px;top:53vh;left:-160px;animation-duration:34s;opacity:.82}
 }
 @media(prefers-reduced-motion:reduce){
  #sevenEclipsesSwimmingWhale{animation:none;left:auto;right:12px;top:auto;bottom:16px;width:125px;opacity:.75}
+ #sevenEclipsesSwimmingWhale .whale-tail{animation:none;transform:none}
 }
 </style>
 
@@ -512,7 +532,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 </style>
 </head>
 <body>
-<img id="sevenEclipsesSwimmingWhale" src="/public/images/52hz-real-whale-cutout.png" alt="" aria-hidden="true" draggable="false">
+<div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
 <div class="announcement">A DEEP REMINDER: BE YOURSELF. ALWAYS.</div>
 <header class="nav"><div class="nav-inner">
 <a class="brand" href="#home">7ECLIPSES<small>BE YOUR OWN FREQUENCY</small></a>
