@@ -2249,41 +2249,35 @@ Ask me about our tees, sizes, colours, fabric or ordering. If you need personal 
 </section>
 <script id="agent-bora-script">
 (()=>{
- const launcher=document.getElementById("bora-chat-launcher"),panel=document.getElementById("bora-chat-panel"),close=document.getElementById("bora-chat-close"),messages=document.getElementById("bora-chat-messages"),form=document.getElementById("bora-chat-form"),input=document.getElementById("bora-chat-input");
+ const launcher=document.getElementById("bora-chat-launcher"),panel=document.getElementById("bora-chat-panel"),close=document.getElementById("bora-chat-close"),messages=document.getElementById("bora-chat-messages"),form=document.getElementById("bora-chat-form"),input=document.getElementById("bora-chat-input"),sendButton=document.getElementById("bora-chat-send");
  if(!launcher||!panel||!messages||!form||!input)return;
- const productInfo=[
-  "BORA — Lavender, White",
-  "FLY WITH 52 — White",
-  "BE STRONG — Lavender, White",
-  "A HUGE WE ALL WAITED FOR — Lavender, White",
-  "RAINY DAYS — Black, White",
-  "MY EGO IS MY PROTECTION -2.18- — Black, White",
-  "APNA HAQ MANGA H AAPKI JAYDAD NAHI — Black, White",
-  "JUST BE YOURSELF — Black, White",
-  "DONE PLEASING PEOPLE — Black, Brown",
-  "SMALL WHALE — Black, White",
-  "Gentle Man — Black, White"
- ];
+ const history=[];
  function open(){panel.classList.add("open");launcher.setAttribute("aria-expanded","true");input.focus()}
  function shut(){panel.classList.remove("open");launcher.setAttribute("aria-expanded","false");launcher.focus()}
  launcher.addEventListener("click",()=>panel.classList.contains("open")?shut():open());
  close.addEventListener("click",shut);
  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open"))shut()});
- function add(text,who){const node=document.createElement("div");node.className="bora-msg "+who;node.textContent=text;messages.appendChild(node);messages.scrollTop=messages.scrollHeight}
+ function add(text,who){const node=document.createElement("div");node.className="bora-msg "+who;node.textContent=text;messages.appendChild(node);messages.scrollTop=messages.scrollHeight;return node}
  function humanLink(message){const url="https://wa.me/919220657676?text="+encodeURIComponent("Hi 7ECLIPSES! I need help with a product inquiry.\n\n"+message);const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";a.textContent="Chat with our team on WhatsApp";a.style.cssText="display:inline-block;margin:2px 0 4px;padding:10px 13px;border-radius:999px;background:#b8a1dd;color:#211b38;font-size:12px;font-weight:700;text-decoration:none";messages.appendChild(a);messages.scrollTop=messages.scrollHeight}
- function reply(q){
-  const x=q.toLowerCase();
-  if(/\b(hi|hello|hey|hii|good morning|good evening)\b/.test(x))return "Hey there! 💜 What would you like to know about our tees?";
-  if(/(price|cost|how much|₹|599)/.test(x))return "Our tees are ₹599 each. You can choose your colour and size on the product page and add your pick to your Ocean.";
-  if(/(size|sizing|fit|measurement)/.test(x))return "Our tees come in sizes S, M, L and XL with a loose-fit, unisex, drop-shoulder style. If you’re between sizes, choose your usual relaxed fit or size up for an extra-roomy look.";
-  if(/(fabric|material|cotton|gsm|quality)/.test(x))return "Our tees are made with 200 GSM cotton and feature DTF prints, with a loose unisex fit.";
-  if(/(colour|color|available in|shade)/.test(x))return "Here are the listed colour options by design:\n"+productInfo.join("\n")+"\nTap a product to see its colour options and photos. Live stock levels are confirmed by our team.";
-  if(/(product|tee|t.?shirt|collection|design|bora|whale|52hz)/.test(x))return "We have 11 designs in our collection, including BORA, FLY WITH 52, BE STRONG, RAINY DAYS and SMALL WHALE. Each tee is ₹599, 200 GSM cotton, unisex and available in S–XL. Ask me about a particular design!";
-  if(/(delivery|shipping|ship|courier|cod|cash on delivery|upi|payment|order|track)/.test(x))return "You can place an order through your Ocean and the website checkout. Delivery charges and payment options are shown at checkout. For an existing order or delivery update, please message our team directly.";
-  if(/(human|team|person|owner|contact|help me|talk|whatsapp|support)/.test(x))return "Of course! Our team can help with product questions, stock checks and order support. Tap below to message us on WhatsApp.";
-  return "I can help with product details, ₹599 pricing, sizes S–XL, colours, 200 GSM cotton and ordering. For a specific stock check or anything I can’t answer, I’ll connect you with our team.";
+ async function send(q){
+  q=q.trim();if(!q)return;
+  add(q,"user");history.push({role:"user",content:q});
+  while(history.length>12)history.shift();
+  input.disabled=true;sendButton.disabled=true;
+  const pending=add("BORA is thinking…","agent");
+  try{
+   const response=await fetch("/api/bora-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(data.error||"BORA is taking a little ocean break.");
+   const answer=String(data.reply||"I couldn't prepare an answer just now. Please try again.").slice(0,3000);
+   pending.textContent=answer;history.push({role:"assistant",content:answer});
+   if(data.handoff)humanLink(q);
+  }catch(error){
+   pending.textContent="I’m having trouble connecting to my AI brain right now. Please try again in a moment, or message our team directly.";
+   humanLink(q);
+   console.error("Agent BORA request failed:",error);
+  }finally{input.disabled=false;sendButton.disabled=false;input.focus();messages.scrollTop=messages.scrollHeight}
  }
- function send(q){q=q.trim();if(!q)return;add(q,"user");const r=reply(q);add(r,"agent");if(/(human|team|person|owner|contact|help me|talk|whatsapp|support|stock|available now|in stock|order status|track)/i.test(q))humanLink(q)}
  form.addEventListener("submit",e=>{e.preventDefault();const q=input.value;input.value="";send(q)});
  panel.querySelectorAll("[data-bora-quick]").forEach(b=>b.addEventListener("click",()=>send(b.dataset.boraQuick)));
 })();
