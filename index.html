@@ -982,6 +982,10 @@ function updateCheckoutSummary(){
     method === "cod" && t.qty >= 2 ? "COD charge" : "Delivery charge";
   document.getElementById("checkoutCharge").textContent = t.delivery === 0 ? "Free" : rupee(t.delivery);
   document.getElementById("checkoutTotal").textContent = rupee(t.total);
+  const submitButton = document.getElementById("placeOrderBtn");
+  if (submitButton && !submitButton.disabled) {
+    submitButton.textContent = method === "upi" ? "Continue to UPI payment" : "Place COD order";
+  }
 }
 
   function updateCart(){localStorage.setItem("7eclipsesBag", JSON.stringify(cart));window.syncShoppingData?.();let t=totals();document.getElementById("cartCount").textContent=t.qty;document.getElementById("bagSub").textContent=`(${t.qty})`;document.getElementById("subtotal").textContent=rupee(t.sub);document.getElementById("delivery").textContent="Calculated at checkout";document.getElementById("total").textContent=rupee(t.sub);document.getElementById("giftMessage").style.display=t.qty>=2&&t.qty<=3?"block":"none";document.getElementById("giftMessage").textContent=t.qty>=2&&t.qty<=3?"A little extra from us: FREE DELIVERY + FREE GIFT with this 2–3 tee order.":t.qty>3?"For 4+ tees, please contact us to confirm gift availability.":"";updateCheckoutSummary();
@@ -1125,7 +1129,7 @@ addressForm.onsubmit = async e => {
     notify(error.message || "We couldn't submit your order. Please try again.");
   } finally {
     placeOrderBtn.disabled = false;
-    placeOrderBtn.textContent = "Place Order";
+    updateCheckoutSummary();
   }
 };
 document.getElementById("continueShopping").onclick = () => thankYouModal.classList.remove("show");
