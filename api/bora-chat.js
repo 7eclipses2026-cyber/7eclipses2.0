@@ -17,10 +17,10 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  const token = req.headers["x-vercel-oidc-token"] || process.env.AI_GATEWAY_API_KEY;
-  if (!token) {
-    console.error("Agent BORA: Vercel AI Gateway authentication is unavailable.");
-    return res.status(503).json({ error: "AI chat is not configured yet." });
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.error("Agent BORA: Gemini API key is not configured.");
+    return res.status(503).json({ error: "BORA's free AI service is not configured yet." });
   }
 
   try {
@@ -86,28 +86,39 @@ RULES:
 - Keep most replies to 1–4 short sentences. Ask one useful follow-up question when needed.
 - You are a 7ECLIPSES customer-support assistant; briefly steer unrelated requests back to store support.`;
 
-    const aiResponse = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + token,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{ role: "system", content: system }, ...messages],
-        temperature: 0.6,
-        max_tokens: 450
-      })
-    });
+    const geminiContents = messages.map((item) => ({
+      role: item.role === "assistant" ? "model" : "user",
+      parts: [{ text: item.content }]
+    }));
+
+    const aiResponse = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": apiKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents: geminiContents,
+          generationConfig: {
+            temperature: 0.6,
+            maxOutputTokens: 450
+          }
+        })
+      }
+    );
 
     const result = await aiResponse.json().catch(() => ({}));
     if (!aiResponse.ok) {
-      console.error("Agent BORA AI Gateway error:", aiResponse.status, result.error || result.message || "Unknown error");
+      console.error("Agent BORA Gemini API error:", aiResponse.status, result.error || "Unknown error");
       return res.status(502).json({ error: "BORA could not reach the AI service. Please try again." });
     }
 
-    const reply = result.choices && result.choices[0] && result.choices[0].message
-      ? String(result.choices[0].message.content || "").trim()
+    const reply = result.candidates && result.candidates[0] &&
+      result.candidates[0].content && Array.isArray(result.candidates[0].content.parts)
+      ? result.candidates[0].content.parts.map((part) => part.text || "").join("").trim()
       : "";
     if (!reply) return res.status(502).json({ error: "BORA received an empty reply. Please try again." });
 
