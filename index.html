@@ -898,15 +898,22 @@ const overlay=document.getElementById("overlay"),drawer=document.getElementById(
   }
 
   items.innerHTML = savedProducts.map(p => `
-    <div style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #444">
-      <img src="${p.images[p.colors[0]]}" alt="${p.name}" style="width:75px;height:90px;object-fit:cover;border-radius:6px">
-      <div style="flex:1">
+    <div class="wishlist-item" style="display:flex;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid #444">
+      <button type="button" class="wishlist-product-open" data-wishlist-open="${p.id}" aria-label="View ${p.name}" style="display:block;flex:0 0 124px;width:124px;height:148px;padding:5px;background:#f2f0ed;border:0;border-radius:10px;cursor:pointer">
+        <img src="${p.images[p.colors[0]]}" alt="${p.name}" loading="lazy" style="display:block;width:100%;height:100%;object-fit:contain;border-radius:6px">
+      </button>
+      <div style="flex:1;min-width:0">
         <strong>${p.name}</strong>
-        <div>₹599</div>
+        <div style="margin:8px 0">₹599</div>
+        <button type="button" data-wishlist-open="${p.id}">View tee</button>
         <button type="button" data-wishlist-remove="${p.id}">Remove</button>
       </div>
     </div>
   `).join("");
+
+  items.querySelectorAll("[data-wishlist-open]").forEach(b => {
+    b.onclick = () => addItem(Number(b.dataset.wishlistOpen));
+  });
 
   items.querySelectorAll("[data-wishlist-remove]").forEach(b => {
     b.onclick = () => {
