@@ -1082,7 +1082,7 @@ addressForm.onsubmit = async e => {
       "https://wa.me/919220657676?text=" + encodeURIComponent(orderText(d));
     document.getElementById("checkoutModal").classList.remove("show");
     thankYouModal.classList.add("show");
-    cart = [];
+    cart.splice(0, cart.length);
     updateCart();
     addressForm.reset();
   } catch (error) {
