@@ -43,9 +43,14 @@
   border-radius: 12px;
 }
 
-#choiceColor {
-  cursor: pointer;
-}
+.color-options{display:flex;gap:11px;flex-wrap:wrap;margin-top:10px}
+.color-option{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 3px;border:0;background:transparent;color:#a9bfcd;font:600 10px 'DM Sans',sans-serif;cursor:pointer;min-width:48px}
+.color-option .color-swatch{width:31px;height:31px;border-radius:50%;border:2px solid rgba(255,255,255,.35);box-shadow:0 0 0 0 rgba(142,207,255,0);transition:box-shadow .18s,border-color .18s,transform .18s}
+.color-option:hover .color-swatch{transform:scale(1.08)}
+.color-option.active .color-swatch,.color-option[aria-pressed="true"] .color-swatch{border-color:#8ecfff;box-shadow:0 0 0 3px #8ecfff55,0 0 15px #8ecfff66}
+.color-option.active{color:#dff5ff}
+.color-option:focus-visible{outline:2px solid #8ecfff;outline-offset:4px;border-radius:6px}
+.selected-color-name{margin:8px 0 0;color:#8ecfff;font-size:11px;letter-spacing:.06em}
 .size-options{display:flex;gap:9px;flex-wrap:wrap;margin-top:9px}
 .size-option{min-width:48px;height:46px;padding:0 13px;border:1px solid rgba(142,207,255,.35);border-radius:7px;background:#0b2232;color:#d8efff;font-weight:700;font-size:13px;transition:background .18s,border-color .18s,color .18s,transform .18s}
 .size-option:hover{border-color:#8ecfff;transform:translateY(-1px)}
@@ -748,7 +753,8 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
     <div class="form-grid">
       <div class="field">
         <label>Choose colour</label>
-        <select id="choiceColor"></select>
+        <div class="color-options" id="choiceColorOptions" role="group" aria-label="Choose T-shirt colour"></div>
+        <p class="selected-color-name" id="selectedColorName" aria-live="polite"></p>
       </div>
       <div class="field">
         <label>Choose size</label>
@@ -970,6 +976,7 @@ let gallerySlideIndex = 0;
 
 let selectedProduct = null;
 let selectedSize = "";
+let selectedColor = "";
 
 
 
@@ -995,7 +1002,7 @@ function showGallerySlide() {
 }
 
 function updateChoiceImage() {
-  const color = document.getElementById("choiceColor").value;
+  const color = selectedColor;
 
   const backImageFiles = {
     Lavender: "Lavender back.jpg",
@@ -1035,7 +1042,16 @@ function changeGallerySlide(direction) {
   showGallerySlide();
 }
 
-document.getElementById("choiceColor").onchange = updateChoiceImage;
+function chooseProductColor(color){
+  selectedColor = color;
+  document.querySelectorAll("#choiceColorOptions .color-option").forEach(button=>{
+    const active = button.dataset.color === color;
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-pressed",String(active));
+  });
+  document.getElementById("selectedColorName").textContent = color;
+  updateChoiceImage();
+}
 document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
   button.addEventListener("click", () => {
     selectedSize = button.dataset.size;
@@ -1052,11 +1068,15 @@ function addItem(id) {
   document.getElementById("choiceName").textContent =
     selectedProduct.name;
 
-  const colorSelect = document.getElementById("choiceColor");
-
-  colorSelect.innerHTML = selectedProduct.colors.map(c =>
-    `<option value="${c}">${c}</option>`
+  const colorHex = {Black:"#101114",White:"#f4f1e9",Lavender:"#bca8cc",Brown:"#795443"};
+  const colorOptions = document.getElementById("choiceColorOptions");
+  colorOptions.innerHTML = selectedProduct.colors.map(c =>
+    `<button type="button" class="color-option" data-color="${c}" aria-label="Choose ${c}" aria-pressed="false"><span class="color-swatch" style="background:${colorHex[c] || "#8ecfff"}"></span><span>${c}</span></button>`
   ).join("");
+  colorOptions.querySelectorAll(".color-option").forEach(button=>{
+    button.addEventListener("click",()=>chooseProductColor(button.dataset.color));
+  });
+  chooseProductColor(selectedProduct.colors[0]);
 
   selectedSize = "";
   document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
@@ -1168,7 +1188,7 @@ document.getElementById("choiceClose").onclick = () => {
 
 // Add product to cart
 document.getElementById("choiceAdd").onclick = () => {
-  const color = document.getElementById("choiceColor").value;
+  const color = selectedColor;
   const size = selectedSize;
 
   if (!size) {
