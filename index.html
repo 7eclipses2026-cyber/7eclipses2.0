@@ -642,6 +642,7 @@ grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addItem(Number(b.da
     }
 
     localStorage.setItem("7eclipsesWishlist", JSON.stringify(wishlist));
+    window.syncShoppingData?.();
     b.textContent = wishlist.includes(id) ? "♥︎" : "♡";
     b.classList.toggle("active", wishlist.includes(id));
   };
@@ -884,7 +885,7 @@ function totals(){
     total: sub + delivery
   };
 }
-  function updateCart(){localStorage.setItem("7eclipsesBag", JSON.stringify(cart));let t=totals();document.getElementById("cartCount").textContent=t.qty;document.getElementById("bagSub").textContent=`(${t.qty})`;document.getElementById("subtotal").textContent=rupee(t.sub);document.getElementById("delivery").textContent=rupee(t.delivery);document.getElementById("total").textContent=rupee(t.total);document.getElementById("giftMessage").style.display=t.qty>=2&&t.qty<=3?"block":"none";document.getElementById("giftMessage").textContent=t.qty>=2&&t.qty<=3?"A little extra from us: FREE DELIVERY + FREE GIFT with this 2–3 tee order.":t.qty>3?"For 4+ tees, please contact us to confirm delivery and gifts.":"";
+  function updateCart(){localStorage.setItem("7eclipsesBag", JSON.stringify(cart));window.syncShoppingData?.();let t=totals();document.getElementById("cartCount").textContent=t.qty;document.getElementById("bagSub").textContent=`(${t.qty})`;document.getElementById("subtotal").textContent=rupee(t.sub);document.getElementById("delivery").textContent=rupee(t.delivery);document.getElementById("total").textContent=rupee(t.total);document.getElementById("giftMessage").style.display=t.qty>=2&&t.qty<=3?"block":"none";document.getElementById("giftMessage").textContent=t.qty>=2&&t.qty<=3?"A little extra from us: FREE DELIVERY + FREE GIFT with this 2–3 tee order.":t.qty>3?"For 4+ tees, please contact us to confirm delivery and gifts.":"";
 let el=document.getElementById("cartItems");el.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-item"><img   class="mini-tee"   src="${products.find(p=>p.id===x.id).images[x.color]}"   alt="${x.name}"   loading="lazy" ><div><h4>${x.name}</h4><small>${x.color} · Size ${x.size}</small><div class="qty-controls"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></div><div><b>${rupee(x.qty*599)}</b><div class="qty-controls"><button class="remove" data-del="${i}">Remove</button></div></div></div>`).join(""):'<div class="empty">Your bag is waiting for its first frequency.</div>';
 el.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{cart[+b.dataset.inc].qty++;updateCart()});el.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart[+b.dataset.dec];x.qty--;if(x.qty<=0)cart.splice(+b.dataset.dec,1);updateCart()});el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{cart.splice(+b.dataset.del,1);updateCart()})}
 function notify(s){let t=document.getElementById("toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
@@ -920,6 +921,7 @@ const overlay=document.getElementById("overlay"),drawer=document.getElementById(
       const id = Number(b.dataset.wishlistRemove);
       wishlist = wishlist.filter(x => x !== id);
       localStorage.setItem("7eclipsesWishlist", JSON.stringify(wishlist));
+      window.syncShoppingData?.();
       renderWishlist();
       renderProducts();
     };
@@ -1057,6 +1059,15 @@ renderProducts();updateCart();
     signOut
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+  import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    onSnapshot,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyCJ2KbU4YlhrXz2loHdhC_E8nEXVDIaSwE",
     authDomain: "eclipses-1bf5c.firebaseapp.com",
@@ -1069,6 +1080,76 @@ renderProducts();updateCart();
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+  let shoppingUnsubscribe = null;
+  let applyingCloudData = false;
+  let authChangeToken = 0;
+
+  const activeUidKey = "7eclipsesActiveUid";
+  const guestBagKey = "7eclipsesGuestBag";
+  const guestWishlistKey = "7eclipsesGuestWishlist";
+
+  function cleanBag(items) {
+    if (!Array.isArray(items)) return [];
+    return items.filter(item => {
+      const product = products.find(p => p.id === Number(item.id));
+      return product &&
+        product.colors.includes(item.color) &&
+        typeof item.size === "string" &&
+        Number.isInteger(Number(item.qty)) &&
+        Number(item.qty) > 0;
+    }).map(item => ({
+      id: Number(item.id),
+      name: products.find(p => p.id === Number(item.id)).name,
+      color: item.color,
+      size: item.size,
+      qty: Number(item.qty)
+    }));
+  }
+
+  function cleanWishlist(items) {
+    if (!Array.isArray(items)) return [];
+    return [...new Set(items.map(Number).filter(id => products.some(p => p.id === id)))];
+  }
+
+  function mergeBags(first, second) {
+    const merged = new Map();
+    [...cleanBag(first), ...cleanBag(second)].forEach(item => {
+      const key = [item.id, item.color, item.size].join("|");
+      if (merged.has(key)) merged.get(key).qty += item.qty;
+      else merged.set(key, { ...item });
+    });
+    return [...merged.values()];
+  }
+
+  function applyShoppingData(data) {
+    applyingCloudData = true;
+    cart.splice(0, cart.length, ...cleanBag(data?.bag));
+    wishlist = cleanWishlist(data?.wishlist);
+    localStorage.setItem("7eclipsesBag", JSON.stringify(cart));
+    localStorage.setItem("7eclipsesWishlist", JSON.stringify(wishlist));
+    updateCart();
+    renderWishlist();
+    renderProducts();
+    applyingCloudData = false;
+  }
+
+  window.syncShoppingData = async () => {
+    if (!currentUser || applyingCloudData) return;
+    try {
+      await setDoc(doc(db, "users", currentUser.uid), {
+        bag: cleanBag(cart),
+        wishlist: cleanWishlist(wishlist),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (error) {
+      console.error("Could not sync shopping data:", error);
+      const status = document.getElementById("accountStatus");
+      if (status) status.textContent = "Your changes are saved on this device, but cloud sync failed. Please check your connection.";
+    }
+  };
 
   const accountModal = document.getElementById("accountModal");
   const accountMessage = document.getElementById("accountMessage");
@@ -1156,7 +1237,8 @@ renderProducts();updateCart();
     }
   };
 
-  onAuthStateChanged(auth, user => {
+  onAuthStateChanged(auth, async user => {
+    const changeToken = ++authChangeToken;
     const form = document.getElementById("accountForm");
     const loggedInArea = document.getElementById("loggedInArea");
     const status = document.getElementById("accountStatus");
@@ -1164,9 +1246,99 @@ renderProducts();updateCart();
     form.style.display = user ? "none" : "block";
     loggedInArea.style.display = user ? "block" : "none";
 
-    status.textContent = user
-      ? "Logged in as " + user.email
-      : "Sign in or create your 7ECLIPSES account.";
+    if (!user) {
+      if (shoppingUnsubscribe) {
+        shoppingUnsubscribe();
+        shoppingUnsubscribe = null;
+      }
+      if (currentUser) {
+        currentUser = null;
+        const guestBag = localStorage.getItem(guestBagKey);
+        const guestWishlist = localStorage.getItem(guestWishlistKey);
+        cart.splice(0, cart.length, ...cleanBag(guestBag ? JSON.parse(guestBag) : []));
+        wishlist = cleanWishlist(guestWishlist ? JSON.parse(guestWishlist) : []);
+        localStorage.setItem("7eclipsesBag", JSON.stringify(cart));
+        localStorage.setItem("7eclipsesWishlist", JSON.stringify(wishlist));
+        localStorage.removeItem(activeUidKey);
+        updateCart();
+        renderWishlist();
+        renderProducts();
+      }
+      status.textContent = "Sign in or create your 7ECLIPSES account.";
+      return;
+    }
+
+    currentUser = user;
+    status.textContent = "Logged in as " + user.email + " · Syncing your Bag and Wishlist…";
+
+    if (shoppingUnsubscribe) {
+      shoppingUnsubscribe();
+      shoppingUnsubscribe = null;
+    }
+
+    const previousUid = localStorage.getItem(activeUidKey);
+    let guestBag = [];
+    let guestWishlist = [];
+
+    if (!previousUid) {
+      guestBag = cleanBag(cart);
+      guestWishlist = cleanWishlist(wishlist);
+      localStorage.setItem(guestBagKey, JSON.stringify(guestBag));
+      localStorage.setItem(guestWishlistKey, JSON.stringify(guestWishlist));
+    } else if (previousUid !== user.uid) {
+      guestBag = cleanBag(JSON.parse(localStorage.getItem(guestBagKey) || "[]"));
+      guestWishlist = cleanWishlist(JSON.parse(localStorage.getItem(guestWishlistKey) || "[]"));
+    }
+
+    localStorage.setItem(activeUidKey, user.uid);
+
+    try {
+      const userDoc = doc(db, "users", user.uid);
+      const snapshot = await getDoc(userDoc);
+      if (changeToken !== authChangeToken) return;
+
+      const cloudData = snapshot.exists() ? snapshot.data() : {};
+      const mergedBag = mergeBags(guestBag, cloudData.bag || []);
+      const mergedWishlist = cleanWishlist([...(guestWishlist || []), ...(cloudData.wishlist || [])]);
+
+      applyingCloudData = true;
+      cart.splice(0, cart.length, ...mergedBag);
+      wishlist = mergedWishlist;
+      localStorage.setItem("7eclipsesBag", JSON.stringify(cart));
+      localStorage.setItem("7eclipsesWishlist", JSON.stringify(wishlist));
+      updateCart();
+      renderWishlist();
+      renderProducts();
+      applyingCloudData = false;
+
+      await setDoc(userDoc, {
+        bag: mergedBag,
+        wishlist: mergedWishlist,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      if (changeToken !== authChangeToken) return;
+
+      shoppingUnsubscribe = onSnapshot(userDoc, remoteSnapshot => {
+        if (!remoteSnapshot.exists()) return;
+        const remoteData = remoteSnapshot.data();
+        const remoteBag = cleanBag(remoteData.bag || []);
+        const remoteWishlist = cleanWishlist(remoteData.wishlist || []);
+        const bagChanged = JSON.stringify(remoteBag) !== JSON.stringify(cleanBag(cart));
+        const wishlistChanged = JSON.stringify(remoteWishlist) !== JSON.stringify(cleanWishlist(wishlist));
+        if (bagChanged || wishlistChanged) {
+          applyShoppingData({ bag: remoteBag, wishlist: remoteWishlist });
+        }
+      }, error => {
+        console.error("Shopping sync listener failed:", error);
+        status.textContent = "Logged in, but live Bag and Wishlist sync is unavailable. Please refresh.";
+      });
+
+      status.textContent = "Logged in as " + user.email + " · Bag and Wishlist synced.";
+    } catch (error) {
+      applyingCloudData = false;
+      console.error("Could not load shopping data:", error);
+      status.textContent = "Logged in, but cloud sync failed. Your items remain saved on this device.";
+    }
   });
 </script>
 </body></html>
