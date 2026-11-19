@@ -517,7 +517,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 <header class="nav"><div class="nav-inner">
 <a class="brand" href="#home">7ECLIPSES<small>BE YOUR OWN FREQUENCY</small></a>
 <nav class="navlinks" id="navlinks"><a href="#shop">Shop</a><a href="/52hz.html">The 52Hz story</a><a href="#beliefs">What we believe</a><a href="#fabric">Fabric & fit</a><a href="#size">Size chart</a><a href="#order">How to order</a></nav>
-<div class="nav-actions">   <button class="iconbtn menu-toggle" id="menuBtn" aria-label="Open menu">☰</button>    <button class="iconbtn" id="wishlistOpen" aria-label="Wishlist">     ♡ Wishlist   </button>    <button class="iconbtn" id="cartOpen">     Bag <span class="cart-count" id="cartCount">0</span>   </button>    <button class="iconbtn" id="accountOpen" aria-label="My Account">     👤   </button> </div>
+<div class="nav-actions">   <button class="iconbtn menu-toggle" id="menuBtn" aria-label="Open menu">☰</button>    <button class="iconbtn" id="wishlistOpen" aria-label="Wishlist">     ♡ Wishlist   </button>    <button class="iconbtn" id="cartOpen">     Bag <span class="cart-count" id="cartCount">0</span>   </button>    <button class="iconbtn account-profile-button" id="accountOpen" aria-label="My Account"><span class="account-profile-avatar" id="accountProfileAvatar">👤</span><span class="account-profile-name" id="accountProfileName"></span></button> </div>
 </div></header>
 <main>
 <section class="hero" id="home"><div class="hero-note">EST. 2026 · MADE TO BE DIFFERENT</div><div class="hero-content">
@@ -1205,6 +1205,7 @@ renderProducts();updateCart();
 
 <style id="profile-editor-style">
 .profile-editor{display:grid;grid-template-columns:82px 1fr;gap:16px;align-items:start;margin:18px 0;padding:16px;background:#211d29;border:1px solid #665777;border-radius:12px}
+.account-profile-button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:54px;padding:4px 7px!important;line-height:1.1}.account-profile-avatar{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:23px;overflow:hidden;border-radius:50%}.account-profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}.account-profile-name{display:block;max-width:90px;font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit}
 .profile-avatar-stack{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}.profile-preview{width:76px;height:76px;border-radius:50%;background:#0b3045;border:2px solid #8ecfff;display:flex;align-items:center;justify-content:center;font-size:34px;overflow:hidden;flex-shrink:0}.profile-name-under-avatar{max-width:112px;text-align:center;color:#fff;font-size:13px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
 .profile-preview img{width:100%;height:100%;object-fit:cover}
 .profile-fields label,.emoji-label{display:block;font-size:12px;color:#d9efff;margin:8px 0 4px}
@@ -1578,6 +1579,16 @@ renderProducts();updateCart();
 
   let selectedProfileAvatar = { type: "emoji", value: "🌊" };
   const profilePreview = document.getElementById("profilePreview");
+  function updateHeaderProfile(avatar, name) {
+    const avatarNode = document.getElementById("accountProfileAvatar");
+    const nameNode = document.getElementById("accountProfileName");
+    avatarNode.replaceChildren();
+    if (avatar && avatar.type === "image" && avatar.value) {
+      const img = document.createElement("img"); img.alt = "Profile"; img.src = avatar.value; avatarNode.appendChild(img);
+    } else avatarNode.textContent = avatar && avatar.value ? avatar.value : "👤";
+    nameNode.textContent = name || "";
+    document.getElementById("accountOpen").setAttribute("aria-label", name ? "My Account: " + name : "My Account");
+  }
   const profileNameInput = document.getElementById("profileName");
   const profileNameUnderAvatar = document.getElementById("profileNameUnderAvatar");
   function updateProfileNamePreview(name) {
@@ -1637,7 +1648,7 @@ renderProducts();updateCart();
       updateProfileNamePreview(name);
       showMessage("Your profile has been saved!");
       document.getElementById("accountStatus").textContent="Logged in as "+name+" · "+currentUser.email;
-      document.getElementById("accountOpen").textContent=selectedProfileAvatar.type==="emoji"?selectedProfileAvatar.value:"👤";
+      updateHeaderProfile(selectedProfileAvatar, name);
     }catch(error){console.error("Profile save failed:",error);showMessage("Could not save your profile. Please try again.");}
     finally{btn.disabled=false;}
   };
@@ -1652,6 +1663,7 @@ renderProducts();updateCart();
     loggedInArea.style.display = user ? "block" : "none";
 
     if (!user) {
+      updateHeaderProfile({type:"emoji",value:"👤"}, "");
       if (shoppingUnsubscribe) {
         shoppingUnsubscribe();
         shoppingUnsubscribe = null;
@@ -1708,7 +1720,7 @@ renderProducts();updateCart();
       document.getElementById("profileName").value = cloudData.displayName || user.displayName || "";
       updateProfileNamePreview(document.getElementById("profileName").value);
       showProfileAvatar(cloudData.profileAvatar || {type:"emoji",value:"🌊"});
-      document.getElementById("accountOpen").textContent = cloudData.profileAvatar && cloudData.profileAvatar.type==="emoji" ? cloudData.profileAvatar.value : "👤";
+      updateHeaderProfile(cloudData.profileAvatar || {type:"emoji",value:"🌊"}, cloudData.displayName || user.displayName || "");
       const mergedBag = mergeBags(guestBag, cloudData.bag || []);
       const mergedWishlist = cleanWishlist([...(guestWishlist || []), ...(cloudData.wishlist || [])]);
 
