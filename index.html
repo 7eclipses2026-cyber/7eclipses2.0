@@ -1088,7 +1088,7 @@ let appliedCoupon = "";
 const COUPON_CODE = "7ECLIPSES10";
 function checkoutTotals(method){
   const base = totals();
-  const discount = appliedCoupon === COUPON_CODE ? Math.round(base.sub * 0.10) : 0;
+  const discount = method === "upi" && appliedCoupon === COUPON_CODE ? Math.round(base.sub * 0.10) : 0;
   const delivery = method === "cod"
     ? (base.qty === 1 ? 60 : base.qty >= 2 ? 40 : 0)
     : (base.qty === 1 ? 40 : 0);
@@ -1189,11 +1189,28 @@ function closeWishlist() {
 document.getElementById("wishlistOpen").onclick = openWishlist;
 document.getElementById("wishlistClose").onclick = closeWishlist;{overlay.classList.remove("show");drawer.classList.remove("show")}
 document.getElementById("cartOpen").onclick=openCart;document.getElementById("cartClose").onclick=closeCart;overlay.onclick=closeCart;
-const modal=document.getElementById("checkoutModal");document.getElementById("checkoutBtn").onclick=()=>{if(!cart.length){notify("Add a tee to your bag first.");return}closeCart();modal.classList.add("show");updateCheckoutSummary()};document.querySelectorAll('input[name="paymentMethod"]').forEach(input=>input.addEventListener("change",updateCheckoutSummary));
+const modal=document.getElementById("checkoutModal");document.getElementById("checkoutBtn").onclick=()=>{if(!cart.length){notify("Add a tee to your bag first.");return}closeCart();modal.classList.add("show");updateCheckoutSummary()};document.querySelectorAll('input[name="paymentMethod"]').forEach(input=>input.addEventListener("change",()=>{
+  const method=document.querySelector('input[name="paymentMethod"]:checked')?.value || "upi";
+  if(method==="cod" && appliedCoupon){
+    appliedCoupon="";
+    const message=document.getElementById("couponMessage");
+    message.className="error";
+    message.textContent="7ECLIPSES10 is valid on UPI / online payments only. Choose UPI and apply the code again to get 10% off.";
+  }
+  updateCheckoutSummary();
+}));
 document.getElementById("applyCouponBtn").onclick=()=>{
   const field=document.getElementById("couponCode");
   const message=document.getElementById("couponMessage");
   const code=field.value.trim().toUpperCase();
+  const method=document.querySelector('input[name="paymentMethod"]:checked')?.value || "upi";
+  if(method!=="upi"){
+    appliedCoupon="";
+    message.className="error";
+    message.textContent="7ECLIPSES10 is valid on UPI / online payments only. Select UPI to use this coupon.";
+    updateCheckoutSummary();
+    return;
+  }
   if(code!==COUPON_CODE){
     appliedCoupon="";
     message.className="error";
@@ -1204,7 +1221,7 @@ document.getElementById("applyCouponBtn").onclick=()=>{
   appliedCoupon=COUPON_CODE;
   field.value=COUPON_CODE;
   message.className="success";
-  message.textContent="Success! Your extra 10% discount has been applied.";
+  message.textContent="Success! Your extra 10% UPI discount has been applied. The offer is limited to the first 25 successful UPI orders.";
   updateCheckoutSummary();
 };
 document.getElementById("couponCode").addEventListener("input",()=>{
