@@ -372,6 +372,84 @@
   margin: 14px 0 0;
 }
 
+
+
+/* 7ECLIPSES CHECKOUT DELIVERY DETAILS MODAL */
+#checkoutModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: rgba(0, 0, 0, .88);
+  backdrop-filter: blur(10px);
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  overflow-y: auto;
+}
+#checkoutModal.show {
+  display: flex;
+}
+#checkoutModal .modal-box {
+  width: 100%;
+  max-width: 620px;
+  max-height: 92vh;
+  overflow-y: auto;
+  margin: auto;
+  padding: 28px;
+  background: #101820;
+  color: #e5f5ff;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 16px;
+  box-shadow: 0 25px 80px #000b;
+}
+#checkoutModal .modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255,255,255,.14);
+  padding-bottom: 16px;
+}
+#checkoutModal .modal-head h3 {
+  margin: 6px 0 0;
+  color: #e5f5ff;
+}
+#checkoutModal .field label {
+  display: block;
+  color: #b9c7d1;
+  margin-bottom: 8px;
+}
+#checkoutModal input,
+#checkoutModal textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1d2a35;
+  color: #fff;
+  border: 1px solid #526575;
+  border-radius: 8px;
+  padding: 12px;
+}
+#checkoutModal textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+#checkoutModal .modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+#checkoutModal .modal-actions .btn {
+  flex: 1 1 210px;
+}
+@media (max-width: 600px) {
+  #checkoutModal { padding: 10px; }
+  #checkoutModal .modal-box { padding: 18px; max-height: 96vh; }
+  #checkoutModal .modal-actions { flex-direction: column; }
+  #checkoutModal .modal-actions .btn { width: 100%; }
+}
+
 </style>
 </head>
 <body>
