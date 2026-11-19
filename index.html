@@ -474,8 +474,34 @@
 @media(max-width:650px){.belief-grid{grid-template-columns:1fr}.belief-card{min-height:0}.beliefs{padding-top:65px;padding-bottom:65px}.friend-note{padding:65px 20px}}
 
 </style>
+
+<style id="52hz-swimming-whale-style">
+#sevenEclipsesSwimmingWhale{
+ position:fixed; z-index:15; left:-190px; top:46vh;
+ width:clamp(130px,19vw,250px); height:auto; max-height:28vh;
+ object-fit:contain; pointer-events:none; user-select:none;
+ filter:drop-shadow(0 10px 20px rgba(125,190,255,.24));
+ opacity:.94; animation:sevenEclipsesWhaleSwim 38s linear infinite;
+}
+@keyframes sevenEclipsesWhaleSwim{
+ 0%{transform:translate3d(0,0,0) rotate(-3deg)}
+ 20%{transform:translate3d(40vw,-3vh,0) rotate(1deg)}
+ 40%{transform:translate3d(80vw,2vh,0) rotate(-2deg)}
+ 60%{transform:translate3d(120vw,-2vh,0) rotate(2deg)}
+ 80%{transform:translate3d(160vw,3vh,0) rotate(-1deg)}
+ 100%{transform:translate3d(200vw,0,0) rotate(-3deg)}
+}
+@media(max-width:650px){
+ #sevenEclipsesSwimmingWhale{width:145px;top:53vh;left:-160px;animation-duration:34s;opacity:.82}
+}
+@media(prefers-reduced-motion:reduce){
+ #sevenEclipsesSwimmingWhale{animation:none;left:auto;right:12px;top:auto;bottom:16px;width:125px;opacity:.75}
+}
+</style>
+
 </head>
 <body>
+<img id="sevenEclipsesSwimmingWhale" src="/images/52hz-real-whale-cutout.png" alt="" aria-hidden="true" draggable="false">
 <div class="announcement">A DEEP REMINDER: BE YOURSELF. ALWAYS.</div>
 <header class="nav"><div class="nav-inner">
 <a class="brand" href="#home">7ECLIPSES<small>BE YOUR OWN FREQUENCY</small></a>
