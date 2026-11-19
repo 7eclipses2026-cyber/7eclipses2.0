@@ -16,6 +16,14 @@
 .checkout-offer{margin:0 0 16px;padding:14px 15px;border:1px solid rgba(142,207,255,.35);border-radius:10px;background:linear-gradient(135deg,rgba(31,89,119,.3),rgba(7,27,41,.6));color:#d8efff;font-size:12px;line-height:1.65}
 .checkout-offer strong{display:block;color:#a9ddff;letter-spacing:.1em;text-transform:uppercase;font-size:11px;margin-bottom:4px}
 .checkout-offer.unlocked{border-color:rgba(142,207,255,.7);background:linear-gradient(135deg,rgba(41,112,145,.38),rgba(7,27,41,.72))}
+.checkout-coupon{margin:0 0 16px;padding:14px;border:1px solid rgba(142,207,255,.25);border-radius:10px;background:rgba(4,19,30,.72);font-size:12px;color:#d8efff}
+.coupon-entry{display:flex;gap:8px;margin-top:9px}
+.coupon-entry input{min-width:0;flex:1;padding:12px;border:1px solid rgba(142,207,255,.35);border-radius:6px;background:#0b2232;color:#eaf7ff;text-transform:uppercase}
+.coupon-entry .btn{padding:11px 16px}
+#couponMessage{margin:8px 0 0;color:#9eb8c8;line-height:1.6}
+#couponMessage.success{color:#a9ddff}#couponMessage.error{color:#ffb6b6}
+.checkout-summary .coupon-discount{color:#a9ddff}
+
 .empty{color:var(--muted);text-align:center;padding:55px 10px;font-size:13px}.cart-item{display:grid;grid-template-columns:65px 1fr auto;gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}.mini-tee {
   width: 75px;
   height: 85px;
@@ -641,7 +649,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
   <img id="zoomImage" src="" alt="Zoomed product image">
   <p>PINCH TO ZOOM · DOUBLE CLICK TO ENLARGE</p>
 </div></div><div class="modal" id="checkoutModal"><div class="modal-box"><div class="modal-head"><div><div class="kicker">Almost yours</div><h3>Delivery details</h3></div><button class="close" id="modalClose">×</button></div><p class="size-note" style="margin-top:12px">Fill in your details so your order message is ready to send.</p>
-<form id="addressForm"><div class="checkout-payment"><strong>Choose payment method</strong><label class="payment-option"><input type="radio" name="paymentMethod" value="upi" checked> <span><b>UPI / Online payment</b><small>Pay securely using Razorpay</small></span></label><label class="payment-option"><input type="radio" name="paymentMethod" value="cod"> <span><b>Cash on Delivery</b><small>Pay when your order arrives</small></span></label></div><div id="checkoutOffer" class="checkout-offer" aria-live="polite"></div><div class="checkout-summary"><div><span>T-shirt subtotal</span><b id="checkoutSubtotal">₹599</b></div><div><span id="checkoutChargeLabel">Delivery charge</span><b id="checkoutCharge">₹40</b></div><div class="checkout-grand-total"><span>Total to pay</span><b id="checkoutTotal">₹639</b></div></div><div class="form-grid"><div class="field"><label>Full name *</label><input name="name" required autocomplete="name"></div><div class="field"><label>Phone number *</label><input name="phone" required type="tel" autocomplete="tel" pattern="[0-9+ ()-]{8,16}"></div><div class="field full"><label>Full address *</label><textarea name="address" required autocomplete="street-address"></textarea></div><div class="field"><label>City *</label><input name="city" required autocomplete="address-level2"></div><div class="field"><label>PIN code *</label><input name="pin" required inputmode="numeric" pattern="[0-9]{6}" autocomplete="postal-code"></div><div class="field full"><label>Landmark / notes (optional)</label><input name="notes"></div></div>
+<form id="addressForm"><div class="checkout-payment"><strong>Choose payment method</strong><label class="payment-option"><input type="radio" name="paymentMethod" value="upi" checked> <span><b>UPI / Online payment</b><small>Pay securely using Razorpay</small></span></label><label class="payment-option"><input type="radio" name="paymentMethod" value="cod"> <span><b>Cash on Delivery</b><small>Pay when your order arrives</small></span></label></div><div id="checkoutOffer" class="checkout-offer" aria-live="polite"></div><div class="checkout-coupon"><strong>Have a coupon?</strong><div class="coupon-entry"><input id="couponCode" type="text" maxlength="24" placeholder="Enter coupon code" autocomplete="off" aria-label="Coupon code"><button type="button" class="btn" id="applyCouponBtn">Apply</button></div><p id="couponMessage" aria-live="polite">Use <b>ECLIPSES5</b> for an extra 5% off your T-shirt subtotal.</p></div><div class="checkout-summary"><div><span>T-shirt subtotal</span><b id="checkoutSubtotal">₹599</b></div><div><span id="checkoutChargeLabel">Delivery charge</span><b id="checkoutCharge">₹40</b></div><div class="checkout-grand-total"><span>Total to pay</span><b id="checkoutTotal">₹639</b></div></div><div class="form-grid"><div class="field"><label>Full name *</label><input name="name" required autocomplete="name"></div><div class="field"><label>Phone number *</label><input name="phone" required type="tel" autocomplete="tel" pattern="[0-9+ ()-]{8,16}"></div><div class="field full"><label>Full address *</label><textarea name="address" required autocomplete="street-address"></textarea></div><div class="field"><label>City *</label><input name="city" required autocomplete="address-level2"></div><div class="field"><label>PIN code *</label><input name="pin" required inputmode="numeric" pattern="[0-9]{6}" autocomplete="postal-code"></div><div class="field full"><label>Landmark / notes (optional)</label><input name="notes"></div></div>
 <div class="modal-actions"><button class="btn" type="submit" id="placeOrderBtn">Place Order</button></div></form></div></div>
 <div class="modal" id="thankYouModal"><div class="modal-box"><div class="kicker">7ECLIPSES · ORDER RECEIVED</div><h3 style="font-size:30px;margin:12px 0">Thank you for shopping with us!</h3><p>Your order has been placed. We’ll contact you soon with the next steps.</p><p id="thankYouOrderId" style="font-weight:700;margin:18px 0"></p><div class="modal-actions"><a class="btn" id="thankYouWhatsApp" href="https://wa.me/919220657676" target="_blank" rel="noopener">Chat with us on WhatsApp</a><button class="btn outline" type="button" id="continueShopping">Continue Shopping</button></div></div></div>
 <div class="toast" id="toast"></div>
@@ -1076,12 +1084,15 @@ function totals(){
   return { qty, sub, delivery: 0, total: sub };
 }
 
+let appliedCoupon = "";
+const COUPON_CODE = "ECLIPSES5";
 function checkoutTotals(method){
   const base = totals();
+  const discount = appliedCoupon === COUPON_CODE ? Math.round(base.sub * 0.05) : 0;
   const delivery = method === "cod"
     ? (base.qty === 1 ? 60 : base.qty >= 2 ? 40 : 0)
     : (base.qty === 1 ? 40 : 0);
-  return { ...base, delivery, total: base.sub + delivery };
+  return { ...base, discount, delivery, total: base.sub - discount + delivery };
 }
 
 function updateCheckoutSummary(){
@@ -1089,6 +1100,17 @@ function updateCheckoutSummary(){
   const method = document.querySelector('input[name="paymentMethod"]:checked')?.value || "upi";
   const t = checkoutTotals(method);
   document.getElementById("checkoutSubtotal").textContent = rupee(t.sub);
+  let discountRow = document.getElementById("checkoutDiscountRow");
+  if (t.discount > 0) {
+    if (!discountRow) {
+      discountRow = document.createElement("div");
+      discountRow.id = "checkoutDiscountRow";
+      discountRow.className = "coupon-discount";
+      discountRow.innerHTML = '<span>Coupon discount (5%)</span><b id="checkoutDiscount"></b>';
+      document.querySelector(".checkout-summary").insertBefore(discountRow, document.querySelector(".checkout-grand-total"));
+    }
+    document.getElementById("checkoutDiscount").textContent = "−" + rupee(t.discount);
+  } else if (discountRow) discountRow.remove();
   document.getElementById("checkoutChargeLabel").textContent =
     method === "cod" && t.qty >= 2 ? "COD charge" : "Delivery charge";
   document.getElementById("checkoutCharge").textContent = t.delivery === 0 ? "Free" : rupee(t.delivery);
@@ -1167,10 +1189,30 @@ function closeWishlist() {
 document.getElementById("wishlistOpen").onclick = openWishlist;
 document.getElementById("wishlistClose").onclick = closeWishlist;{overlay.classList.remove("show");drawer.classList.remove("show")}
 document.getElementById("cartOpen").onclick=openCart;document.getElementById("cartClose").onclick=closeCart;overlay.onclick=closeCart;
-const modal=document.getElementById("checkoutModal");document.getElementById("checkoutBtn").onclick=()=>{if(!cart.length){notify("Add a tee to your bag first.");return}closeCart();modal.classList.add("show");updateCheckoutSummary()};document.querySelectorAll('input[name="paymentMethod"]').forEach(input=>input.addEventListener("change",updateCheckoutSummary));document.getElementById("modalClose").onclick=()=>modal.classList.remove("show");modal.onclick=e=>{if(e.target===modal)modal.classList.remove("show")};
+const modal=document.getElementById("checkoutModal");document.getElementById("checkoutBtn").onclick=()=>{if(!cart.length){notify("Add a tee to your bag first.");return}closeCart();modal.classList.add("show");updateCheckoutSummary()};document.querySelectorAll('input[name="paymentMethod"]').forEach(input=>input.addEventListener("change",updateCheckoutSummary));
+document.getElementById("applyCouponBtn").onclick=()=>{
+  const field=document.getElementById("couponCode");
+  const message=document.getElementById("couponMessage");
+  const code=field.value.trim().toUpperCase();
+  if(code!==COUPON_CODE){
+    appliedCoupon="";
+    message.className="error";
+    message.textContent="That coupon code isn't valid. Check the code and try again.";
+    updateCheckoutSummary();
+    return;
+  }
+  appliedCoupon=COUPON_CODE;
+  field.value=COUPON_CODE;
+  message.className="success";
+  message.textContent="Success! Your extra 5% discount has been applied.";
+  updateCheckoutSummary();
+};
+document.getElementById("couponCode").addEventListener("input",()=>{
+  if(appliedCoupon){appliedCoupon="";document.getElementById("couponMessage").className="";document.getElementById("couponMessage").textContent="Apply ECLIPSES5 to get an extra 5% off.";updateCheckoutSummary();}
+});document.getElementById("modalClose").onclick=()=>modal.classList.remove("show");modal.onclick=e=>{if(e.target===modal)modal.classList.remove("show")};
 function orderText(d, method, order) {
   const t = checkoutTotals(method);
-  return `Hello 7ECLIPSES! I'd like to place an order.\\n\\n${cart.map(x=>`${x.name} | ${x.color} | Size ${x.size} | Qty ${x.qty} | ${rupee(x.qty*599)}`).join("\\n")}\\n\\nSubtotal: ${rupee(t.sub)}\\nPayment method: ${method === "cod" ? "Cash on Delivery" : "UPI"}\\nDelivery / COD charge: ${t.delivery === 0 ? "Free" : rupee(t.delivery)}\\nTotal: ${rupee(t.total)}\\nOrder ID: ${order.orderId}\\n\\nCustomer account name: ${window.customerAccountName || "Guest customer"}\\nDelivery recipient: ${d.name}\\nPhone: ${d.phone}\\nAddress: ${d.address}\\nCity: ${d.city}\\nPIN: ${d.pin}\\nNotes: ${d.notes||"—"}\\n\\n${t.qty>=2&&t.qty<=3?"Please include my free gift.":""}`;
+  return `Hello 7ECLIPSES! I'd like to place an order.\\n\\n${cart.map(x=>`${x.name} | ${x.color} | Size ${x.size} | Qty ${x.qty} | ${rupee(x.qty*599)}`).join("\\n")}\\n\\nSubtotal: ${rupee(t.sub)}\\nCoupon (${appliedCoupon || "none"}): ${t.discount ? "−" + rupee(t.discount) : "Not applied"}\\nPayment method: ${method === "cod" ? "Cash on Delivery" : "UPI"}\\nDelivery / COD charge: ${t.delivery === 0 ? "Free" : rupee(t.delivery)}\\nTotal: ${rupee(t.total)}\\nOrder ID: ${order.orderId}\\n\\nCustomer account name: ${window.customerAccountName || "Guest customer"}\\nDelivery recipient: ${d.name}\\nPhone: ${d.phone}\\nAddress: ${d.address}\\nCity: ${d.city}\\nPIN: ${d.pin}\\nNotes: ${d.notes||"—"}\\n\\n${t.qty>=2&&t.qty<=3?"Please include my free gift.":""}`;
 }
 function getDetails(){let f=document.getElementById("addressForm");if(!f.reportValidity())return null;return Object.fromEntries(new FormData(f).entries())}
 const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzlt1idnzdAN_0VZuwqxP7Vt08jUuZIC3-y14kV-cPjHk4MJKx-COC_Jcu6S7zznXh12w/exec";
@@ -1188,6 +1230,8 @@ function buildSheetOrder(d, method) {
     size: cart.map(x => x.size).join(", "),
     payment: method === "cod" ? "Cash on Delivery" : "UPI - Payment Pending",
     quantity: t.qty,
+    coupon: appliedCoupon || "",
+    discount: t.discount,
     amount: t.total
   };
 }
@@ -1226,6 +1270,7 @@ addressForm.onsubmit = async e => {
         body: JSON.stringify({
           orderId: order.orderId,
           quantity: order.quantity,
+          couponCode: appliedCoupon,
           customer: { name: d.name, contact: d.phone, email: order.email }
         })
       });
