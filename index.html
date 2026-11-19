@@ -707,6 +707,30 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 @media(max-width:480px){.coupon-celebration{padding:12px}.coupon-celebration-content{min-height:calc(100dvh - 24px);padding:58px 20px 28px;border-radius:18px}.coupon-celebration-close{right:12px;top:12px}.coupon-celebration-sparkles{margin-bottom:10px}}
 @media(prefers-reduced-motion:reduce){.coupon-celebration,.coupon-celebration-content{transition:none}}
 </style>
+<style id="agent-bora-style">
+#bora-chat-launcher{position:fixed;right:22px;bottom:22px;z-index:1200;border:0;border-radius:999px;padding:13px 19px;background:linear-gradient(135deg,#7556a8,#332d63);color:#fff;box-shadow:0 10px 32px #10142b55;display:flex;align-items:center;gap:10px;font:700 14px 'DM Sans',sans-serif;cursor:pointer}
+#bora-chat-launcher .bora-orb{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#ffffff24;font-size:17px}
+#bora-chat-panel{position:fixed;right:22px;bottom:86px;width:min(370px,calc(100vw - 28px));height:min(540px,calc(100dvh - 115px));z-index:1201;background:#101a30;color:#eef5ff;border:1px solid #8295c044;border-radius:22px;box-shadow:0 22px 70px #050b1dcc;display:none;overflow:hidden;flex-direction:column;font-family:'DM Sans',sans-serif}
+#bora-chat-panel.open{display:flex;animation:bora-rise .22s ease-out}
+@keyframes bora-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.bora-chat-head{padding:16px 17px;background:linear-gradient(120deg,#433b72,#172c4a);display:flex;align-items:center;gap:11px}
+.bora-chat-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#b8a1dd;color:#282044;font-size:22px;flex:none}
+.bora-chat-head-copy{flex:1}.bora-chat-head-copy strong{display:block;font-size:15px}.bora-chat-head-copy small{color:#c4d0e7;font-size:11px}
+#bora-chat-close{border:0;background:#ffffff18;color:white;border-radius:50%;width:32px;height:32px;font-size:21px;cursor:pointer}
+#bora-chat-messages{padding:16px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.bora-msg{max-width:88%;padding:11px 13px;border-radius:15px;font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.bora-msg.agent{align-self:flex-start;background:#202e49;color:#edf4ff;border-bottom-left-radius:5px}
+.bora-msg.user{align-self:flex-end;background:#7560a5;color:#fff;border-bottom-right-radius:5px}
+.bora-chat-quick{padding:0 13px 10px;display:flex;gap:7px;flex-wrap:wrap}
+.bora-chat-quick button{border:1px solid #7184a866;border-radius:999px;padding:7px 10px;background:#1b2942;color:#dfe9ff;font-size:11px;cursor:pointer}
+.bora-chat-compose{padding:11px;border-top:1px solid #7184a833;display:flex;gap:8px;background:#121f37}
+#bora-chat-input{min-width:0;flex:1;border:1px solid #7082a866;border-radius:999px;padding:11px 14px;background:#0d1729;color:#fff;font:13px 'DM Sans',sans-serif;outline:none}
+#bora-chat-input:focus{border-color:#b8a1dd}
+#bora-chat-send{border:0;border-radius:50%;width:42px;height:42px;background:#b8a1dd;color:#211b38;font-size:18px;font-weight:800;cursor:pointer}
+.bora-chat-foot{text-align:center;color:#91a3c1;font-size:10px;padding:0 10px 9px;background:#121f37}
+@media(max-width:520px){#bora-chat-launcher{right:14px;bottom:14px;padding:10px 14px}#bora-chat-panel{right:8px;bottom:72px;width:calc(100vw - 16px);height:min(570px,calc(100dvh - 88px));border-radius:19px}}
+@media(prefers-reduced-motion:reduce){#bora-chat-panel.open{animation:none}}
+</style>
 </head>
 <body>
 <div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
@@ -2213,5 +2237,55 @@ renderProducts();updateCart();
       status.textContent = "Logged in, but cloud sync failed. Your items remain saved on this device.";
     }
   });
+</script>
+<button id="bora-chat-launcher" type="button" aria-label="Chat with Agent BORA" aria-expanded="false"><span class="bora-orb">🐋</span><span>Chat with Agent BORA</span></button>
+<section id="bora-chat-panel" role="dialog" aria-label="Agent BORA product help" aria-modal="false">
+  <header class="bora-chat-head"><div class="bora-chat-avatar">🐋</div><div class="bora-chat-head-copy"><strong>Agent BORA</strong><small>7ECLIPSES product guide · Here to help</small></div><button id="bora-chat-close" type="button" aria-label="Close chat">×</button></header>
+  <div id="bora-chat-messages" aria-live="polite"><div class="bora-msg agent">Hey! I’m Agent BORA 🐋 Welcome to 7ECLIPSES.
+Ask me about our tees, sizes, colours, fabric or ordering. If you need personal help, I can connect you with our team.</div></div>
+  <div class="bora-chat-quick"><button type="button" data-bora-quick="Tell me about the tees">Our tees</button><button type="button" data-bora-quick="What sizes are available?">Size guide</button><button type="button" data-bora-quick="What colours are available?">Colours</button><button type="button" data-bora-quick="I want to talk to your team">Talk to us</button></div>
+  <form class="bora-chat-compose" id="bora-chat-form"><input id="bora-chat-input" type="text" maxlength="400" placeholder="Ask Agent BORA anything…" autocomplete="off" aria-label="Message Agent BORA"><button id="bora-chat-send" type="submit" aria-label="Send message">➤</button></form>
+  <div class="bora-chat-foot">For order-specific help, our team is one tap away on WhatsApp.</div>
+</section>
+<script id="agent-bora-script">
+(()=>{
+ const launcher=document.getElementById("bora-chat-launcher"),panel=document.getElementById("bora-chat-panel"),close=document.getElementById("bora-chat-close"),messages=document.getElementById("bora-chat-messages"),form=document.getElementById("bora-chat-form"),input=document.getElementById("bora-chat-input");
+ if(!launcher||!panel||!messages||!form||!input)return;
+ const productInfo=[
+  "BORA — Lavender, White",
+  "FLY WITH 52 — White",
+  "BE STRONG — Lavender, White",
+  "A HUGE WE ALL WAITED FOR — Lavender, White",
+  "RAINY DAYS — Black, White",
+  "MY EGO IS MY PROTECTION -2.18- — Black, White",
+  "APNA HAQ MANGA H AAPKI JAYDAD NAHI — Black, White",
+  "JUST BE YOURSELF — Black, White",
+  "DONE PLEASING PEOPLE — Black, Brown",
+  "SMALL WHALE — Black, White",
+  "Gentle Man — Black, White"
+ ];
+ function open(){panel.classList.add("open");launcher.setAttribute("aria-expanded","true");input.focus()}
+ function shut(){panel.classList.remove("open");launcher.setAttribute("aria-expanded","false");launcher.focus()}
+ launcher.addEventListener("click",()=>panel.classList.contains("open")?shut():open());
+ close.addEventListener("click",shut);
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open"))shut()});
+ function add(text,who){const node=document.createElement("div");node.className="bora-msg "+who;node.textContent=text;messages.appendChild(node);messages.scrollTop=messages.scrollHeight}
+ function humanLink(message){const url="https://wa.me/919220657676?text="+encodeURIComponent("Hi 7ECLIPSES! I need help with a product inquiry.\n\n"+message);const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";a.textContent="Chat with our team on WhatsApp";a.style.cssText="display:inline-block;margin:2px 0 4px;padding:10px 13px;border-radius:999px;background:#b8a1dd;color:#211b38;font-size:12px;font-weight:700;text-decoration:none";messages.appendChild(a);messages.scrollTop=messages.scrollHeight}
+ function reply(q){
+  const x=q.toLowerCase();
+  if(/\b(hi|hello|hey|hii|good morning|good evening)\b/.test(x))return "Hey there! 💜 What would you like to know about our tees?";
+  if(/(price|cost|how much|₹|599)/.test(x))return "Our tees are ₹599 each. You can choose your colour and size on the product page and add your pick to your Ocean.";
+  if(/(size|sizing|fit|measurement)/.test(x))return "Our tees come in sizes S, M, L and XL with a loose-fit, unisex, drop-shoulder style. If you’re between sizes, choose your usual relaxed fit or size up for an extra-roomy look.";
+  if(/(fabric|material|cotton|gsm|quality)/.test(x))return "Our tees are made with 200 GSM cotton and feature DTF prints, with a loose unisex fit.";
+  if(/(colour|color|available in|shade)/.test(x))return "Here are the listed colour options by design:\n"+productInfo.join("\n")+"\nTap a product to see its colour options and photos. Live stock levels are confirmed by our team.";
+  if(/(product|tee|t.?shirt|collection|design|bora|whale|52hz)/.test(x))return "We have 11 designs in our collection, including BORA, FLY WITH 52, BE STRONG, RAINY DAYS and SMALL WHALE. Each tee is ₹599, 200 GSM cotton, unisex and available in S–XL. Ask me about a particular design!";
+  if(/(delivery|shipping|ship|courier|cod|cash on delivery|upi|payment|order|track)/.test(x))return "You can place an order through your Ocean and the website checkout. Delivery charges and payment options are shown at checkout. For an existing order or delivery update, please message our team directly.";
+  if(/(human|team|person|owner|contact|help me|talk|whatsapp|support)/.test(x))return "Of course! Our team can help with product questions, stock checks and order support. Tap below to message us on WhatsApp.";
+  return "I can help with product details, ₹599 pricing, sizes S–XL, colours, 200 GSM cotton and ordering. For a specific stock check or anything I can’t answer, I’ll connect you with our team.";
+ }
+ function send(q){q=q.trim();if(!q)return;add(q,"user");const r=reply(q);add(r,"agent");if(/(human|team|person|owner|contact|help me|talk|whatsapp|support|stock|available now|in stock|order status|track)/i.test(q))humanLink(q)}
+ form.addEventListener("submit",e=>{e.preventDefault();const q=input.value;input.value="";send(q)});
+ panel.querySelectorAll("[data-bora-quick]").forEach(b=>b.addEventListener("click",()=>send(b.dataset.boraQuick)));
+})();
 </script>
 </body></html>
