@@ -550,6 +550,92 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 .footer{background:linear-gradient(180deg,rgba(3,17,29,.18),rgba(2,13,23,.82))}
 
 </style>
+
+<style id="7ecl-streetwear-bag-redesign">
+/* 7ECLIPSES — streetwear shopping bag */
+#cartDrawer{
+  width:min(520px,100%);background:#090d12;color:#f4f6f8;
+  border-left:1px solid rgba(142,207,255,.28);
+  box-shadow:-24px 0 70px rgba(0,0,0,.42)
+}
+#cartDrawer .drawer-head{
+  padding:25px 26px 21px;border-bottom:1px solid #ffffff18;
+  background:linear-gradient(115deg,#111923,#090d12);
+}
+#cartDrawer .drawer-head h3{
+  font:800 25px/1 'DM Sans',sans-serif;letter-spacing:-.06em;
+  text-transform:uppercase;color:#f7fbff
+}
+#cartDrawer #bagSub{font:600 11px 'DM Sans';letter-spacing:.08em;color:#8ecfff!important}
+#cartDrawer .close{width:38px;height:38px;border:1px solid #ffffff30;border-radius:50%;font-size:23px}
+#cartDrawer .cart-items{padding:12px 26px 22px;background:#090d12}
+#cartDrawer .cart-item{
+  grid-template-columns:88px minmax(0,1fr) auto;gap:15px;
+  padding:20px 0;border-bottom:1px solid #ffffff18;align-items:start
+}
+#cartDrawer .mini-tee{
+  width:88px;height:106px;background:#f1f1ee;border-radius:3px;
+  padding:5px;object-fit:contain
+}
+#cartDrawer .cart-item h4{
+  margin:3px 0 7px;color:#f6f8fa;font:700 14px/1.35 'DM Sans',sans-serif;
+  letter-spacing:.025em;text-transform:uppercase
+}
+#cartDrawer .cart-item small{
+  color:#91a0ad;font-size:10px;letter-spacing:.1em;text-transform:uppercase
+}
+#cartDrawer .cart-item>div:last-child>b{color:#f5f8fa;font-size:13px;white-space:nowrap}
+#cartDrawer .qty-controls{display:flex;align-items:center;gap:9px;margin-top:12px}
+#cartDrawer .qty-controls button{
+  min-width:29px;height:29px;padding:0 8px;border:1px solid #ffffff38;
+  border-radius:2px;background:#121a23;color:#eaf6ff;font-weight:700
+}
+#cartDrawer .qty-controls span{font-size:12px;color:#fff;min-width:10px;text-align:center}
+#cartDrawer .qty-controls button.remove{
+  width:auto;border:0;background:transparent;color:#8ca0ae;
+  text-decoration:underline;text-underline-offset:3px;font-size:10px;
+  letter-spacing:.06em;padding:0;margin-top:2px
+}
+#cartDrawer .cart-foot{
+  padding:18px 26px 25px;border-top:1px solid #ffffff20;
+  background:#0d131a;box-shadow:0 -14px 35px #0005
+}
+#cartDrawer .gift-note{
+  border-radius:3px;border:1px solid #8ecfff55;
+  background:linear-gradient(110deg,#142b3a,#101820);
+  padding:13px 15px;margin-bottom:17px;font-size:11px
+}
+#cartDrawer .gift-note strong{color:#8ecfff;font-size:10px;letter-spacing:.16em}
+#cartDrawer .cart-line{
+  display:flex;justify-content:space-between;align-items:center;gap:15px;
+  padding:8px 0;color:#9baab5;font-size:12px;letter-spacing:.035em
+}
+#cartDrawer .cart-line span:last-child{color:#edf3f7;font-weight:600;font-variant-numeric:tabular-nums}
+#cartDrawer .cart-line:has(#bagDiscount){color:#b9c9d3}
+#cartDrawer #bagDiscount{color:#8ecfff!important;font-weight:800}
+#cartDrawer .cart-line.total{
+  border-top:1px solid #ffffff26;margin-top:8px;padding:15px 0 18px;
+  color:#fff;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.1em
+}
+#cartDrawer .cart-line.total span:last-child{font-size:20px;color:#fff}
+#cartDrawer #checkoutBtn{
+  width:100%;min-height:54px;border-radius:2px;background:#8ecfff;
+  border:1px solid #8ecfff;color:#07111a;font-weight:800;
+  letter-spacing:.15em;font-size:11px;text-transform:uppercase
+}
+#cartDrawer #checkoutBtn:hover{background:#c2e7ff;transform:translateY(-1px)}
+#cartDrawer .empty{padding:65px 12px;color:#93a5b3;font-size:12px;letter-spacing:.06em}
+@media(max-width:650px){
+  #cartDrawer{width:100%;border-left:0}
+  #cartDrawer .drawer-head{padding:20px}
+  #cartDrawer .cart-items{padding:8px 20px 18px}
+  #cartDrawer .cart-foot{padding:15px 20px 20px}
+  #cartDrawer .cart-item{grid-template-columns:76px minmax(0,1fr) auto;gap:12px}
+  #cartDrawer .mini-tee{width:76px;height:94px}
+  #cartDrawer .cart-item h4{font-size:13px}
+}
+</style>
+
 </head>
 <body>
 <div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
