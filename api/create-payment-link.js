@@ -27,8 +27,14 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "Please provide your name and phone number." });
     }
 
-    // Recalculate the UPI amount on the server; never accept an amount from the browser.
-    const amountRupees = quantity * 599 + (quantity === 1 ? 40 : 0);
+    // Validate the promotional code and calculate the discount on the server.
+    const couponCode = String(body.couponCode || "").trim().toUpperCase();
+    const discount = couponCode === "ECLIPSES5" ? Math.round(quantity * 599 * 0.05) : 0;
+    if (couponCode && couponCode !== "ECLIPSES5") {
+      return res.status(400).json({ error: "Invalid coupon code." });
+    }
+    // Never accept a payable amount or discount from the browser.
+    const amountRupees = quantity * 599 - discount + (quantity === 1 ? 40 : 0);
     const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
 
     const link = await razorpay.paymentLink.create({
@@ -45,7 +51,7 @@ module.exports = async function handler(req, res) {
       },
       notify: { sms: false, email: false },
       reminder_enable: false,
-      notes: { order_id: orderId, quantity: String(quantity) }
+      notes: { order_id: orderId, quantity: String(quantity), ...(couponCode ? { coupon_code: couponCode, discount: String(discount) } : {}) }
     });
 
     return res.status(200).json({
