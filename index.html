@@ -318,6 +318,54 @@
     flex-wrap: wrap;
   }
 }
+
+/* 7ECLIPSES PRODUCT IMAGE ZOOM */
+.image-zoom {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  background: rgba(0,0,0,.96);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 56px 14px 24px;
+}
+.image-zoom.show { display: flex; }
+#zoomImage {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 110px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: #f2f0ed;
+  border-radius: 8px;
+  touch-action: pinch-zoom;
+  user-select: none;
+}
+#zoomClose {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #ffffff70;
+  border-radius: 50%;
+  background: #101820;
+  color: white;
+  font-size: 30px;
+  line-height: 1;
+  z-index: 2;
+}
+.image-zoom p {
+  color: #d8efff;
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-align: center;
+  margin: 14px 0 0;
+}
+
 </style>
 </head>
 <body>
@@ -687,6 +735,33 @@ document.querySelector(".gallery-main").addEventListener("touchend", event => {
     changeGallerySlide(difference < 0 ? 1 : -1);
   }
 }, { passive: true });
+
+
+// Product image zoom: tap image to open, tap outside or X to close
+const imageZoom = document.getElementById("imageZoom");
+const zoomImage = document.getElementById("zoomImage");
+const zoomClose = document.getElementById("zoomClose");
+
+document.getElementById("choiceImage").addEventListener("click", () => {
+  zoomImage.src = document.getElementById("choiceImage").src;
+  imageZoom.classList.add("show");
+  document.body.style.overflow = "hidden";
+});
+
+function closeImageZoom() {
+  imageZoom.classList.remove("show");
+  document.body.style.overflow = "";
+}
+
+zoomClose.onclick = closeImageZoom;
+imageZoom.addEventListener("click", event => {
+  if (event.target === imageZoom) closeImageZoom();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && imageZoom.classList.contains("show")) {
+    closeImageZoom();
+  }
+});
 
 // Close product popup
 document.getElementById("choiceClose").onclick = () => {
