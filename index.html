@@ -1633,6 +1633,108 @@ renderProducts();updateCart();
   }
 }
 </style>
+<style id="7ecl-product-modal-mobile-cta">
+/* Keep product choices and the Ocean button within easy reach on phones. */
+@media (max-width: 650px) {
+  #productModal {
+    align-items: center;
+    padding: 8px;
+    overflow: hidden;
+  }
+  #productModal .modal-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 520px;
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 14px;
+    margin: auto;
+  }
+  #productModal .modal-head {
+    flex: 0 0 auto;
+    padding-bottom: 9px;
+  }
+  #productModal .product-gallery {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+  #productModal .gallery-main {
+    height: clamp(155px, 27vh, 245px);
+    min-height: 0;
+  }
+  #productModal #choiceImage {
+    width: 92%;
+    height: 100%;
+    max-height: none;
+    padding: 4px;
+  }
+  #productModal .gallery-label {
+    margin: 6px 0;
+    font-size: 10px;
+  }
+  #productModal .gallery-thumbnails {
+    gap: 6px;
+    margin-top: 6px;
+  }
+  #productModal .gallery-thumb {
+    width: 44px;
+    height: 46px;
+  }
+  #productModal #choicePrice {
+    margin: 6px 0 0 !important;
+    font-size: 21px;
+  }
+  #productModal .form-grid {
+    flex: 0 0 auto;
+    gap: 10px;
+  }
+  #productModal .field {
+    margin: 0;
+  }
+  #productModal .color-options {
+    gap: 7px;
+    margin-top: 6px;
+  }
+  #productModal .color-option {
+    min-width: 42px;
+    gap: 4px;
+  }
+  #productModal .color-option .color-swatch {
+    width: 27px;
+    height: 27px;
+  }
+  #productModal .size-options {
+    gap: 7px;
+    margin-top: 6px;
+  }
+  #productModal .size-option {
+    height: 40px;
+  }
+  #productModal #choiceAdd {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 54px;
+    margin: 0 !important;
+    padding: 12px;
+    background: #8ecfff;
+    color: #061724;
+    border: 1px solid #b9e5ff;
+    box-shadow: 0 -12px 24px rgba(5, 17, 28, .92);
+  }
+}
+@media (max-width: 380px) {
+  #productModal .modal-box { padding: 11px; gap: 8px; }
+  #productModal .gallery-main { height: clamp(140px, 23vh, 195px); }
+  #productModal #choiceAdd { min-height: 50px; }
+}
+</style>
 
 <div id="accountModal">
   <div class="account-box">
