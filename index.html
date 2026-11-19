@@ -457,29 +457,47 @@
 #thankYouModal .modal-actions { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:24px; }
 #thankYouModal .modal-actions .btn { flex:1 1 190px; text-decoration:none; }
 #placeOrderBtn:disabled { opacity:.65; cursor:wait; }
+
+/* 7ECLIPSES ocean-story homepage additions */
+.beliefs{padding-top:86px;padding-bottom:90px}
+.belief-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.belief-card{padding:30px 26px;border:1px solid var(--line);background:linear-gradient(145deg,rgba(22,66,91,.48),rgba(5,24,38,.55));min-height:220px}
+.belief-card span{font-size:9px;letter-spacing:.2em;color:var(--blue)}
+.belief-card h3{font:27px 'Playfair Display',serif;color:#e8f6ff;margin:20px 0 12px}
+.belief-card p{font-size:13px;line-height:1.9;color:#a9bfcd;margin:0}
+.friend-note{padding:86px 24px;background:radial-gradient(ellipse at 50% 0%,rgba(37,115,151,.28),transparent 65%),#061725;border-block:1px solid var(--line);text-align:center}
+.friend-inner{max-width:720px;margin:auto}
+.friend-note h2{font:clamp(38px,6vw,66px)/1.05 'Playfair Display',serif;margin:16px 0}
+.friend-note p{font-size:14px;line-height:2;color:#b5cbd8}
+.friend-note .friend-signoff{font:italic 22px 'Playfair Display';color:#d9efff;margin-top:26px}
+.friend-signoff span{display:block;font:10px 'DM Sans';letter-spacing:.18em;color:var(--blue);margin-top:12px;text-transform:uppercase}
+@media(max-width:650px){.belief-grid{grid-template-columns:1fr}.belief-card{min-height:0}.beliefs{padding-top:65px;padding-bottom:65px}.friend-note{padding:65px 20px}}
+
 </style>
 </head>
 <body>
-<div class="announcement">Free delivery + a little something extra on orders of 2 or 3 tees</div>
+<div class="announcement">A DEEP REMINDER: BE YOURSELF. ALWAYS.</div>
 <header class="nav"><div class="nav-inner">
 <a class="brand" href="#home">7ECLIPSES<small>BE YOUR OWN FREQUENCY</small></a>
-<nav class="navlinks" id="navlinks"><a href="#shop">Shop</a><a href="#story">Our story</a><a href="#fabric">Fabric & fit</a><a href="#size">Size chart</a><a href="#order">How to order</a></nav>
+<nav class="navlinks" id="navlinks"><a href="#shop">Shop</a><a href="#story">Our story</a><a href="#beliefs">What we believe</a><a href="#fabric">Fabric & fit</a><a href="#size">Size chart</a><a href="#order">How to order</a></nav>
 <div class="nav-actions">   <button class="iconbtn menu-toggle" id="menuBtn" aria-label="Open menu">☰</button>    <button class="iconbtn" id="wishlistOpen" aria-label="Wishlist">     ♡ Wishlist   </button>    <button class="iconbtn" id="cartOpen">     Bag <span class="cart-count" id="cartCount">0</span>   </button>    <button class="iconbtn" id="accountOpen" aria-label="My Account">     👤   </button> </div>
 </div></header>
 <main>
 <section class="hero" id="home"><div class="hero-note">EST. 2026 · MADE TO BE DIFFERENT</div><div class="hero-content">
-<div class="eyebrow">7ECLIPSES · THE 52HZ COLLECTION</div><h1>Not every voice<br>needs to be heard<br>to be powerful.</h1>
-<p class="hero-sub">Somewhere in the deep blue, a whale sings at 52Hz — a frequency unlike the others. 7ECLIPSES is for the ones who keep moving, keep becoming, and never shrink themselves to fit in.</p>
+<div class="eyebrow">7ECLIPSES · THE UNKNOWN FREQUENCY</div><h1>The world has<br>its own frequency.<br><span style="color:#8ecfff">What’s yours?</span></h1>
+<p class="hero-sub">Inspired by the 52Hz whale. Made for everyone who chooses to be unapologetically themselves. Your voice, your pace, your way — they belong here.</p>
 <div class="hero-cta"><a class="btn" href="#shop">Explore the collection</a><a class="btn outline" href="#story">Meet the 52Hz story</a></div>
 </div></section>
-<div class="ticker"><span>BE THE STRONGEST VERSION OF YOURSELF</span> ✦ <span>COMFORT OF TEE'S OF 7ECLIPSES</span> ✦ <span>FIND YOUR FREQUENCY</span> ✦ <span>BE THE STRONGEST VERSION OF YOURSELF</span></div>
-<section class="section products" id="shop"><div class="section-head"><div><div class="kicker">The first transmission · 2026</div><h2>Wear your frequency.</h2></div><p>Every piece carries its own mood. Choose the one that feels like you. Product photos can be added later — these are temporary visual placeholders.</p></div>
+<div class="ticker"><span>BE YOU. WE’RE WITH YOU.</span> ✦ <span>KEEP YOUR FREQUENCY</span> ✦ <span>A PHASE, NOT FOREVER</span> ✦ <span>BE YOU. WE’RE WITH YOU.</span></div>
+<section class="section products" id="shop"><div class="section-head"><div><div class="kicker">The first transmission · 2026</div><h2>Wear your frequency.</h2></div><p>Every piece carries its own mood. Find the design that feels like you, and wear it your way.</p></div>
 <div class="filters" id="filters"><button class="filter active" data-filter="all">All pieces</button><button class="filter" data-filter="lavender">Lavender / White</button><button class="filter" data-filter="black">Black / White</button></div>
 <div class="product-grid" id="productGrid"></div></section>
-<section class="section" id="story"><div class="story"><div class="story-visual" role="img" aria-label="The 52Hz whale underwater"></div><div class="story-copy"><div class="kicker">A story from the deep</div><h2>The whale who sang at 52Hz.</h2>
-<p>In the vastness of the ocean, a whale was heard singing at 52 hertz — a frequency different from the calls usually heard from other whales. The story became a symbol of being different, of searching for connection, and of continuing to sing anyway.</p>
-<p>That is the spirit behind 7ECLIPSES. We believe your difference is not something to hide. Your voice, your pace, your story — they deserve space.</p>
-<div class="story-quote">“Be the strongest version of yourself. Even when your frequency is different.”</div><p>Founded in 2026 · Created by Shikha</p><a class="btn outline" href="#shop">Find your tee</a></div></div></section>
+<section class="section" id="story"><div class="story"><div class="story-visual" role="img" aria-label="The 52Hz whale underwater"></div><div class="story-copy"><div class="kicker">A story from the deep</div><h2>A frequency of its own.</h2>
+<p>The 52Hz whale became known because its recorded call was at a frequency different from the calls usually heard from other whales. Its story has inspired people to think about individuality and the beauty of being different.</p>
+<p>For 7ECLIPSES, 52Hz is a reminder that you do not have to change who you are just to fit a pattern. Your voice, your pace and your way of becoming deserve space.</p>
+<div class="story-quote">“Keep your frequency. Keep being you.”</div><p>Founded in 2026 · Created by Shikha</p><a class="btn outline" href="#shop">Find your tee</a></div></div></section>
+<section class="section beliefs" id="beliefs"><div class="section-head"><div><div class="kicker">A little of what we believe</div><h2>Be kind. Be real. Keep becoming.</h2></div><p>Not rules to live by. Just little reminders we hope you carry with you.</p></div><div class="belief-grid"><article class="belief-card"><span>01 / IDENTITY</span><h3>Be yourself.</h3><p>You do not need permission to be who you are. Your differences are part of your story.</p></article><article class="belief-card"><span>02 / TRANSFORMATION</span><h3>A phase, not forever.</h3><p>Like an eclipse, some moments change the light. They do not define your whole sky.</p></article><article class="belief-card"><span>03 / KINDNESS</span><h3>Choose kindness.</h3><p>Do not hurt someone to please yourself. And do not hurt yourself just to please someone else.</p></article></div></section>
+<section class="friend-note"><div class="friend-inner"><div class="kicker">A message from 7ECLIPSES</div><h2>Hey, you. Yes, you.</h2><p>You do not have to be perfect. You do not have to become someone else to belong. Be a little weird. Be ambitious. Make mistakes. Laugh loudly. Take your time.</p><p class="friend-signoff">We’re glad you’re here. <span>— 7ECLIPSES</span></p></div></section>
 <section class="section specs" id="fabric"><div class="section-head"><div><div class="kicker">Made for everyday movement</div><h2>Comfort is the statement.</h2></div><p>Thoughtful essentials with an easy silhouette, soft feel and artwork made to stand out.</p></div>
 <div class="spec-grid">
 <div class="spec-card"><div class="num">01</div><h3>200 GSM cotton</h3><p>Pure cotton single jersey fabric with a soft, comfortable hand-feel.</p></div>
@@ -494,7 +512,7 @@
 <div class="order-steps"><div class="step"><b>01</b><h3>Choose your pieces</h3><p>Add your favourite tees and select a size and quantity for each item.</p></div><div class="step"><b>02</b><h3>Review your bag</h3><p>One tee adds ₹60 delivery. Orders of 2 or 3 tees receive free delivery and a free gift.</p></div><div class="step"><b>03</b><h3>Place your order</h3><p>Continue to the Google Order Form or send your full delivery details directly on WhatsApp.</p></div></div>
 <div style="margin-top:32px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn" href="https://tinyurl.com/7-eclipses" target="_blank" rel="noopener">Open Google Order Form</a><a class="btn outline" href="https://www.instagram.com/7__eclipses/" target="_blank" rel="noopener">Follow @7__eclipses</a></div></section>
 </main>
-<footer class="footer"><div class="footer-inner"><div><div class="footer-brand">7ECLIPSES</div><p>Be the strongest version of yourself.<br>Est. 2026 · Created by Shikha</p></div><div><div class="kicker">Explore</div><p><a href="#shop">Shop collection</a><br><a href="#fabric">Fabric & fit</a><br><a href="#size">Size chart</a><br><a href="#story">Our story</a></p></div><div><div class="kicker">Connect</div><p><a href="https://www.instagram.com/7__eclipses/" target="_blank" rel="noopener">@7__eclipses</a><br><a href="https://wa.me/919220657676" target="_blank" rel="noopener">WhatsApp: +91 92206 57676</a><br><a href="https://tinyurl.com/7-eclipses" target="_blank" rel="noopener">Google Order Form</a></p></div></div><div class="copyright">© 2026 7ECLIPSES. ALL RIGHTS RESERVED. · COMFORT OF TEE'S OF 7ECLIPSES</div></footer>
+<footer class="footer"><div class="footer-inner"><div><div class="footer-brand">7ECLIPSES</div><p>BE YOU. WE’RE WITH YOU.<br>Est. 2026 · Created by Shikha</p></div><div><div class="kicker">Explore</div><p><a href="#shop">Shop collection</a><br><a href="#fabric">Fabric & fit</a><br><a href="#size">Size chart</a><br><a href="#story">Our story</a></p></div><div><div class="kicker">Connect</div><p><a href="https://www.instagram.com/7__eclipses/" target="_blank" rel="noopener">@7__eclipses</a><br><a href="https://wa.me/919220657676" target="_blank" rel="noopener">WhatsApp: +91 92206 57676</a><br><a href="https://tinyurl.com/7-eclipses" target="_blank" rel="noopener">Google Order Form</a></p></div></div><div class="copyright">© 2026 7ECLIPSES. ALL RIGHTS RESERVED. · COMFORT OF TEE'S OF 7ECLIPSES</div></footer>
 
 <div class="overlay" id="overlay"></div><aside class="cart-drawer" id="cartDrawer" aria-label="Shopping bag"><div class="drawer-head"><h3>Your bag <span style="font:12px 'DM Sans';color:#8ca6b7" id="bagSub"></span></h3><button class="close" id="cartClose" aria-label="Close bag">×</button></div><div class="cart-items" id="cartItems"><div class="empty">Your bag is waiting for its first frequency.</div></div><div class="cart-foot"><div id="giftMessage" class="gift-note" style="display:none"></div><div class="cart-line"><span>Subtotal</span><span id="subtotal">₹0</span></div><div class="cart-line"><span>Charges at checkout</span><span id="delivery">Calculated by payment method</span></div><div class="cart-line total"><span>Items total</span><span id="total">₹0</span></div><button class="btn" id="checkoutBtn">Continue to checkout</button></div></aside><aside class="cart-drawer" id="wishlistDrawer" aria-label="Wishlist">
   <div class="drawer-head">
