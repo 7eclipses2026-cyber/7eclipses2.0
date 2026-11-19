@@ -577,7 +577,29 @@ const products = [
   ...p,
   colors: Object.keys(p.images)
 }));
-const cart=[];const rupee=n=>"₹"+n.toLocaleString("en-IN");
+const cart = (() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem("7eclipsesBag") || "[]");
+    if (!Array.isArray(saved)) return [];
+    return saved.filter(item => {
+      const product = products.find(p => p.id === Number(item.id));
+      return product &&
+        product.colors.includes(item.color) &&
+        typeof item.size === "string" &&
+        Number.isInteger(Number(item.qty)) &&
+        Number(item.qty) > 0;
+    }).map(item => ({
+      id: Number(item.id),
+      name: products.find(p => p.id === Number(item.id)).name,
+      color: item.color,
+      size: item.size,
+      qty: Number(item.qty)
+    }));
+  } catch (error) {
+    return [];
+  }
+})();
+const rupee=n=>"₹"+n.toLocaleString("en-IN");
 const grid=document.getElementById("productGrid");
 
 function card(p){
@@ -862,7 +884,7 @@ function totals(){
     total: sub + delivery
   };
 }
-  function updateCart(){let t=totals();document.getElementById("cartCount").textContent=t.qty;document.getElementById("bagSub").textContent=`(${t.qty})`;document.getElementById("subtotal").textContent=rupee(t.sub);document.getElementById("delivery").textContent=rupee(t.delivery);document.getElementById("total").textContent=rupee(t.total);document.getElementById("giftMessage").style.display=t.qty>=2&&t.qty<=3?"block":"none";document.getElementById("giftMessage").textContent=t.qty>=2&&t.qty<=3?"A little extra from us: FREE DELIVERY + FREE GIFT with this 2–3 tee order.":t.qty>3?"For 4+ tees, please contact us to confirm delivery and gifts.":"";
+  function updateCart(){localStorage.setItem("7eclipsesBag", JSON.stringify(cart));let t=totals();document.getElementById("cartCount").textContent=t.qty;document.getElementById("bagSub").textContent=`(${t.qty})`;document.getElementById("subtotal").textContent=rupee(t.sub);document.getElementById("delivery").textContent=rupee(t.delivery);document.getElementById("total").textContent=rupee(t.total);document.getElementById("giftMessage").style.display=t.qty>=2&&t.qty<=3?"block":"none";document.getElementById("giftMessage").textContent=t.qty>=2&&t.qty<=3?"A little extra from us: FREE DELIVERY + FREE GIFT with this 2–3 tee order.":t.qty>3?"For 4+ tees, please contact us to confirm delivery and gifts.":"";
 let el=document.getElementById("cartItems");el.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-item"><img   class="mini-tee"   src="${products.find(p=>p.id===x.id).images[x.color]}"   alt="${x.name}"   loading="lazy" ><div><h4>${x.name}</h4><small>${x.color} · Size ${x.size}</small><div class="qty-controls"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></div><div><b>${rupee(x.qty*599)}</b><div class="qty-controls"><button class="remove" data-del="${i}">Remove</button></div></div></div>`).join(""):'<div class="empty">Your bag is waiting for its first frequency.</div>';
 el.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{cart[+b.dataset.inc].qty++;updateCart()});el.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart[+b.dataset.dec];x.qty--;if(x.qty<=0)cart.splice(+b.dataset.dec,1);updateCart()});el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{cart.splice(+b.dataset.del,1);updateCart()})}
 function notify(s){let t=document.getElementById("toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
