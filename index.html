@@ -732,6 +732,9 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 #bora-chat-input:focus{border-color:#b8a1dd}
 #bora-chat-send{border:0;border-radius:50%;width:42px;height:42px;background:#b8a1dd;color:#211b38;font-size:18px;font-weight:800;cursor:pointer}
 .bora-chat-foot{text-align:center;color:#91a3c1;font-size:10px;padding:0 10px 9px;background:#121f37}
+.bora-whatsapp-support{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:7px;padding:8px 13px;border-radius:999px;background:#168b57;color:#fff;text-decoration:none;font-size:12px;font-weight:700;transition:background .15s ease,transform .15s ease}
+.bora-whatsapp-support:hover{background:#117447;transform:translateY(-1px)}
+.bora-whatsapp-support:focus-visible{outline:2px solid #fff;outline-offset:3px}
 @media(max-width:520px){#bora-chat-launcher{right:14px;bottom:14px;padding:10px 14px}#bora-chat-panel{right:8px;bottom:72px;width:calc(100vw - 16px);height:min(570px,calc(100dvh - 88px));border-radius:19px}}
 @media(prefers-reduced-motion:reduce){#bora-chat-panel.open{animation:none}}
 </style>
@@ -2249,7 +2252,7 @@ renderProducts();updateCart();
 Ask me about our tees, sizes, colours, fabric or ordering. If you need personal help, I can connect you with our team.</div></div>
   <div class="bora-chat-quick"><button type="button" data-bora-quick="Tell me about the tees">Our tees</button><button type="button" data-bora-quick="What sizes are available?">Size guide</button><button type="button" data-bora-quick="What colours are available?">Colours</button><button type="button" data-bora-quick="I want to talk to your team">Talk to us</button></div>
   <form class="bora-chat-compose" id="bora-chat-form"><input id="bora-chat-input" type="text" maxlength="400" placeholder="Ask Agent BORA anything…" autocomplete="off" aria-label="Message Agent BORA"><button id="bora-chat-send" type="submit" aria-label="Send message">➤</button></form>
-  <div class="bora-chat-foot">For order-specific help, our team is one tap away on WhatsApp.</div>
+  <div class="bora-chat-foot">For order-specific help, connect with our team:<br><a class="bora-whatsapp-support" href="https://wa.me/919220657676" target="_blank" rel="noopener noreferrer" aria-label="Chat with 7ECLIPSES support on WhatsApp"> <span aria-hidden="true">☏</span> Chat with us on WhatsApp </a></div>
 </section>
 <script id="agent-bora-script">
 (()=>{
