@@ -945,8 +945,57 @@ document.getElementById("cartOpen").onclick=openCart;document.getElementById("ca
 const modal=document.getElementById("checkoutModal");document.getElementById("checkoutBtn").onclick=()=>{if(!cart.length){notify("Add a tee to your bag first.");return}closeCart();modal.classList.add("show")};document.getElementById("modalClose").onclick=()=>modal.classList.remove("show");modal.onclick=e=>{if(e.target===modal)modal.classList.remove("show")};
 function orderText(d){let t=totals();return `Hello 7ECLIPSES! I'd like to place an order.\\n\\n${cart.map(x=>`${x.name} | ${x.color} | Size ${x.size} | Qty ${x.qty} | ${rupee(x.qty*599)}`).join("\\n")}\\n\\nSubtotal: ${rupee(t.sub)}\\nDelivery: ${rupee(t.delivery)}\\nTotal: ${rupee(t.total)}\\n\\nCustomer account name: ${window.customerAccountName || "Guest customer"}\\nDelivery recipient: ${d.name}\\nPhone: ${d.phone}\\nAddress: ${d.address}\\nCity: ${d.city}\\nPIN: ${d.pin}\\nNotes: ${d.notes||"—"}\\n\\n${t.qty>=2&&t.qty<=3?"Please include my free gift.":""}`}
 function getDetails(){let f=document.getElementById("addressForm");if(!f.reportValidity())return null;return Object.fromEntries(new FormData(f).entries())}
-document.getElementById("addressForm").onsubmit=e=>{e.preventDefault();let d=getDetails();if(!d)return;let url="https://wa.me/919220657676?text="+encodeURIComponent(orderText(d));window.open(url,"_blank","noopener");};
-document.getElementById("googleOrder").onclick=()=>{let d=getDetails();if(!d)return;let msg=orderText(d);window.open("https://tinyurl.com/7-eclipses","_blank","noopener");notify("Google Form opened — use your bag summary and delivery details to complete it.");};
+const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzlt1idnzdAN_0VZuwqxP7Vt08jUuZIC3-y14kV-cPjHk4MJKx-COC_Jcu6S7zznXh12w/exec";
+
+function buildSheetOrder(d) {
+  const t = totals();
+  return {
+    orderId: "7E-" + Date.now(),
+    email: window.customerAccountEmail || "",
+    name: d.name,
+    phone: d.phone,
+    address: [d.address, d.city, d.pin, d.notes].filter(Boolean).join(", "),
+    product: cart.map(x => x.name).join(" + "),
+    color: cart.map(x => x.color).join(", "),
+    size: cart.map(x => x.size).join(", "),
+    payment: "",
+    quantity: t.qty,
+    amount: t.total
+  };
+}
+
+async function sendOrderToGoogleSheet(d) {
+  const order = buildSheetOrder(d);
+  try {
+    await fetch(GOOGLE_SHEET_WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(order)
+    });
+    return true;
+  } catch (error) {
+    console.error("Google Sheet order submission failed:", error);
+    return false;
+  }
+}
+
+document.getElementById("addressForm").onsubmit = async e => {
+  e.preventDefault();
+  const d = getDetails();
+  if (!d) return;
+  const saved = await sendOrderToGoogleSheet(d);
+  const url = "https://wa.me/919220657676?text=" + encodeURIComponent(orderText(d));
+  window.open(url, "_blank", "noopener");
+  notify(saved ? "Order details sent to 7ECLIPSES. Please send your WhatsApp message." : "WhatsApp opened. Sheet submission may need checking.");
+};
+
+document.getElementById("googleOrder").onclick = async () => {
+  const d = getDetails();
+  if (!d) return;
+  const saved = await sendOrderToGoogleSheet(d);
+  notify(saved ? "Your order details have been sent to 7ECLIPSES." : "Could not send order details. Please try again.");
+};
 document.getElementById("menuBtn").onclick=()=>document.getElementById("navlinks").classList.toggle("open");document.querySelectorAll(".navlinks a").forEach(a=>a.onclick=()=>document.getElementById("navlinks").classList.remove("open"));
 renderProducts();updateCart();
 </script>
@@ -1281,6 +1330,7 @@ renderProducts();updateCart();
 
     currentUser = user;
     window.customerAccountName = user.displayName || "";
+    window.customerAccountEmail = user.email || "";
     status.textContent = "Logged in as " + (user.displayName ? user.displayName + " · " : "") + user.email + " · Syncing your Bag and Wishlist…";
 
     if (shoppingUnsubscribe) {
