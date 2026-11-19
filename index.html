@@ -591,7 +591,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 </main>
 <footer class="footer"><div class="footer-inner"><div><div class="footer-brand">7ECLIPSES</div><p>BE YOU. WE’RE WITH YOU.<br>Est. 2026 · Created by Shikha</p></div><div><div class="kicker">Explore</div><p><a href="#shop">Shop collection</a><br><a href="#fabric">Fabric & fit</a><br><a href="#size">Size chart</a><br><a href="#story">Our story</a></p></div><div><div class="kicker">Connect</div><p><a href="https://www.instagram.com/7__eclipses/" target="_blank" rel="noopener">@7__eclipses</a><br><a href="https://wa.me/919220657676" target="_blank" rel="noopener">WhatsApp: +91 92206 57676</a><br><a href="https://tinyurl.com/7-eclipses" target="_blank" rel="noopener">Google Order Form</a></p></div></div><div class="copyright">© 2026 7ECLIPSES. ALL RIGHTS RESERVED. · COMFORT OF TEE'S OF 7ECLIPSES</div></footer>
 
-<div class="overlay" id="overlay"></div><aside class="cart-drawer" id="cartDrawer" aria-label="Shopping bag"><div class="drawer-head"><h3>Your bag <span style="font:12px 'DM Sans';color:#8ca6b7" id="bagSub"></span></h3><button class="close" id="cartClose" aria-label="Close bag">×</button></div><div class="cart-items" id="cartItems"><div class="empty">Your bag is waiting for its first frequency.</div></div><div class="cart-foot"><div id="giftMessage" class="gift-note" style="display:none"></div><div class="cart-line"><span>Subtotal</span><span id="subtotal">₹0</span></div><div class="cart-line"><span>Charges at checkout</span><span id="delivery">Calculated by payment method</span></div><div class="cart-line total"><span>Items total</span><span id="total">₹0</span></div><button class="btn" id="checkoutBtn">Continue to checkout</button></div></aside><aside class="cart-drawer" id="wishlistDrawer" aria-label="Wishlist">
+<div class="overlay" id="overlay"></div><aside class="cart-drawer" id="cartDrawer" aria-label="Shopping bag"><div class="drawer-head"><h3>Your bag <span style="font:12px 'DM Sans';color:#8ca6b7" id="bagSub"></span></h3><button class="close" id="cartClose" aria-label="Close bag">×</button></div><div class="cart-items" id="cartItems"><div class="empty">Your bag is waiting for its first frequency.</div></div><div class="cart-foot"><div id="giftMessage" class="gift-note" style="display:none"></div><div class="cart-line"><span>Subtotal</span><span id="subtotal">₹0</span></div><div class="cart-line"><span>Coupon discount</span><span id="bagDiscount">—</span></div><div class="cart-line"><span>Charges at checkout</span><span id="delivery">Calculated by payment method</span></div><div class="cart-line total"><span>Items total</span><span id="total">₹0</span></div><button class="btn" id="checkoutBtn">Continue to checkout</button></div></aside><aside class="cart-drawer" id="wishlistDrawer" aria-label="Wishlist">
   <div class="drawer-head">
     <h3>Your Wishlist ♡</h3>
     <button class="close" id="wishlistClose" aria-label="Close wishlist">×</button>
@@ -1095,10 +1095,19 @@ function checkoutTotals(method){
   return { ...base, discount, delivery, total: base.sub - discount + delivery };
 }
 
+function updateBagDiscount(){
+  const method=document.querySelector('input[name="paymentMethod"]:checked')?.value || "upi";
+  const discount=method==="upi" && appliedCoupon===COUPON_CODE ? Math.round(totals().sub*0.10) : 0;
+  const row=document.getElementById("bagDiscount");
+  if(row) row.textContent=discount ? "−"+rupee(discount) : "—";
+  const total=document.getElementById("total");
+  if(total) total.textContent=rupee(totals().sub-discount);
+}
 function updateCheckoutSummary(){
-  if (!cart.length) return;
+  if (!cart.length) { updateBagDiscount(); return; }
   const method = document.querySelector('input[name="paymentMethod"]:checked')?.value || "upi";
   const t = checkoutTotals(method);
+  updateBagDiscount();
   document.getElementById("checkoutSubtotal").textContent = rupee(t.sub);
   let discountRow = document.getElementById("checkoutDiscountRow");
   if (t.discount > 0) {
@@ -1132,7 +1141,7 @@ function updateCheckoutSummary(){
   }
 }
 
-  function updateCart(){localStorage.setItem("7eclipsesBag", JSON.stringify(cart));window.syncShoppingData?.();let t=totals();document.getElementById("cartCount").textContent=t.qty;document.getElementById("bagSub").textContent=`(${t.qty})`;document.getElementById("subtotal").textContent=rupee(t.sub);document.getElementById("delivery").textContent="Calculated at checkout";document.getElementById("total").textContent=rupee(t.sub);document.getElementById("giftMessage").style.display=t.qty>0?"block":"none";document.getElementById("giftMessage").innerHTML=t.qty>=2&&t.qty<=3?"<strong>🎁 Combo offer unlocked!</strong>Your 2–3 tee combo includes a FREE GIFT. Prepaid orders also get FREE DELIVERY.":t.qty===1?"<strong>Unlock your combo offer</strong>Add one more tee to get a FREE GIFT on your 2–3 tee combo.":"<strong>7ECLIPSES combo offer</strong>Free gift on 2–3 tee combo orders. Contact us for 4+ tees.";updateCheckoutSummary();
+  function updateCart(){localStorage.setItem("7eclipsesBag", JSON.stringify(cart));window.syncShoppingData?.();let t=totals();document.getElementById("cartCount").textContent=t.qty;document.getElementById("bagSub").textContent=`(${t.qty})`;document.getElementById("subtotal").textContent=rupee(t.sub);document.getElementById("delivery").textContent="Calculated at checkout";document.getElementById("total").textContent=rupee(t.sub);updateBagDiscount();document.getElementById("giftMessage").style.display=t.qty>0?"block":"none";document.getElementById("giftMessage").innerHTML=t.qty>=2&&t.qty<=3?"<strong>🎁 Combo offer unlocked!</strong>Your 2–3 tee combo includes a FREE GIFT. Prepaid orders also get FREE DELIVERY.":t.qty===1?"<strong>Unlock your combo offer</strong>Add one more tee to get a FREE GIFT on your 2–3 tee combo.":"<strong>7ECLIPSES combo offer</strong>Free gift on 2–3 tee combo orders. Contact us for 4+ tees.";updateCheckoutSummary();
 let el=document.getElementById("cartItems");el.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-item"><img   class="mini-tee"   src="${products.find(p=>p.id===x.id).images[x.color]}"   alt="${x.name}"   loading="lazy" ><div><h4>${x.name}</h4><small>${x.color} · Size ${x.size}</small><div class="qty-controls"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></div><div><b>${rupee(x.qty*599)}</b><div class="qty-controls"><button class="remove" data-del="${i}">Remove</button></div></div></div>`).join(""):'<div class="empty">Your bag is waiting for its first frequency.</div>';
 el.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{cart[+b.dataset.inc].qty++;updateCart()});el.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart[+b.dataset.dec];x.qty--;if(x.qty<=0)cart.splice(+b.dataset.dec,1);updateCart()});el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{cart.splice(+b.dataset.del,1);updateCart()})}
 function notify(s){let t=document.getElementById("toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
@@ -1223,6 +1232,7 @@ document.getElementById("applyCouponBtn").onclick=()=>{
   message.className="success";
   message.textContent="Success! Your extra 10% UPI discount has been applied.";
   updateCheckoutSummary();
+  notify("🎉🥳 YAY! You got another 10% OFF! ✨");
 };
 document.getElementById("couponCode").addEventListener("input",()=>{
   if(appliedCoupon){appliedCoupon="";document.getElementById("couponMessage").className="";document.getElementById("couponMessage").textContent="Apply 7ECLIPSES10 to get an extra 5% off.";updateCheckoutSummary();}
