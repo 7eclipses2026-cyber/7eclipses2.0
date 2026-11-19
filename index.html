@@ -1031,6 +1031,7 @@ renderProducts();updateCart();
     <p id="accountStatus">Sign in or create your 7ECLIPSES account.</p>
 
     <div id="accountForm">
+      <input id="accountName" type="text" placeholder="Name or nickname (for new accounts)" autocomplete="nickname" maxlength="40">
       <input id="accountEmail" type="email" placeholder="Email address" autocomplete="email">
       <input id="accountPassword" type="password" placeholder="Password (minimum 6 characters)" autocomplete="current-password">
 
@@ -1056,7 +1057,8 @@ renderProducts();updateCart();
     signInWithEmailAndPassword,
     sendPasswordResetEmail,
     onAuthStateChanged,
-    signOut
+    signOut,
+    updateProfile
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   import {
@@ -1161,7 +1163,8 @@ renderProducts();updateCart();
   function getCredentials() {
     return {
       email: document.getElementById("accountEmail").value.trim(),
-      password: document.getElementById("accountPassword").value
+      password: document.getElementById("accountPassword").value,
+      name: document.getElementById("accountName").value.trim()
     };
   }
 
@@ -1181,15 +1184,18 @@ renderProducts();updateCart();
   };
 
   document.getElementById("signupBtn").onclick = async () => {
-    const { email, password } = getCredentials();
+    const { email, password, name } = getCredentials();
 
-    if (!email || !password) {
-      showMessage("Please enter your email and password.");
+    if (!name || !email || !password) {
+      showMessage("Please enter your name or nickname, email and password.");
       return;
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(credential.user, { displayName: name });
+      window.customerAccountName = name;
+      await setDoc(doc(db, "users", credential.user.uid), { displayName: name, updatedAt: serverTimestamp() }, { merge: true });
       showMessage("Your account has been created!");
     } catch (error) {
       showMessage(error.message);
@@ -1197,7 +1203,7 @@ renderProducts();updateCart();
   };
 
   document.getElementById("loginBtn").onclick = async () => {
-    const { email, password } = getCredentials();
+    const { email, password, name } = getCredentials();
 
     if (!email || !password) {
       showMessage("Please enter your email and password.");
@@ -1205,7 +1211,12 @@ renderProducts();updateCart();
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      if (name && !credential.user.displayName) {
+        await updateProfile(credential.user, { displayName: name });
+        await setDoc(doc(db, "users", credential.user.uid), { displayName: name, updatedAt: serverTimestamp() }, { merge: true });
+      }
+      window.customerAccountName = credential.user.displayName || name || "";
       showMessage("You are now logged in!");
     } catch (error) {
       showMessage(error.message);
@@ -1269,7 +1280,8 @@ renderProducts();updateCart();
     }
 
     currentUser = user;
-    status.textContent = "Logged in as " + user.email + " · Syncing your Bag and Wishlist…";
+    window.customerAccountName = user.displayName || "";
+    status.textContent = "Logged in as " + (user.displayName ? user.displayName + " · " : "") + user.email + " · Syncing your Bag and Wishlist…";
 
     if (shoppingUnsubscribe) {
       shoppingUnsubscribe();
