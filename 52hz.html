@@ -42,12 +42,12 @@
 .swimming-whale{
   position:fixed;z-index:5;left:0;top:0;width:min(28vw,300px);
   height:auto;max-height:32vh;object-fit:contain;pointer-events:auto;
-  user-select:none;cursor:pointer;touch-action:manipulation;
+  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent; -webkit-user-drag:none;cursor:pointer;touch-action:manipulation;outline:none;
   filter:drop-shadow(0 12px 22px rgba(150,190,255,.22));
   opacity:.94;animation:none;will-change:transform;
   transition:filter .35s ease;
 }
-.swimming-whale:hover{filter:drop-shadow(0 12px 28px rgba(180,160,255,.48))}
+.swimming-whale:hover{filter:drop-shadow(0 12px 28px rgba(180,160,255,.48))}\n.swimming-whale:focus{outline:none}\n.swimming-whale:focus-visible{outline:2px solid rgba(190,160,255,.75);outline-offset:5px;border-radius:50%}
 .whale-bubble{
   position:fixed;z-index:6;pointer-events:none;border:1px solid rgba(218,205,255,.72);
   border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.72),rgba(174,194,255,.13) 48%,rgba(174,194,255,.03));
