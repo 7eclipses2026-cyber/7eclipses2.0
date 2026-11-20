@@ -829,6 +829,27 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 
 
 
+
+<style id="7ecl-product-details-panel">
+/* Product information panel — uses the existing product popup palette */
+#productModal .product-details-info{margin-top:18px;padding-top:15px;border-top:1px solid rgba(201,169,232,.2);text-align:left}
+#productModal .product-details-kicker{display:block;color:#c9a9e8;font-size:9px;font-weight:700;letter-spacing:.2em;margin-bottom:7px}
+#productModal .product-details-intro p{margin:0 0 12px;color:#c6d2dc;font-size:12px;line-height:1.65}
+#productModal .product-detail-accordion{border-top:1px solid rgba(255,255,255,.1)}
+#productModal .product-detail-accordion:last-child{border-bottom:1px solid rgba(255,255,255,.1)}
+#productModal .product-detail-accordion summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px;color:#f0eaf6;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;list-style:none}
+#productModal .product-detail-accordion summary::-webkit-details-marker{display:none}
+#productModal .product-detail-accordion summary span{color:#c9a9e8;font-size:17px;transition:transform .2s}
+#productModal .product-detail-accordion[open] summary span{transform:rotate(45deg)}
+#productModal .product-detail-copy{padding:0 2px 12px;color:#adbdc9;font-size:11px;line-height:1.75}
+#productModal .product-detail-copy p{margin:0 0 7px}
+#productModal .product-detail-copy p:last-child{margin-bottom:0}
+#productModal .product-detail-copy strong{color:#e8dff0}
+#productModal .product-detail-copy a{color:#c9a9e8;text-decoration:underline;text-underline-offset:3px}
+#productModal .product-detail-accordion summary:focus-visible{outline:2px solid #c9a9e8;outline-offset:3px}
+@media(max-width:700px){#productModal .product-details-info{margin-top:12px;padding-top:12px}#productModal .product-detail-accordion summary{padding:12px 2px}}
+</style>
+
 </head>
 <body>
 <div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
@@ -919,6 +940,41 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
         </div>
       </div>
     </div>
+
+    <section class="product-details-info" id="productDetailsInfo" aria-label="Product information">
+      <div class="product-details-intro">
+        <span class="product-details-kicker">THE DETAILS</span>
+        <p id="choiceDescription">A statement tee made to bring your own frequency to everyday wear.</p>
+      </div>
+      <details class="product-detail-accordion" open>
+        <summary>Fabric &amp; feel <span aria-hidden="true">＋</span></summary>
+        <div class="product-detail-copy">
+          <p><strong>200 GSM pure cotton single jersey.</strong> A soft, substantial feel designed for everyday comfort.</p>
+          <p>Printed with DTF artwork for a crisp graphic finish.</p>
+        </div>
+      </details>
+      <details class="product-detail-accordion">
+        <summary>Fit &amp; sizing <span aria-hidden="true">＋</span></summary>
+        <div class="product-detail-copy">
+          <p>Relaxed unisex loose fit with a drop shoulder.</p>
+          <p>Choose your usual size for the intended relaxed look. Check the <a href="#size" class="product-size-guide-link">size chart</a> before selecting your size.</p>
+        </div>
+      </details>
+      <details class="product-detail-accordion">
+        <summary>Care instructions <span aria-hidden="true">＋</span></summary>
+        <div class="product-detail-copy">
+          <p>Turn inside out before washing. Use a gentle, cold wash with similar colours.</p>
+          <p>Do not iron directly on the print. Air dry when possible.</p>
+        </div>
+      </details>
+      <details class="product-detail-accordion">
+        <summary>Delivery &amp; support <span aria-hidden="true">＋</span></summary>
+        <div class="product-detail-copy">
+          <p>Delivery charges are shown at checkout. Once your order is dispatched, use the tracking details in My Orders to follow its journey.</p>
+          <p>Need help before ordering? <a href="https://wa.me/919220657676" target="_blank" rel="noopener noreferrer">Chat with 7ECLIPSES on WhatsApp</a>.</p>
+        </div>
+      </details>
+    </section>
 
     <button class="btn" id="choiceAdd"
       style="width:100%;margin-top:22px">
