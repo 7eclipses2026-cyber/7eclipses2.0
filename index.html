@@ -2291,15 +2291,27 @@ renderProducts();updateCart();
       const uid = currentUser.uid;
       const snap = await getDoc(doc(db, "users", uid));
       if (!currentUser || currentUser.uid !== uid || !snap.exists()) return [];
-      const saved = snap.data().boraChatHistory;
-      return Array.isArray(saved) ? saved.filter(item => item && ["user", "assistant"].includes(item.role) && typeof item.content === "string").slice(-100) : [];
+      const data = snap.data();
+      let conversations = Array.isArray(data.boraConversations) ? data.boraConversations : [];
+      if (!conversations.length && Array.isArray(data.boraChatHistory) && data.boraChatHistory.length) {
+        conversations = [{ id: "legacy-" + uid, title: "Previous chat", updatedAt: Date.now(), messages: data.boraChatHistory }];
+      }
+      return conversations.filter(c => c && typeof c.id === "string" && Array.isArray(c.messages)).map(c => ({
+        id: c.id, title: String(c.title || "BORA chat").slice(0, 60),
+        updatedAt: Number(c.updatedAt) || Date.now(),
+        messages: c.messages.filter(item => item && ["user", "assistant"].includes(item.role) && typeof item.content === "string").slice(-100).map(item => ({ role: item.role, content: item.content.slice(0, 3000) }))
+      })).slice(-30);
     },
-    async save(history) {
-      if (!currentUser || !Array.isArray(history)) return false;
+    async save(conversations) {
+      if (!currentUser || !Array.isArray(conversations)) return false;
       const uid = currentUser.uid;
-      const safeHistory = history.filter(item => item && ["user", "assistant"].includes(item.role) && typeof item.content === "string").slice(-100).map(item => ({ role: item.role, content: item.content.slice(0, 3000) }));
+      const safe = conversations.slice(-30).map(c => ({
+        id: String(c.id).slice(0, 80), title: String(c.title || "BORA chat").slice(0, 60),
+        updatedAt: Number(c.updatedAt) || Date.now(),
+        messages: (Array.isArray(c.messages) ? c.messages : []).filter(item => item && ["user", "assistant"].includes(item.role) && typeof item.content === "string").slice(-100).map(item => ({ role: item.role, content: item.content.slice(0, 3000) }))
+      }));
       if (!currentUser || currentUser.uid !== uid) return false;
-      await setDoc(doc(db, "users", uid), { boraChatHistory: safeHistory, boraChatUpdatedAt: serverTimestamp() }, { merge: true });
+      await setDoc(doc(db, "users", uid), { boraConversations: safe, boraChatUpdatedAt: serverTimestamp() }, { merge: true });
       return true;
     }
   };
@@ -2795,43 +2807,31 @@ renderProducts();updateCart();
   <div id="bora-chat-messages" aria-live="polite"><div class="bora-welcome"><span class="bora-welcome-eyebrow">A LITTLE HELP FROM THE DEEP</span><h3>Hey there, ocean soul. <span>🌊</span></h3><p>I’m BORA — your friendly 7ECLIPSES guide. Looking for your next favourite tee, a size recommendation, or a hand with an order? Let’s dive in.</p><span class="bora-welcome-whisper">No question is too small. 💜</span></div></div>
   <div class="bora-quick-label">QUICK DIPS</div><div class="bora-chat-quick"><button type="button" data-bora-quick="Tell me about the tees"><span>✦</span> Explore tees</button><button type="button" data-bora-quick="What sizes are available?"><span>↗</span> Find my size</button><button type="button" data-bora-quick="What colours are available?"><span>◉</span> Colours</button><button type="button" data-bora-quick="I want to talk to your team"><span>♡</span> Human help</button></div>
   <form class="bora-chat-compose" id="bora-chat-form"><input id="bora-chat-input" type="text" maxlength="400" placeholder="Ask Agent BORA anything…" autocomplete="off" aria-label="Message Agent BORA"><button id="bora-chat-send" type="submit" aria-label="Send message">➤</button></form>
-  <div class="bora-chat-foot">For order-specific help, connect with our team:<br><a class="bora-whatsapp-support" href="https://wa.me/919220657676" target="_blank" rel="noopener noreferrer" aria-label="Chat with 7ECLIPSES support on WhatsApp"> <span aria-hidden="true">☏</span> Chat with us on WhatsApp </a><br><button id="bora-clear-history" type="button" style="display:none;margin-top:10px;padding:7px 12px;border:1px solid #c8b9dc;border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer">Clear chat history</button></div>
+  <div class="bora-chat-foot">For order-specific help, connect with our team:<br><a class="bora-whatsapp-support" href="https://wa.me/919220657676" target="_blank" rel="noopener noreferrer" aria-label="Chat with 7ECLIPSES support on WhatsApp"> <span aria-hidden="true">☏</span> Chat with us on WhatsApp </a><br><div id="bora-conversation-tools" style="display:none;margin-top:10px;gap:7px;align-items:center;flex-wrap:wrap"><button id="bora-new-chat" type="button" style="padding:7px 12px;border:1px solid #c8b9dc;border-radius:999px;background:#b8a1dd;color:#211b38;font:inherit;font-size:12px;font-weight:700;cursor:pointer">＋ New chat</button><select id="bora-chat-picker" aria-label="Open a saved BORA conversation" style="max-width:150px;padding:7px 9px;border:1px solid #c8b9dc;border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:12px"><option value="">Saved chats</option></select><button id="bora-clear-history" type="button" style="padding:7px 12px;border:1px solid #c8b9dc;border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer">Clear all</button></div></div>
 </section>
 <script id="agent-bora-script">
 (()=>{
  const launcher=document.getElementById("bora-chat-launcher"),panel=document.getElementById("bora-chat-panel"),close=document.getElementById("bora-chat-close"),messages=document.getElementById("bora-chat-messages"),form=document.getElementById("bora-chat-form"),input=document.getElementById("bora-chat-input"),sendButton=document.getElementById("bora-chat-send");
  if(!launcher||!panel||!messages||!form||!input)return;
- let history=[],savedTranscript=[],signedIn=false,loadToken=0;
- const welcome=messages.innerHTML;
+ let history=[],conversations=[],activeId=null,signedIn=false,loadToken=0;
+ const welcome=messages.innerHTML,tools=document.getElementById("bora-conversation-tools"),newButton=document.getElementById("bora-new-chat"),picker=document.getElementById("bora-chat-picker"),clearButton=document.getElementById("bora-clear-history");
  function open(){panel.classList.add("open");launcher.setAttribute("aria-expanded","true");input.focus()}
  function shut(){panel.classList.remove("open");launcher.setAttribute("aria-expanded","false");launcher.focus()}
  launcher.addEventListener("click",()=>panel.classList.contains("open")?shut():open());close.addEventListener("click",shut);
  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open"))shut()});
  function add(text,who){const node=document.createElement("div");node.className="bora-msg "+who;node.textContent=text;messages.appendChild(node);messages.scrollTop=messages.scrollHeight;return node}
  function renderTranscript(items){messages.innerHTML=welcome;items.forEach(item=>add(item.content,item.role==="user"?"user":"agent"));}
- const clearHistoryButton=document.getElementById("bora-clear-history");
- if(clearHistoryButton)clearHistoryButton.addEventListener("click",async()=>{
-  if(!signedIn||!window.boraChatStore)return;
-  if(!window.confirm("Clear your saved BORA chat history? This cannot be undone."))return;
-  clearHistoryButton.disabled=true;
-  try{await window.boraChatStore.save([]);history=[];savedTranscript=[];renderTranscript([]);add("Your chat history has been cleared. How can I help you today? 🌊","agent");}
-  catch(error){console.error("Could not clear BORA chat history:",error);add("I couldn’t clear your saved history just now. Please try again.","agent");}
-  finally{clearHistoryButton.disabled=false;}
- });
- function persist(){if(signedIn&&window.boraChatStore)window.boraChatStore.save(savedTranscript).catch(error=>console.error("Could not save BORA chat history:",error));}
- async function restore(){const token=++loadToken;history=[];savedTranscript=[];renderTranscript([]);if(!signedIn||!window.boraChatStore)return;try{const items=await window.boraChatStore.load();if(token!==loadToken)return;savedTranscript=items;history=items.slice(-12).map(item=>({role:item.role,content:item.content}));renderTranscript(items);if(items.length)add("Welcome back! I’ve kept our previous conversation here. 🌊","agent");}catch(error){console.error("Could not load BORA chat history:",error);}}
- window.addEventListener("bora-auth-changed",event=>{signedIn=!!(event.detail&&event.detail.signedIn);if(clearHistoryButton)clearHistoryButton.style.display=signedIn?"inline-block":"none";restore();});
+ function activeConversation(){return conversations.find(c=>c.id===activeId)||null}
+ function renderPicker(){if(!picker)return;picker.innerHTML='<option value="">Saved chats</option>';conversations.slice().sort((a,b)=>b.updatedAt-a.updatedAt).forEach(c=>{const option=document.createElement("option");option.value=c.id;option.textContent=c.title||"BORA chat";picker.appendChild(option)});picker.value=activeId||"";}
+ function persist(){if(!signedIn||!window.boraChatStore)return;const c=activeConversation();if(c){c.messages=history.slice(-100);c.updatedAt=Date.now();}window.boraChatStore.save(conversations).catch(error=>console.error("Could not save BORA conversations:",error));}
+ function startNewChat(){if(!signedIn)return;const c={id:"chat-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),title:"New conversation",updatedAt:Date.now(),messages:[]};conversations.push(c);activeId=c.id;history=[];renderTranscript([]);renderPicker();persist();add("A fresh start! What would you like to talk about? 🌊","agent");}
+ async function restore(){const token=++loadToken;history=[];conversations=[];activeId=null;renderTranscript([]);if(!signedIn||!window.boraChatStore){if(tools)tools.style.display="none";return;}try{conversations=await window.boraChatStore.load();if(token!==loadToken)return;if(!conversations.length)startNewChat();else{conversations.sort((a,b)=>a.updatedAt-b.updatedAt);activeId=conversations[conversations.length-1].id;history=activeConversation().messages.slice(-12);renderTranscript(activeConversation().messages);if(activeConversation().messages.length)add("Welcome back! Your saved conversations are here. 🌊","agent");}if(tools)tools.style.display="flex";renderPicker();}catch(error){console.error("Could not load BORA conversations:",error);}}
+ if(newButton)newButton.addEventListener("click",startNewChat);
+ if(picker)picker.addEventListener("change",()=>{const c=conversations.find(item=>item.id===picker.value);if(!c)return;activeId=c.id;history=c.messages.slice(-12);renderTranscript(c.messages);});
+ if(clearButton)clearButton.addEventListener("click",async()=>{if(!signedIn||!window.boraChatStore)return;if(!window.confirm("Clear all your saved BORA conversations? This cannot be undone."))return;clearButton.disabled=true;try{conversations=[];history=[];activeId=null;await window.boraChatStore.save([]);renderTranscript([]);startNewChat();}catch(error){console.error("Could not clear BORA history:",error);add("I couldn’t clear your saved chats just now. Please try again.","agent");}finally{clearButton.disabled=false;}});
+ window.addEventListener("bora-auth-changed",event=>{signedIn=!!(event.detail&&event.detail.signedIn);restore();});
  function humanLink(message){const url="https://wa.me/919220657676?text="+encodeURIComponent("Hi 7ECLIPSES! I need help with a product inquiry.\\n\\n"+message);const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";a.textContent="Chat with our team on WhatsApp";a.style.cssText="display:inline-block;margin:2px 0 4px;padding:10px 13px;border-radius:999px;background:#b8a1dd;color:#211b38;font-size:12px;font-weight:700;text-decoration:none";messages.appendChild(a);messages.scrollTop=messages.scrollHeight}
- async function send(q){
-  q=q.trim();if(!q)return;
-  add(q,"user");const userItem={role:"user",content:q};history.push(userItem);savedTranscript.push(userItem);while(history.length>12)history.shift();savedTranscript=savedTranscript.slice(-100);persist();
-  input.disabled=true;sendButton.disabled=true;const pending=add("BORA is thinking…","agent");
-  try{
-   const response=await fetch("/api/bora-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"BORA is taking a little ocean break.");
-   const answer=String(data.reply||"I couldn't prepare an answer just now. Please try again.").slice(0,3000);pending.textContent=answer;const assistantItem={role:"assistant",content:answer};history.push(assistantItem);savedTranscript.push(assistantItem);savedTranscript=savedTranscript.slice(-100);persist();if(data.handoff)humanLink(q);
-  }catch(error){pending.textContent="I’m having trouble connecting to my AI brain right now. Please try again in a moment, or message our team directly.";humanLink(q);console.error("Agent BORA request failed:",error);}
-  finally{input.disabled=false;sendButton.disabled=false;input.focus();messages.scrollTop=messages.scrollHeight}
- }
+ async function send(q){q=q.trim();if(!q)return;add(q,"user");const userItem={role:"user",content:q};history.push(userItem);const c=activeConversation();if(c){c.messages.push(userItem);if(c.title==="New conversation")c.title=q.slice(0,38)+(q.length>38?"…":"");}history=history.slice(-12);persist();renderPicker();input.disabled=true;sendButton.disabled=true;const pending=add("BORA is thinking…","agent");try{const response=await fetch("/api/bora-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"BORA is taking a little ocean break.");const answer=String(data.reply||"I couldn't prepare an answer just now. Please try again.").slice(0,3000);pending.textContent=answer;const assistantItem={role:"assistant",content:answer};history.push(assistantItem);if(c)c.messages.push(assistantItem);persist();if(data.handoff)humanLink(q);}catch(error){pending.textContent="I’m having trouble connecting to my AI brain right now. Please try again in a moment, or message our team directly.";humanLink(q);console.error("Agent BORA request failed:",error);}finally{input.disabled=false;sendButton.disabled=false;input.focus();messages.scrollTop=messages.scrollHeight}}
  form.addEventListener("submit",e=>{e.preventDefault();const q=input.value;input.value="";send(q)});
  panel.querySelectorAll("[data-bora-quick]").forEach(button=>button.addEventListener("click",()=>send(button.dataset.boraQuick)));
 })();
