@@ -348,6 +348,11 @@
   }
 }
 
+
+.image-zoom .zoom-story{max-width:680px;margin:18px auto 8px;color:#e7d8f7;font:18px/1.65 'Playfair Display',serif;letter-spacing:.01em;text-align:center}
+.image-zoom .zoom-hint{color:#9db4c5;font-size:9px;letter-spacing:.14em;text-align:center;margin:8px 0 0}
+@media(max-width:600px){.image-zoom .zoom-story{font-size:15px;line-height:1.5;padding:0 8px}}
+
 /* 7ECLIPSES PRODUCT IMAGE ZOOM */
 .image-zoom {
   display: none;
@@ -1100,7 +1105,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 <div id="imageZoom" class="image-zoom">
   <button type="button" id="zoomClose" aria-label="Close zoom">×</button>
   <img id="zoomImage" src="" alt="Zoomed product image">
-  <p>PINCH TO ZOOM · DOUBLE CLICK TO ENLARGE</p>
+  <p id="zoomStory" class="zoom-story" aria-live="polite"></p><p class="zoom-hint">PINCH TO ZOOM · DOUBLE CLICK TO ENLARGE</p>
 </div></div><div class="modal" id="checkoutModal"><div class="modal-box"><div class="modal-head"><div><div class="kicker">Almost yours</div><h3>Delivery details</h3></div><button class="close" id="modalClose">×</button></div><p class="size-note" style="margin-top:12px">Fill in your details so your order message is ready to send.</p>
 <form id="addressForm"><div class="checkout-payment"><strong>Choose payment method</strong><label class="payment-option"><input type="radio" name="paymentMethod" value="upi" checked> <span><b>UPI / Online payment</b><small>Pay securely using Razorpay</small></span></label><label class="payment-option"><input type="radio" name="paymentMethod" value="cod"> <span><b>Cash on Delivery</b><small>Pay when your order arrives</small></span></label></div><div id="checkoutOffer" class="checkout-offer" aria-live="polite"></div><div class="checkout-coupon"><strong>Have a coupon?</strong><div class="coupon-entry"><input id="couponCode" type="text" maxlength="24" placeholder="Enter coupon code" autocomplete="off" aria-label="Coupon code"><button type="button" class="btn" id="applyCouponBtn">Apply</button></div><p id="couponMessage" aria-live="polite">Use <b>7ECLIPSES10</b> for an extra 10% off with UPI / online payment only.</p></div><div class="checkout-summary"><div><span>T-shirt subtotal</span><b id="checkoutSubtotal">₹599</b></div><div><span id="checkoutChargeLabel">Delivery charge</span><b id="checkoutCharge">₹40</b></div><div class="checkout-grand-total"><span>Total to pay</span><b id="checkoutTotal">₹639</b></div></div><div class="form-grid"><div class="field"><label>Full name *</label><input name="name" required autocomplete="name"></div><div class="field"><label>Email address *</label><input name="email" type="email" required autocomplete="email" placeholder="you@example.com"></div><div class="field"><label>Phone number *</label><input name="phone" required type="tel" autocomplete="tel" pattern="[0-9+ ()-]{8,16}"></div><div class="field full"><label>Full address *</label><textarea name="address" required autocomplete="street-address"></textarea></div><div class="field"><label>City *</label><input name="city" required autocomplete="address-level2"></div><div class="field"><label>PIN code *</label><input name="pin" required inputmode="numeric" pattern="[0-9]{6}" autocomplete="postal-code"></div><div class="field full"><label>Landmark / notes (optional)</label><input name="notes"></div></div>
 <div class="modal-actions"><button class="btn" type="submit" id="placeOrderBtn">Place Order</button></div></form></div></div>
@@ -1524,6 +1529,9 @@ function setZoom(value) {
 
 document.getElementById("choiceImage").addEventListener("click", () => {
   zoomImage.src = document.getElementById("choiceImage").src;
+  const story = document.getElementById("choiceDescription");
+  const zoomStory = document.getElementById("zoomStory");
+  if (zoomStory) zoomStory.textContent = story ? story.textContent : "";
   setZoom(1);
   imageZoom.classList.add("show");
   document.body.style.overflow = "hidden";
