@@ -941,39 +941,11 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
       </div>
     </div>
 
-    <section class="product-details-info" id="productDetailsInfo" aria-label="Product information">
+    <section class="product-details-info" id="productDetailsInfo" aria-label="Meaning behind this design">
       <div class="product-details-intro">
-        <span class="product-details-kicker">THE DETAILS</span>
-        <p id="choiceDescription">A statement tee made to bring your own frequency to everyday wear.</p>
+        <span class="product-details-kicker">THE MEANING BEHIND THE DESIGN</span>
+        <p id="choiceDescription">A statement can mean something different to everyone. Here's the thought behind this design.</p>
       </div>
-      <details class="product-detail-accordion" open>
-        <summary>Fabric &amp; feel <span aria-hidden="true">＋</span></summary>
-        <div class="product-detail-copy">
-          <p><strong>200 GSM pure cotton single jersey.</strong> A soft, substantial feel designed for everyday comfort.</p>
-          <p>Printed with DTF artwork for a crisp graphic finish.</p>
-        </div>
-      </details>
-      <details class="product-detail-accordion">
-        <summary>Fit &amp; sizing <span aria-hidden="true">＋</span></summary>
-        <div class="product-detail-copy">
-          <p>Relaxed unisex loose fit with a drop shoulder.</p>
-          <p>Choose your usual size for the intended relaxed look. Check the <a href="#size" class="product-size-guide-link">size chart</a> before selecting your size.</p>
-        </div>
-      </details>
-      <details class="product-detail-accordion">
-        <summary>Care instructions <span aria-hidden="true">＋</span></summary>
-        <div class="product-detail-copy">
-          <p>Turn inside out before washing. Use a gentle, cold wash with similar colours.</p>
-          <p>Do not iron directly on the print. Air dry when possible.</p>
-        </div>
-      </details>
-      <details class="product-detail-accordion">
-        <summary>Delivery &amp; support <span aria-hidden="true">＋</span></summary>
-        <div class="product-detail-copy">
-          <p>Delivery charges are shown at checkout. Once your order is dispatched, use the tracking details in My Orders to follow its journey.</p>
-          <p>Need help before ordering? <a href="https://wa.me/919220657676" target="_blank" rel="noopener noreferrer">Chat with 7ECLIPSES on WhatsApp</a>.</p>
-        </div>
-      </details>
     </section>
 
     <button class="btn" id="choiceAdd"
@@ -1289,8 +1261,20 @@ function addItem(id) {
 
   document.getElementById("choiceName").textContent =
     selectedProduct.name;
+  const productMeanings = {
+    "MY EGO IS MY PROTECTION -2.18-": "Sometimes what looks like ego is actually a defence mechanism.",
+    "BE STRONG": "Keep going, even when life gets difficult.",
+    "BORA": "An identity of its own. Its meaning can remain open to interpretation.",
+    "APNA HAQ MANGA H AAPKI JAYDAD NAHI": "Know your worth. Asking for what you deserve isn't asking for a favour.",
+    "JUST BE YOURSELF": "Don't change your identity to earn acceptance.",
+    "FLY WITH 52": "Find your frequency. Don't be afraid to be different.",
+    "A HUGE WE ALL WAITED FOR": "Hope, anticipation and something worth waiting for.",
+    "SMALL WHALE": "A reminder of the symbol at the heart of the brand.",
+    "Gentle Man": "Strength doesn't have to mean aggression.",
+    "DONE PLEASING PEOPLE": "Stop living your life just to satisfy everyone else."
+  };
   document.getElementById("choiceDescription").textContent =
-    selectedProduct.name + " — a graphic tee made to bring your own frequency to everyday wear.";
+    productMeanings[selectedProduct.name] || "A statement can mean something different to everyone. Here's the thought behind this design.";
 
   const colorHex = {Black:"#101114",White:"#f4f1e9",Lavender:"#bca8cc",Brown:"#795443"};
   const colorOptions = document.getElementById("choiceColorOptions");
