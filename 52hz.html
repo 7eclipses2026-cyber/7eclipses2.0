@@ -37,6 +37,34 @@
   .swimming-whale{animation:none;left:auto;right:12px;top:auto;bottom:18px;width:150px;opacity:.7}
 }
 
+
+/* Interactive 52Hz companion — isolated to this story page */
+.swimming-whale{
+  position:fixed;z-index:5;left:0;top:0;width:min(28vw,300px);
+  height:auto;max-height:32vh;object-fit:contain;pointer-events:auto;
+  user-select:none;cursor:pointer;touch-action:manipulation;
+  filter:drop-shadow(0 12px 22px rgba(150,190,255,.22));
+  opacity:.94;animation:none;will-change:transform;
+  transition:filter .35s ease;
+}
+.swimming-whale:hover{filter:drop-shadow(0 12px 28px rgba(180,160,255,.48))}
+.whale-bubble{
+  position:fixed;z-index:6;pointer-events:none;border:1px solid rgba(218,205,255,.72);
+  border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.72),rgba(174,194,255,.13) 48%,rgba(174,194,255,.03));
+  box-shadow:0 0 14px rgba(174,194,255,.22);
+  animation:whale-bubble-rise var(--bubble-life,2.8s) ease-out forwards;
+}
+@keyframes whale-bubble-rise{
+  0%{opacity:0;transform:translate3d(0,8px,0) scale(.55)}
+  15%{opacity:.8}
+  100%{opacity:0;transform:translate3d(var(--bubble-drift,18px),-100px,0) scale(1.15)}
+}
+@media(max-width:650px){.swimming-whale{width:155px;max-height:22vh;opacity:.84}}
+@media(prefers-reduced-motion:reduce){
+  .swimming-whale{animation:none;transition:none}
+  .whale-bubble{animation-duration:1.2s}
+}
+
 </style>
 </head>
 <body>
@@ -46,7 +74,7 @@
 <nav class="navlinks" aria-label="Main navigation"><a href="/">Home</a><a href="/#shop">Shop</a><a href="#story">Meet 52Hz</a><a href="#meaning">The meaning</a></nav>
 </div></header>
 <main>
-<img class="swimming-whale" src="/images/52hz-real-whale-cutout.png" alt="" aria-hidden="true" draggable="false">
+<img class="swimming-whale" id="whale52" src="/images/52hz-real-whale-cutout.png" alt="52Hz, a whale swimming through the midnight ocean" draggable="false" role="button" tabindex="0" aria-label="Tap 52Hz to change direction and make bubbles">
 <section class="hero"><div class="hero-inner">
 <div class="eyebrow">7ECLIPSES · AN ORIGINAL MIDNIGHT STORY</div>
 <h1>Meet <span>52Hz.</span><br>The whale of<br>00:00.</h1>
@@ -93,5 +121,111 @@
 </section>
 </main>
 <footer class="footer">7ECLIPSES · 52Hz · THE UNKNOWN FREQUENCY · <a href="/">BACK TO HOME</a></footer>
+
+<script>
+(() => {
+  const whale = document.getElementById('whale52');
+  if (!whale) return;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let phase = 0, lastTime = 0, facing = 1, pointer = null, pointerUntil = 0;
+  let x = -180, y = window.innerHeight * .5, lastX = x;
+  let reversing = 1;
+
+  function bubbleBurst(count = 9) {
+    const rect = whale.getBoundingClientRect();
+    const originX = rect.left + rect.width * .5;
+    const originY = rect.top + rect.height * .58;
+    for (let i = 0; i < count; i++) {
+      const bubble = document.createElement('span');
+      bubble.className = 'whale-bubble';
+      const size = 5 + Math.random() * 10;
+      bubble.style.width = size + 'px';
+      bubble.style.height = size + 'px';
+      bubble.style.left = (originX + (Math.random() - .5) * rect.width * .65) + 'px';
+      bubble.style.top = (originY + (Math.random() - .5) * 24) + 'px';
+      bubble.style.setProperty('--bubble-drift', ((Math.random() - .5) * 75) + 'px');
+      bubble.style.setProperty('--bubble-life', (2.1 + Math.random() * 1.5) + 's');
+      document.body.appendChild(bubble);
+      bubble.addEventListener('animationend', () => bubble.remove(), { once:true });
+    }
+  }
+
+  function turnAround() {
+    phase = Math.PI - phase;
+    reversing *= -1;
+    bubbleBurst(12);
+    whale.animate(
+      [{ filter:'drop-shadow(0 12px 22px rgba(150,190,255,.22))' },
+       { filter:'drop-shadow(0 0 28px rgba(190,165,255,.8))' },
+       { filter:'drop-shadow(0 12px 22px rgba(150,190,255,.22))' }],
+      { duration:850, easing:'ease-out' }
+    );
+  }
+
+  whale.addEventListener('click', turnAround);
+  whale.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      turnAround();
+    }
+  });
+  window.addEventListener('pointermove', event => {
+    pointer = { x:event.clientX, y:event.clientY };
+    pointerUntil = performance.now() + 1800;
+  }, { passive:true });
+  window.addEventListener('resize', () => {
+    y = Math.min(y, window.innerHeight - 100);
+  });
+
+  if (reduceMotion) {
+    whale.style.left = 'auto';
+    whale.style.right = '12px';
+    whale.style.top = 'auto';
+    whale.style.bottom = '18px';
+    whale.style.width = '150px';
+    return;
+  }
+
+  function swim(now) {
+    if (!lastTime) lastTime = now;
+    const dt = Math.min((now - lastTime) / 1000, .04);
+    lastTime = now;
+    const w = window.innerWidth, h = window.innerHeight;
+    phase += dt * .19 * reversing;
+    const baseX = w * .5 + Math.sin(phase) * Math.max(90, w * .43);
+    let targetX = baseX;
+    let targetY = h * .49 + Math.sin(phase * 1.85) * Math.min(92, h * .12);
+
+    if (pointer && now < pointerUntil) {
+      const dx = pointer.x - baseX, dy = pointer.y - targetY;
+      const distance = Math.hypot(dx, dy);
+      if (distance < 300) {
+        const influence = (1 - distance / 300) * .2;
+        targetX += dx * influence;
+        targetY += dy * influence;
+      }
+    }
+
+    x += (targetX - x) * Math.min(1, dt * 2.1);
+    y += (targetY - y) * Math.min(1, dt * 2.1);
+    const velocity = x - lastX;
+    if (Math.abs(velocity) > .08) facing = velocity > 0 ? 1 : -1;
+    lastX = x;
+    const bob = Math.sin(now * .0018) * 3;
+    const tilt = Math.max(-7, Math.min(7, Math.cos(phase) * 4 + Math.sin(now * .0012) * 1.5));
+    whale.style.transform = 'translate3d(' + (x - whale.offsetWidth / 2) + 'px,' +
+      (y - whale.offsetHeight / 2 + bob) + 'px,0) scaleX(' + facing + ') rotate(' + tilt + 'deg)';
+    requestAnimationFrame(swim);
+  }
+  requestAnimationFrame(swim);
+
+  // A few quiet bubbles make the ocean feel alive without covering the story.
+  window.setTimeout(() => bubbleBurst(4), 2200);
+  window.setInterval(() => {
+    if (document.visibilityState === 'visible' && Math.random() > .35) bubbleBurst(2);
+  }, 8500);
+})();
+</script>
+
 </body>
 </html>
