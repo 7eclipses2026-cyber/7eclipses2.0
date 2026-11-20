@@ -947,6 +947,10 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 @media(max-width:700px){#productModal .product-details-info{margin-top:12px;padding-top:12px}#productModal .product-detail-accordion summary{padding:12px 2px}}
 </style>
 
+<style id="7e-stock-manager-style">
+.stock-manager-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}.stock-manager-heading h3{font:22px 'Playfair Display',serif;color:#f2eaff;margin:0 0 6px}.stock-manager-heading p{font-size:11px;line-height:1.6;color:#b8aeca;margin:0}.stock-owner-label{font-size:9px;letter-spacing:.12em;color:#c9a9e8;border:1px solid #80689b;border-radius:99px;padding:6px 9px;white-space:nowrap}.stock-manager-message{font-size:11px;line-height:1.6;color:#c9a9e8;margin:12px 0}.stock-product-group{margin:14px 0;padding:12px;border:1px solid rgba(201,169,232,.22);border-radius:10px;background:#211d29}.stock-product-group h4{font:17px 'Playfair Display',serif;color:#f2eaff;margin:0 0 10px}.stock-variant-row{display:grid;grid-template-columns:76px 1fr 88px;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #ffffff12}.stock-variant-label{font-size:11px;color:#d9c8eb}.stock-variant-row input{width:100%;min-width:0;padding:9px;border:1px solid #665777;border-radius:7px;background:#17151e;color:#fff}.stock-variant-row button{padding:9px 8px;margin:0;font-size:10px}.stock-variant-row button:disabled{opacity:.55;cursor:wait}.stock-variant-status{grid-column:1/-1;font-size:10px;color:#a8c8a9;margin-top:-4px}.stock-availability{font-size:11px;color:#b9d9ed;margin:10px 0 0;min-height:16px}.size-option:disabled{opacity:.35;cursor:not-allowed;text-decoration:line-through;transform:none}.size-option.stock-unknown{opacity:.55}
+@media(max-width:650px){.stock-manager-heading{display:block}.stock-owner-label{display:inline-block;margin-top:10px}.stock-variant-row{grid-template-columns:60px minmax(0,1fr) 75px}.stock-variant-row button{padding:9px 5px}}
+</style>
 </head>
 <body>
 <div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
@@ -1036,6 +1040,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
           <button type="button" class="size-option" data-size="L" aria-pressed="false">L</button>
           <button type="button" class="size-option" data-size="XL" aria-pressed="false">XL</button>
         </div>
+        <p id="choiceStockStatus" class="stock-availability" aria-live="polite">Choose a size to check live availability.</p>
       </div>
     </div>
 
@@ -1372,14 +1377,34 @@ function chooseProductColor(color){
   document.getElementById("selectedColorName").textContent = color;
   updateChoiceImage();
 }
+function getVariantStock(productId, color, size) { return typeof window.getStockAvailability === "function" ? window.getStockAvailability(productId, color, size) : null; }
+function refreshSizeAvailability() {
+  if (!selectedProduct || !selectedColor) return;
+  let selectedAvailable = false;
+  document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
+    const qty = getVariantStock(selectedProduct.id, selectedColor, button.dataset.size);
+    button.disabled = qty === null || qty <= 0;
+    button.classList.toggle("stock-unknown", qty === null);
+    button.title = qty === null ? "Stock not updated yet" : qty <= 0 ? "Sold out" : qty + " available";
+    if (button.dataset.size === selectedSize && qty > 0) selectedAvailable = true;
+  });
+  const status = document.getElementById("choiceStockStatus");
+  const qty = selectedSize ? getVariantStock(selectedProduct.id, selectedColor, selectedSize) : null;
+  if (status) status.textContent = selectedSize && qty !== null ? (qty > 0 ? qty + " available in " + selectedSize : "Sold out in " + selectedSize) : "Choose a size to check live availability. Unupdated stock cannot be ordered.";
+  const add = document.getElementById("choiceAdd");
+  if (add) add.disabled = !selectedSize || !selectedAvailable;
+}
+window.addEventListener("7e-stock-updated", refreshSizeAvailability);
 document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
   button.addEventListener("click", () => {
+    if (button.disabled) return;
     selectedSize = button.dataset.size;
     document.querySelectorAll("#choiceSizeOptions .size-option").forEach(option => {
       const isSelected = option === button;
       option.classList.toggle("active", isSelected);
       option.setAttribute("aria-pressed", String(isSelected));
     });
+    refreshSizeAvailability();
   });
 });
 function addItem(id) {
@@ -1419,6 +1444,7 @@ function addItem(id) {
   });
 
   updateChoiceImage();
+  refreshSizeAvailability();
 
   document.getElementById("productModal").classList.add("show");
 }
@@ -1531,6 +1557,10 @@ document.getElementById("choiceAdd").onclick = () => {
   }
 
   const p = selectedProduct;
+  const available = getVariantStock(p.id, color, size);
+  const inBag = cart.find(x => x.id === p.id && x.size === size && x.color === color)?.qty || 0;
+  if (available === null) { notify("Stock for this size has not been updated yet."); return; }
+  if (available <= inBag) { notify("Sorry, this size is sold out or your bag already has all available stock."); return; }
 
   const existing = cart.find(x =>
     x.id === p.id && x.size === size && x.color === color
@@ -1619,7 +1649,7 @@ function updateCheckoutSummary(){
 
   function updateCart(){localStorage.setItem("7eclipsesBag", JSON.stringify(cart));window.syncShoppingData?.();let t=totals();document.getElementById("cartCount").textContent=t.qty;document.getElementById("bagSub").textContent=`(${t.qty})`;document.getElementById("subtotal").textContent=rupee(t.sub);document.getElementById("delivery").textContent="Calculated at checkout";document.getElementById("total").textContent=rupee(t.sub);updateBagDiscount();document.getElementById("giftMessage").style.display=t.qty>0?"block":"none";document.getElementById("giftMessage").innerHTML=t.qty>=2&&t.qty<=3?"<strong>🎁 Combo offer unlocked!</strong>Your 2–3 tee combo includes a FREE GIFT. Prepaid orders also get FREE DELIVERY.":t.qty===1?"<strong>Unlock your combo offer</strong>Add one more tee to get a FREE GIFT on your 2–3 tee combo.":"<strong>7ECLIPSES combo offer</strong>Free gift on 2–3 tee combo orders. Contact us for 4+ tees.";updateCheckoutSummary();
 let el=document.getElementById("cartItems");el.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-item"><img   class="mini-tee"   src="${products.find(p=>p.id===x.id).images[x.color]}"   alt="${x.name}"   loading="lazy" ><div><h4>${x.name}</h4><small>${x.color} · Size ${x.size}</small><div class="qty-controls"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></div><div><b>${rupee(x.qty*599)}</b><div class="qty-controls"><button class="remove" data-del="${i}">Remove</button></div></div></div>`).join(""):'<div class="empty">Your Ocean is waiting for its first frequency.</div>';
-el.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{cart[+b.dataset.inc].qty++;updateCart()});el.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart[+b.dataset.dec];x.qty--;if(x.qty<=0)cart.splice(+b.dataset.dec,1);updateCart()});el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{cart.splice(+b.dataset.del,1);updateCart()})}
+el.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{const item=cart[+b.dataset.inc];const qty=getVariantStock(item.id,item.color,item.size);if(qty===null||item.qty>=qty){notify(qty===null?"Stock has not been updated yet.":"No more stock is available for this size.");return;}item.qty++;updateCart()});el.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart[+b.dataset.dec];x.qty--;if(x.qty<=0)cart.splice(+b.dataset.dec,1);updateCart()});el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{cart.splice(+b.dataset.del,1);updateCart()})}
 function notify(s){let t=document.getElementById("toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
 const overlay=document.getElementById("overlay"),drawer=document.getElementById("cartDrawer");function openCart() { overlay.classList.add("show"); drawer.classList.add("show"); drawer.setAttribute("aria-hidden","false"); document.getElementById("cartOpen").setAttribute("aria-expanded","true"); } function closeCart() { overlay.classList.remove("show"); drawer.classList.remove("show"); drawer.setAttribute("aria-hidden","true"); document.getElementById("cartOpen").setAttribute("aria-expanded","false"); }  function renderWishlist() {
   const items = document.getElementById("wishlistItems");
@@ -2151,6 +2181,7 @@ renderProducts();updateCart();
       <nav class="account-tabs" aria-label="Account sections">
         <button type="button" class="account-tab active" data-account-tab="profile" aria-selected="true">My Profile</button>
         <button type="button" class="account-tab" data-account-tab="orders" aria-selected="false">My Orders</button>
+        <button type="button" class="account-tab" data-account-tab="stock" id="stockManagerTab" aria-selected="false" hidden>Stock Manager</button>
       </nav>
       <div class="account-panels">
         <section id="profilePanel" class="account-panel active">
@@ -2188,6 +2219,11 @@ renderProducts();updateCart();
           <div id="myOrdersList" aria-live="polite"><p class="my-orders-empty">Your orders will appear here.</p></div>
           <div id="myOrderDetails" aria-live="polite"><p class="my-orders-empty">Choose an order ID to see its details.</p></div>
         </section>
+        <section id="stockPanel" class="account-panel">
+          <div class="stock-manager-heading"><div><h3>Stock Manager</h3><p>Set exact quantities for every design, colour and size. Customers see availability live.</p></div><span class="stock-owner-label">OWNER ACCESS</span></div>
+          <p id="stockManagerMessage" class="stock-manager-message" aria-live="polite">Loading inventory…</p>
+          <div id="stockManagerRows" class="stock-manager-rows"></div>
+        </section>
       </div>
       <button type="button" id="logoutBtn" class="account-logout-tab" aria-label="Log out of your 7ECLIPSES account">Log out</button>
     </div>
@@ -2211,6 +2247,7 @@ renderProducts();updateCart();
 
   import {
     getFirestore,
+    collection,
     doc,
     getDoc,
     setDoc,
@@ -2641,6 +2678,66 @@ renderProducts();updateCart();
     }
   }
 
+
+  const STOCK_OWNER_EMAIL = "7eclipses2026@gmail.com";
+  let liveInventory = {};
+  let inventoryReady = false;
+  const stockTab = document.getElementById("stockManagerTab");
+  const stockMessage = document.getElementById("stockManagerMessage");
+  const stockRows = document.getElementById("stockManagerRows");
+  window.getStockAvailability = (productId, color, size) => {
+    if (!inventoryReady) return null;
+    const item = liveInventory[stockDocumentId(productId, color, size)];
+    return item && Number.isInteger(item.quantity) ? item.quantity : null;
+  };
+  function stockDocumentId(productId, color, size) { return "p" + Number(productId) + "_" + String(color).toLowerCase() + "_" + String(size).toLowerCase(); }
+  function isStockOwner() { return !!currentUser && String(currentUser.email || "").toLowerCase() === STOCK_OWNER_EMAIL; }
+  function renderStockManager() {
+    if (!isStockOwner()) return;
+    if (!inventoryReady) { stockMessage.textContent = "Connecting to live inventory…"; return; }
+    stockMessage.textContent = "Enter a whole number for each variant. Blank = not configured; 0 = sold out.";
+    stockRows.innerHTML = products.map(product => '<section class="stock-product-group"><h4>' + escapeOrderHtml(product.name) + '</h4>' +
+      product.colors.map(color => ["S","M","L","XL"].map(size => {
+        const id = stockDocumentId(product.id, color, size), item = liveInventory[id];
+        const value = item && Number.isInteger(item.quantity) ? String(item.quantity) : "";
+        const state = item ? (item.quantity > 0 ? item.quantity + " available" : "Sold out") : "Not configured";
+        return '<div class="stock-variant-row"><span class="stock-variant-label">' + escapeOrderHtml(color) + ' · ' + size + '</span><input type="number" min="0" max="9999" step="1" inputmode="numeric" placeholder="Qty" aria-label="' + escapeOrderHtml(product.name + " " + color + " " + size + " quantity") + '" data-stock-qty="' + id + '" value="' + value + '"><button type="button" data-stock-save="' + id + '">Save</button><span class="stock-variant-status">' + state + '</span></div>';
+      }).join("")).join("") + '</section>').join("");
+  }
+  stockRows.addEventListener("click", async event => {
+    const button = event.target.closest("[data-stock-save]");
+    if (!button) return;
+    if (!isStockOwner()) { stockMessage.textContent = "Only the owner account can update stock."; return; }
+    const id = button.dataset.stockSave, input = stockRows.querySelector('[data-stock-qty="' + id + '"]');
+    const raw = input?.value.trim(), quantity = Number(raw);
+    if (raw === "" || !Number.isInteger(quantity) || quantity < 0 || quantity > 9999) { stockMessage.textContent = "Enter a whole number from 0 to 9999. Use 0 for sold out."; return; }
+    const parts = id.match(/^p([0-9]+)_([a-z]+)_([smlx]+)$/);
+    const product = parts && products.find(p => p.id === Number(parts[1]));
+    const color = parts && product?.colors.find(c => c.toLowerCase() === parts[2]);
+    const size = parts && parts[3].toUpperCase();
+    if (!product || !color || !["S","M","L","XL"].includes(size)) return;
+    button.disabled = true; button.textContent = "Saving…";
+    try {
+      await setDoc(doc(db, "inventory", id), { productId: product.id, productName: product.name, color, size, quantity, updatedAt: serverTimestamp(), updatedBy: STOCK_OWNER_EMAIL });
+      stockMessage.textContent = "Saved " + product.name + " · " + color + " · " + size + ": " + quantity + " available.";
+    } catch (error) {
+      console.error("Stock update failed:", error);
+      stockMessage.textContent = error.code === "permission-denied" ? "Firestore blocked this update. Publish the owner-only rules in firestore.rules, then try again." : "Could not save stock: " + (error.message || "Please try again.");
+    } finally { button.disabled = false; button.textContent = "Save"; }
+  });
+  if (stockTab) stockTab.hidden = true;
+  onSnapshot(collection(db, "inventory"), snapshot => {
+    liveInventory = {}; snapshot.forEach(item => { liveInventory[item.id] = item.data(); });
+    inventoryReady = true;
+    if (stockTab) stockTab.hidden = !isStockOwner();
+    if (isStockOwner() && document.getElementById("stockPanel").classList.contains("active")) renderStockManager();
+    window.dispatchEvent(new CustomEvent("7e-stock-updated"));
+  }, error => {
+    console.error("Inventory listener failed:", error); inventoryReady = false;
+    if (stockMessage) stockMessage.textContent = "Live stock could not load. Check Firestore inventory read permissions.";
+    window.dispatchEvent(new CustomEvent("7e-stock-updated"));
+  });
+
   document.querySelector(".account-tabs").addEventListener("click", event => {
     const tab = event.target.closest("[data-account-tab]");
     if (!tab) return;
@@ -2650,8 +2747,9 @@ renderProducts();updateCart();
       item.classList.toggle("active", active);
       item.setAttribute("aria-selected", String(active));
     });
-    document.querySelectorAll(".account-panel").forEach(panel => panel.classList.toggle("active", panel.id === (name === "profile" ? "profilePanel" : "ordersPanel")));
+    document.querySelectorAll(".account-panel").forEach(panel => panel.classList.toggle("active", panel.id === (name === "profile" ? "profilePanel" : name === "orders" ? "ordersPanel" : "stockPanel")));
     if (name === "orders" && currentUser && !currentMyOrders.length) loadMyOrders();
+    if (name === "stock" && currentUser && currentUser.email?.toLowerCase() === "7eclipses2026@gmail.com") renderStockManager();
   });
 
   myOrdersList.addEventListener("click", event => {
@@ -2695,6 +2793,11 @@ renderProducts();updateCart();
     loggedInArea.style.display = user ? "block" : "none";
 
     if (!user) {
+      if (stockTab) stockTab.hidden = true;
+      if (document.getElementById("stockPanel").classList.contains("active")) {
+        document.getElementById("stockPanel").classList.remove("active"); document.getElementById("profilePanel").classList.add("active");
+        document.querySelectorAll(".account-tab").forEach(tab => { const active = tab.dataset.accountTab === "profile"; tab.classList.toggle("active", active); tab.setAttribute("aria-selected", String(active)); });
+      }
       window.dispatchEvent(new CustomEvent("bora-auth-changed", { detail: { signedIn: false } }));
       updateHeaderProfile({type:"emoji",value:"👤"}, "");
       if (shoppingUnsubscribe) {
@@ -2719,6 +2822,7 @@ renderProducts();updateCart();
     }
 
     currentUser = user;
+    if (stockTab) stockTab.hidden = !isStockOwner();
     window.dispatchEvent(new CustomEvent("bora-auth-changed", { detail: { signedIn: true, uid: user.uid } }));
     loadMyOrders();
     window.customerAccountName = user.displayName || "";
