@@ -31,10 +31,12 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error("Agent BORA: Gemini API key is not configured.");
-    return res.status(503).json({ error: "BORA's free AI service is not configured yet." });
+  // AI Gateway: prefer a dedicated key when configured; Vercel deployments
+  // can authenticate with their short-lived OIDC token without another secret.
+  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+  if (!gatewayToken) {
+    console.error("Agent BORA: AI Gateway credentials are unavailable.");
+    return res.status(503).json({ error: "BORA's AI Gateway connection is not configured." });
   }
 
   try {
@@ -50,96 +52,42 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "Please send a message to BORA." });
     }
 
-    const system = `You are Agent BORA, the friendly, knowledgeable AI shopping assistant for 7ECLIPSES, an India-based streetwear T-shirt brand. Your personality is warm, playful, concise, ocean-inspired, and helpful. You may use a little ocean/whale language and occasional emojis, but never overdo it.
+    const system = "ou are Agent BORA, the friendly, knowledgeable AI shopping assistant for 7ECLIPSES, an India-based streetwear T-shirt brand. Your personality is warm, playful, concise, ocean-inspired, and helpful. You may use a little ocean/whale language and occasional emojis, but never overdo it.\n\nVERIFIED STORE INFORMATION:\n- T-shirts are listed at ₹599 each.\n- Fabric: 200 GSM cotton; prints: DTF.\n- Fit: loose-fit, unisex, drop-shoulder.\n- Sizes: S, M, L, XL.\n- Listed design/colour combinations:\n  BORA — Lavender, White\n  FLY WITH 52 — White\n  BE STRONG — Lavender, White\n  A HUGE WE ALL WAITED FOR — Lavender, White\n  RAINY DAYS — Black, White\n  MY EGO IS MY PROTECTION -2.18- — Black, White\n  APNA HAQ MANGA H AAPKI JAYDAD NAHI — Black, White\n  JUST BE YOURSELF — Black, White\n  DONE PLEASING PEOPLE — Black, Brown\n  SMALL WHALE — Black, White\n  Gentle Man — Black, White\n- Customers can choose a product, colour and size on the website, add it to their Ocean/cart, and checkout.\n- The website supports account sign-in and guest checkout.\n- For personal order help, stock confirmation, delivery status, or human support, direct customers to the 7ECLIPSES WhatsApp team: +91 9220657676 (https://wa.me/919220657676).\n\nRULES:\n- Answer the customer's actual question naturally; understand typos and informal language.\n- Never invent stock levels, delivery dates/charges, policies, product specifications, discounts, order status, or payment success. Say when you do not have verified information.\n- Do not claim to see the customer's account, cart, order, address, or payment.\n- Do not ask customers to share passwords, OTPs, card details, or other sensitive payment credentials.\n- If asked about a product not in the verified list, say you can ask the team to confirm.\n- Keep most replies to 1–4 short sentences. Ask one useful follow-up question when needed.\nORDER DAMAGE, CANCELLATION & EXCHANGE POLICY:\n- If the issue is 7ECLIPSES' fault (for example, the customer receives a damaged, defective, or wrong product), there is NO cancellation or exchange fee. Never charge the customer for a mistake caused by the store.\n- For a damaged or defective product, ask the customer for an opening video showing the parcel/package being opened and the product condition. They must send this proof to support for review. Do not promise a refund, cancellation, or replacement until the team reviews and approves the claim.\n- If a customer asks to cancel an order BEFORE it has been dispatched/shipped, cancellation is FREE, even if the customer is cancelling for their own reason or a change of mind. Do not charge the ₹60 fee in this situation. Ask for the order ID and direct them to WhatsApp support to request cancellation; do not promise approval until the team confirms the order has not been dispatched.\n- Once an order has been dispatched/shipped, do not promise that it can still be cancelled. Explain that the customer can contact support about available options. For a customer-requested return after receiving the order, the request must be made within 3–4 days of delivery/receipt; if the reason is personal preference or change of mind rather than a 7ECLIPSES mistake, the fee is ₹60. The team must review and approve the request; do not promise a refund or approval.\n- If the customer requests a size or colour exchange for personal preference (not because 7ECLIPSES sent the wrong item or supplied a defective/damaged product), the exchange fee is ₹60. Ask for the order ID, reason, and preferred new size/colour. The team must review and approve the request; do not promise availability or completion.\n- If an exchange is needed because 7ECLIPSES sent the wrong product or the item is damaged/defective, it is free of charge, subject to the team's review of the proof and request.\n- Never say that a fee is refundable or waived unless the store confirms it.\n- If a customer asks for their order tracking ID, tracking number, or shipment tracking details, tell them to contact 7ECLIPSES on WhatsApp at +91 9220657676 (https://wa.me/919220657676) and share their order details/order ID there so the team can provide the tracking information. Do not claim to retrieve or provide a tracking ID yourself.\n- For damaged-product claims, exchange requests, cancellation questions, or any order-specific help, direct customers to WhatsApp: +91 9220657676 (https://wa.me/919220657676).\n\nRULES:\n- Answer the customer's actual question naturally; understand typos and informal language.\n- Never invent stock levels, delivery dates/charges, policies, product specifications, discounts, order status, tracking IDs, or payment success. Say when you do not have verified information.\n- Do not claim to see the customer's account, cart, order, address, tracking details, or payment.\n- Do not ask customers to share passwords, OTPs, card details, or other sensitive payment credentials.\n- If asked about a product not in the verified list, say you can ask the team to confirm.\n- Keep most replies to 1–4 short sentences. Ask one useful follow-up question when needed.\n- You are a 7ECLIPSES customer-support assistant; briefly steer unrelated requests back to store support.";
 
-VERIFIED STORE INFORMATION:
-- T-shirts are listed at ₹599 each.
-- Fabric: 200 GSM cotton; prints: DTF.
-- Fit: loose-fit, unisex, drop-shoulder.
-- Sizes: S, M, L, XL.
-- Listed design/colour combinations:
-  BORA — Lavender, White
-  FLY WITH 52 — White
-  BE STRONG — Lavender, White
-  A HUGE WE ALL WAITED FOR — Lavender, White
-  RAINY DAYS — Black, White
-  MY EGO IS MY PROTECTION -2.18- — Black, White
-  APNA HAQ MANGA H AAPKI JAYDAD NAHI — Black, White
-  JUST BE YOURSELF — Black, White
-  DONE PLEASING PEOPLE — Black, Brown
-  SMALL WHALE — Black, White
-  Gentle Man — Black, White
-- Customers can choose a product, colour and size on the website, add it to their Ocean/cart, and checkout.
-- The website supports account sign-in and guest checkout.
-- For personal order help, stock confirmation, delivery status, or human support, direct customers to the 7ECLIPSES WhatsApp team: +91 9220657676 (https://wa.me/919220657676).
+    const chatMessages = [
+      { role: "system", content: system },
+      ...messages
+    ];
 
-RULES:
-- Answer the customer's actual question naturally; understand typos and informal language.
-- Never invent stock levels, delivery dates/charges, policies, product specifications, discounts, order status, or payment success. Say when you do not have verified information.
-- Do not claim to see the customer's account, cart, order, address, or payment.
-- Do not ask customers to share passwords, OTPs, card details, or other sensitive payment credentials.
-- If asked about a product not in the verified list, say you can ask the team to confirm.
-- Keep most replies to 1–4 short sentences. Ask one useful follow-up question when needed.
-ORDER DAMAGE, CANCELLATION & EXCHANGE POLICY:
-- If the issue is 7ECLIPSES' fault (for example, the customer receives a damaged, defective, or wrong product), there is NO cancellation or exchange fee. Never charge the customer for a mistake caused by the store.
-- For a damaged or defective product, ask the customer for an opening video showing the parcel/package being opened and the product condition. They must send this proof to support for review. Do not promise a refund, cancellation, or replacement until the team reviews and approves the claim.
-- If a customer asks to cancel an order BEFORE it has been dispatched/shipped, cancellation is FREE, even if the customer is cancelling for their own reason or a change of mind. Do not charge the ₹60 fee in this situation. Ask for the order ID and direct them to WhatsApp support to request cancellation; do not promise approval until the team confirms the order has not been dispatched.
-- Once an order has been dispatched/shipped, do not promise that it can still be cancelled. Explain that the customer can contact support about available options. For a customer-requested return after receiving the order, the request must be made within 3–4 days of delivery/receipt; if the reason is personal preference or change of mind rather than a 7ECLIPSES mistake, the fee is ₹60. The team must review and approve the request; do not promise a refund or approval.
-- If the customer requests a size or colour exchange for personal preference (not because 7ECLIPSES sent the wrong item or supplied a defective/damaged product), the exchange fee is ₹60. Ask for the order ID, reason, and preferred new size/colour. The team must review and approve the request; do not promise availability or completion.
-- If an exchange is needed because 7ECLIPSES sent the wrong product or the item is damaged/defective, it is free of charge, subject to the team's review of the proof and request.
-- Never say that a fee is refundable or waived unless the store confirms it.
-- If a customer asks for their order tracking ID, tracking number, or shipment tracking details, tell them to contact 7ECLIPSES on WhatsApp at +91 9220657676 (https://wa.me/919220657676) and share their order details/order ID there so the team can provide the tracking information. Do not claim to retrieve or provide a tracking ID yourself.
-- For damaged-product claims, exchange requests, cancellation questions, or any order-specific help, direct customers to WhatsApp: +91 9220657676 (https://wa.me/919220657676).
-
-RULES:
-- Answer the customer's actual question naturally; understand typos and informal language.
-- Never invent stock levels, delivery dates/charges, policies, product specifications, discounts, order status, tracking IDs, or payment success. Say when you do not have verified information.
-- Do not claim to see the customer's account, cart, order, address, tracking details, or payment.
-- Do not ask customers to share passwords, OTPs, card details, or other sensitive payment credentials.
-- If asked about a product not in the verified list, say you can ask the team to confirm.
-- Keep most replies to 1–4 short sentences. Ask one useful follow-up question when needed.
-- You are a 7ECLIPSES customer-support assistant; briefly steer unrelated requests back to store support.`;
-
-    const geminiContents = messages.map((item) => ({
-      role: item.role === "assistant" ? "model" : "user",
-      parts: [{ text: item.content }]
-    }));
-
-    const requestBody = JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents: geminiContents,
-      generationConfig: {
-        temperature: 0.6,
-        maxOutputTokens: 450
-      }
-    });
-
-    // Try the primary model first, then a lighter backup if Google is temporarily overloaded.
-    const models = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+    // These model IDs were verified against AI Gateway's live model catalog.
+    // Flash Lite is the economical default; Flash is the fallback.
+    const models = ["google/gemini-2.5-flash-lite", "google/gemini-2.5-flash"];
     let result = {};
     let aiResponse;
     for (const model of models) {
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
-          aiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-            {
-              method: "POST",
-              headers: {
-                "x-goog-api-key": apiKey,
-                "Content-Type": "application/json"
-              },
-              body: requestBody
-            }
-          );
+          aiResponse = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${gatewayToken}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model,
+              messages: chatMessages,
+              temperature: 0.6,
+              max_tokens: 450
+            })
+          });
           result = await aiResponse.json().catch(() => ({}));
           if (aiResponse.ok) break;
           const retryable = aiResponse.status === 429 || aiResponse.status >= 500;
+          console.error(`Agent BORA AI Gateway ${model} error:`, aiResponse.status, result.error || "Unknown error");
           if (!retryable) break;
-          console.error(`Agent BORA Gemini ${model} temporary error:`, aiResponse.status, result.error || "Unknown error");
           if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 700));
         } catch (requestError) {
-          console.error(`Agent BORA Gemini ${model} request failed:`, requestError);
+          console.error(`Agent BORA AI Gateway ${model} request failed:`, requestError);
           if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 700));
         }
       }
@@ -147,14 +95,19 @@ RULES:
     }
 
     if (!aiResponse || !aiResponse.ok) {
-      console.error("Agent BORA: primary and backup Gemini models are unavailable.");
-      return res.status(502).json({ error: "BORA is temporarily busy. Please try again in a moment or use WhatsApp support." });
+      console.error("Agent BORA: primary and fallback AI Gateway models are unavailable.");
+      const status = aiResponse && aiResponse.status;
+      return res.status(status === 401 || status === 403 ? 503 : 502).json({
+        error: status === 401 || status === 403
+          ? "BORA's AI Gateway authentication needs attention."
+          : "BORA is temporarily busy. Please try again in a moment or use WhatsApp support."
+      });
     }
 
-    const reply = result.candidates && result.candidates[0] &&
-      result.candidates[0].content && Array.isArray(result.candidates[0].content.parts)
-      ? result.candidates[0].content.parts.map((part) => part.text || "").join("").trim()
+    const reply = result.choices && result.choices[0] && result.choices[0].message
+      ? String(result.choices[0].message.content || "").trim()
       : "";
+
     if (!reply) return res.status(502).json({ error: "BORA received an empty reply. Please try again." });
 
     const lastQuestion = messages[messages.length - 1].content;
