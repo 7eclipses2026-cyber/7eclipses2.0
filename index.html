@@ -1720,6 +1720,7 @@ renderProducts();updateCart();
     border-radius: 14px;
     position: relative;
   }
+.account-box{max-width:720px}
   .account-workspace{display:grid;grid-template-columns:112px minmax(0,1fr);gap:16px;align-items:start;margin-top:18px}
   .account-tabs{display:flex;flex-direction:column;gap:8px;position:sticky;top:0}
   .account-box .account-tabs .account-tab{width:100%;margin:0;padding:12px 9px;text-align:left;font-size:12px;background:#211d29;color:#d9c8eb;border:1px solid rgba(201,169,232,.28);border-radius:9px}
@@ -2453,7 +2454,7 @@ renderProducts();updateCart();
   });
 
   loadMyOrdersBtn.addEventListener("click", loadMyOrders);
-  myOrdersList.addEventListener("click", async event => {
+  myOrderDetails.addEventListener("click", async event => {
     const button = event.target.closest("[data-cancel-order]");
     if (!button) return;
     const orderId = button.getAttribute("data-cancel-order");
