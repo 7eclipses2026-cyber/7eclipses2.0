@@ -92,54 +92,80 @@ CHECKOUT & PAYMENT GUIDANCE:
       ...messages
     ];
 
-    // These model IDs were verified against AI Gateway's live model catalog.
-    // Flash Lite is the economical default; Flash is the fallback.
-    const models = ["google/gemini-2.5-flash-lite", "google/gemini-2.5-flash"];
-    let result = {};
-    let aiResponse;
-    for (const model of models) {
-      for (let attempt = 0; attempt < 2; attempt++) {
+    // Prefer the project's existing Gemini API key. This avoids AI Gateway's
+    // account-verification requirement while keeping the key server-side.
+    let reply = "";
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey) {
+      const models = ["gemini-2.5-flash-lite", "gemini-2.5-flash"];
+      for (const model of models) {
         try {
-          aiResponse = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+          const contents = messages.map(item => ({
+            role: item.role === "assistant" ? "model" : "user",
+            parts: [{ text: item.content }]
+          }));
+          const aiResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-goog-api-key": geminiKey
+              },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: system }] },
+                contents,
+                generationConfig: { temperature: 0.6, maxOutputTokens: 450 }
+              })
+            }
+          );
+          const result = await aiResponse.json().catch(() => ({}));
+          if (!aiResponse.ok) {
+            console.error(`Agent BORA Gemini ${model} error:`, aiResponse.status, result.error || "Unknown error");
+            continue;
+          }
+          reply = (result.candidates?.[0]?.content?.parts || [])
+            .map(part => part.text || "")
+            .join("")
+            .trim();
+          if (reply) break;
+          console.error(`Agent BORA Gemini ${model} returned no text.`);
+        } catch (requestError) {
+          console.error(`Agent BORA Gemini ${model} request failed:`, requestError);
+        }
+      }
+    } else {
+      // Keep AI Gateway as a fallback for environments without GEMINI_API_KEY.
+      const models = ["google/gemini-2.5-flash-lite", "google/gemini-2.5-flash"];
+      for (const model of models) {
+        try {
+          const aiResponse = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${gatewayToken}`,
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-              model,
-              messages: chatMessages,
-              temperature: 0.6,
-              max_tokens: 450
-            })
+            body: JSON.stringify({ model, messages: chatMessages, temperature: 0.6, max_tokens: 450 })
           });
-          result = await aiResponse.json().catch(() => ({}));
-          if (aiResponse.ok) break;
-          const retryable = aiResponse.status === 429 || aiResponse.status >= 500;
-          console.error(`Agent BORA AI Gateway ${model} error:`, aiResponse.status, result.error || "Unknown error");
-          if (!retryable) break;
-          if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 700));
+          const result = await aiResponse.json().catch(() => ({}));
+          if (!aiResponse.ok) {
+            console.error(`Agent BORA AI Gateway ${model} error:`, aiResponse.status, result.error || "Unknown error");
+            continue;
+          }
+          reply = String(result.choices?.[0]?.message?.content || "").trim();
+          if (reply) break;
         } catch (requestError) {
           console.error(`Agent BORA AI Gateway ${model} request failed:`, requestError);
-          if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 700));
         }
       }
-      if (aiResponse && aiResponse.ok) break;
     }
 
-    if (!aiResponse || !aiResponse.ok) {
-      console.error("Agent BORA: primary and fallback AI Gateway models are unavailable.");
-      const status = aiResponse && aiResponse.status;
-      return res.status(status === 401 || status === 403 ? 503 : 502).json({
-        error: status === 401 || status === 403
-          ? "BORA's AI Gateway authentication needs attention."
-          : "BORA is temporarily busy. Please try again in a moment or use WhatsApp support."
+    if (!reply) {
+      console.error("Agent BORA: Gemini and configured AI fallback did not return a reply.");
+      return res.status(502).json({
+        error: "BORA is temporarily busy. Please try again in a moment or use WhatsApp support."
       });
     }
-
-    const reply = result.choices && result.choices[0] && result.choices[0].message
-      ? String(result.choices[0].message.content || "").trim()
-      : "";
 
     if (!reply) return res.status(502).json({ error: "BORA received an empty reply. Please try again." });
 
