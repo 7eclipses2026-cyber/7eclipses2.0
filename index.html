@@ -3141,4 +3141,28 @@ renderProducts();updateCart();
 }
 </style>
 
+
+<style id="52hz-whale-static">
+/* Keep the real whale cutout visible, but completely still. */
+#sevenEclipsesSwimmingWhale{
+  animation:none!important;
+  transform:none!important;
+  left:auto!important;right:18px!important;
+  top:auto!important;bottom:24px!important;
+  width:clamp(110px,15vw,185px)!important;
+  pointer-events:none!important;
+}
+#sevenEclipsesSwimmingWhale .whale-tail,
+#sevenEclipsesSwimmingWhale .whale-body{
+  animation:none!important;
+  transform:none!important;
+  scale:1!important;
+}
+#sevenEclipsesSwimmingWhaleTwo{display:none!important;animation:none!important}
+#sevenEclipsesSwimmingWhale.sleeping::after,
+#sevenEclipsesSwimmingWhaleTwo.sleeping::after,
+#sevenEclipsesSwimmingWhale.sleeping .whale-body,
+#sevenEclipsesSwimmingWhaleTwo.sleeping .whale-body{animation:none!important;content:none!important}
+</style>
+
 </body></html>
