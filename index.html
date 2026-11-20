@@ -3341,4 +3341,61 @@ button:focus:not(:focus-visible),
 }
 </style>
 
+
+
+<style id="52hz-whale-multi-direction">
+/* Reuse the existing 52Hz whale artwork; animate it through a looping ocean journey. */
+#sevenEclipsesSwimmingWhale{
+  position:fixed!important;
+  left:-190px!important;right:auto!important;top:43vh!important;bottom:auto!important;
+  width:clamp(130px,19vw,230px)!important;height:auto!important;
+  aspect-ratio:2.1/1!important;
+  display:block!important;opacity:.94!important;
+  pointer-events:none!important;
+  transform-origin:50% 50%!important;
+  animation:whale52hzOceanJourney 42s linear infinite!important;
+  filter:drop-shadow(0 10px 20px rgba(125,190,255,.24))!important;
+}
+#sevenEclipsesSwimmingWhale .whale-body,
+#sevenEclipsesSwimmingWhale .whale-tail{
+  animation-play-state:running!important;
+}
+#sevenEclipsesSwimmingWhale .whale-tail{
+  animation:sevenEclipsesWhaleTail 1.8s ease-in-out infinite!important;
+}
+#sevenEclipsesSwimmingWhale.sleeping{
+  opacity:.94!important;
+  animation-play-state:running!important;
+}
+#sevenEclipsesSwimmingWhale.sleeping::after{display:none!important}
+#sevenEclipsesSwimmingWhaleTwo{display:none!important}
+@keyframes whale52hzOceanJourney{
+  0%   {transform:translate3d(0,0,0) rotateZ(-2deg) rotateY(0deg)}
+  10%  {transform:translate3d(28vw,-12vh,0) rotateZ(-13deg) rotateY(0deg)}
+  20%  {transform:translate3d(58vw,-23vh,0) rotateZ(-20deg) rotateY(0deg)}
+  29%  {transform:translate3d(83vw,-13vh,0) rotateZ(4deg) rotateY(0deg)}
+  38%  {transform:translate3d(108vw,1vh,0) rotateZ(13deg) rotateY(65deg)}
+  45%  {transform:translate3d(105vw,15vh,0) rotateZ(25deg) rotateY(180deg)}
+  55%  {transform:translate3d(76vw,24vh,0) rotateZ(8deg) rotateY(180deg)}
+  65%  {transform:translate3d(48vw,12vh,0) rotateZ(-12deg) rotateY(180deg)}
+  74%  {transform:translate3d(22vw,-2vh,0) rotateZ(-24deg) rotateY(180deg)}
+  83%  {transform:translate3d(-5vw,-15vh,0) rotateZ(-8deg) rotateY(250deg)}
+  92%  {transform:translate3d(-10vw,-7vh,0) rotateZ(12deg) rotateY(360deg)}
+  100% {transform:translate3d(0,0,0) rotateZ(-2deg) rotateY(360deg)}
+}
+@media(max-width:650px){
+  #sevenEclipsesSwimmingWhale{
+    width:145px!important;top:45vh!important;
+    animation-duration:38s!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #sevenEclipsesSwimmingWhale{
+    animation:none!important;left:auto!important;right:18px!important;
+    top:auto!important;bottom:24px!important;width:125px!important;
+  }
+  #sevenEclipsesSwimmingWhale .whale-tail{animation:none!important}
+}
+</style>
+
 </body></html>
