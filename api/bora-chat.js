@@ -17,6 +17,20 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  // Answer the store's fixed cancellation policy locally. This keeps essential
+  // support information available even when the external AI provider is unavailable.
+  const latestMessage = Array.isArray(req.body && req.body.messages)
+    ? req.body.messages.filter(item => item && item.role === "user").slice(-1)[0]
+    : null;
+  const question = String(latestMessage && latestMessage.content || "").trim();
+  if (/(cancel(?:lation)? policy|policy for cancel|how (?:do|can) i cancel|can i cancel|cancel my order|order cancellation|cancellation fee|cancel order)/i.test(question)) {
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(200).json({
+      reply: "You can request cancellation from My Orders on the 7ECLIPSES website. COD or unpaid orders can be cancelled there; for paid orders, the status becomes ‘Cancellation Requested’ while our team reviews it. If your order has already been dispatched, please contact us before assuming cancellation is possible. If you receive a wrong, damaged or defective item, there is no exchange fee. For a personal-preference return or size/colour exchange after delivery, contact us within 3–4 days; a ₹60 fee applies and the request is subject to approval. Need help? WhatsApp us at +91 9220657676: https://wa.me/919220657676",
+      handoff: false
+    });
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     console.error("Agent BORA: Gemini API key is not configured.");
