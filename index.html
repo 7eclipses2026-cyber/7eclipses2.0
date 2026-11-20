@@ -594,6 +594,51 @@
  #sevenEclipsesSwimmingWhaleTwo{animation:none;left:auto;right:12px;top:auto;bottom:145px;width:100px;opacity:.65}
  #sevenEclipsesSwimmingWhaleTwo .whale-tail{animation:none;transform:none}
 }
+
+/* Rest cycle: each whale swims for about a minute, then pauses for a short nap. */
+#sevenEclipsesSwimmingWhale.sleeping,
+#sevenEclipsesSwimmingWhaleTwo.sleeping{
+ animation-play-state:paused!important;
+ opacity:.38;
+ filter:drop-shadow(0 5px 12px rgba(125,190,255,.12));
+ cursor:pointer;
+}
+#sevenEclipsesSwimmingWhale.sleeping::after,
+#sevenEclipsesSwimmingWhaleTwo.sleeping::after{
+ content:"z  Z";
+ position:absolute;
+ top:-12px;
+ right:8%;
+ color:rgba(205,235,255,.8);
+ font:600 15px 'DM Sans',sans-serif;
+ letter-spacing:5px;
+ text-shadow:0 0 10px rgba(142,207,255,.45);
+ animation:whaleSleepZ 2.8s ease-in-out infinite;
+ pointer-events:none;
+}
+#sevenEclipsesSwimmingWhale.sleeping .whale-tail,
+#sevenEclipsesSwimmingWhaleTwo.sleeping .whale-tail{
+ animation-play-state:paused!important;
+}
+#sevenEclipsesSwimmingWhale.sleeping .whale-body,
+#sevenEclipsesSwimmingWhaleTwo.sleeping .whale-body{
+ animation:whaleSleepBreath 3.2s ease-in-out infinite;
+ transform-origin:50% 50%;
+}
+@keyframes whaleSleepBreath{
+ 0%,100%{scale:1;opacity:.9}
+ 50%{scale:1.012 .985;opacity:.72}
+}
+@keyframes whaleSleepZ{
+ 0%,100%{opacity:0;transform:translateY(5px)}
+ 35%,75%{opacity:.9;transform:translateY(-5px)}
+}
+@media(prefers-reduced-motion:reduce){
+ #sevenEclipsesSwimmingWhale.sleeping::after,
+ #sevenEclipsesSwimmingWhaleTwo.sleeping::after,
+ #sevenEclipsesSwimmingWhale.sleeping .whale-body,
+ #sevenEclipsesSwimmingWhaleTwo.sleeping .whale-body{animation:none}
+}
 </style>
 
 <style id="7e-ocean-full-page-size-guide">
@@ -2771,11 +2816,33 @@ renderProducts();updateCart();
    document.getElementById("sevenEclipsesSwimmingWhale"),
    document.getElementById("sevenEclipsesSwimmingWhaleTwo")
  ].filter(Boolean);
- whales.forEach(function(whale){
+ const reducedMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+ whales.forEach(function(whale,index){
    let headingReversed=whale.id==="sevenEclipsesSwimmingWhaleTwo";
+   let restTimer=null;
+   let wakeTimer=null;
+   function scheduleRest(delay){
+     if(reducedMotion)return;
+     clearTimeout(restTimer);
+     clearTimeout(wakeTimer);
+     restTimer=setTimeout(function(){
+       whale.classList.add("sleeping");
+       wakeTimer=setTimeout(function(){
+         whale.classList.remove("sleeping");
+         scheduleRest(60000);
+       },12000);
+     },delay);
+   }
+   // Stagger their naps so the ocean never feels completely empty.
+   scheduleRest(index===1?30000:60000);
    whale.addEventListener("pointerdown",function(event){
      if(event.button!==undefined&&event.button!==0)return;
      event.preventDefault();
+     // A tap gently wakes a resting whale and restarts its swim cycle.
+     if(whale.classList.contains("sleeping")){
+       whale.classList.remove("sleeping");
+       scheduleRest(60000);
+     }
      headingReversed=!headingReversed;
      whale.classList.toggle("turning",headingReversed);
      whale.style.animationDirection=headingReversed?"reverse":"normal";
