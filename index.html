@@ -1893,6 +1893,9 @@ renderProducts();updateCart();
     position: relative;
   }
 .account-box{max-width:720px}
+  .account-box .account-logout-tab{position:absolute;top:13px;right:48px;margin:0;padding:6px 10px;font-size:10px;line-height:1.2;border:1px solid rgba(201,169,232,.45);border-radius:999px;background:transparent;color:#d9c8eb}
+  .account-box .account-logout-tab:hover{background:#c9a9e8;color:#17151e}
+  #accountModal h2{padding-right:100px}
   .account-workspace{display:grid;grid-template-columns:112px minmax(0,1fr);gap:16px;align-items:start;margin-top:18px}
   .account-tabs{display:flex;flex-direction:column;gap:8px;position:sticky;top:0}
   .account-box .account-tabs .account-tab{width:100%;margin:0;padding:12px 9px;text-align:left;font-size:12px;background:#211d29;color:#d9c8eb;border:1px solid rgba(201,169,232,.28);border-radius:9px}
@@ -2186,7 +2189,7 @@ renderProducts();updateCart();
           <div id="myOrderDetails" aria-live="polite"><p class="my-orders-empty">Choose an order ID to see its details.</p></div>
         </section>
       </div>
-      <button type="button" id="logoutBtn">Log out</button>
+      <button type="button" id="logoutBtn" class="account-logout-tab" aria-label="Log out of your 7ECLIPSES account">Log out</button>
     </div>
 
     <p id="accountMessage"></p>
