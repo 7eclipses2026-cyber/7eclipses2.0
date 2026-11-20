@@ -738,6 +738,89 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 @media(max-width:520px){#bora-chat-launcher{right:14px;bottom:14px;padding:10px 14px}#bora-chat-panel{right:8px;bottom:72px;width:calc(100vw - 16px);height:min(570px,calc(100dvh - 88px));border-radius:19px}}
 @media(prefers-reduced-motion:reduce){#bora-chat-panel.open{animation:none}}
 </style>
+
+<style id="agent-bora-redesign">
+/* BORA — the 7ECLIPSES ocean companion */
+#bora-chat-launcher{
+  left:22px;right:auto;bottom:22px;z-index:1200;display:flex;align-items:center;gap:11px;
+  min-height:66px;padding:8px 17px 8px 9px;border:1px solid rgba(218,201,255,.42);
+  border-radius:22px;background:linear-gradient(125deg,#f5edff 0%,#d9edff 100%);
+  color:#17263d;box-shadow:0 12px 34px rgba(3,17,29,.32),0 0 0 5px rgba(174,151,224,.09);
+  font:inherit;text-align:left;transition:transform .22s ease,box-shadow .22s ease;
+}
+#bora-chat-launcher:hover{transform:translateY(-3px);box-shadow:0 17px 40px rgba(3,17,29,.38),0 0 0 7px rgba(174,151,224,.13)}
+#bora-chat-launcher .bora-orb{
+  width:49px;height:49px;flex:none;display:grid;place-items:center;overflow:hidden;border-radius:16px;
+  background:linear-gradient(145deg,#c6b1ed,#8ecfff);box-shadow:inset 0 1px 0 #ffffffaa;
+}
+#bora-chat-launcher .bora-orb img{width:115%;height:115%;object-fit:contain;filter:drop-shadow(0 4px 5px #283d5b44);animation:bora-float 3.6s ease-in-out infinite}
+.bora-launcher-copy{display:flex;flex-direction:column;gap:3px}
+.bora-launcher-copy strong{font-size:14px;font-weight:800;letter-spacing:.01em}
+.bora-launcher-copy small{font-size:10px;color:#60738c;letter-spacing:.01em}
+.bora-launcher-spark{align-self:flex-start;margin:3px 0 0 3px;color:#8a70b8;font-size:14px}
+#bora-chat-panel{
+  left:22px;right:auto;bottom:101px;width:min(405px,calc(100vw - 32px));height:min(630px,calc(100dvh - 130px));
+  z-index:1201;display:none;flex-direction:column;overflow:hidden;border:1px solid rgba(189,213,246,.34);
+  border-radius:27px;background:#f6f8ff;color:#192a43;
+  box-shadow:0 28px 90px rgba(0,10,25,.42),0 0 0 6px rgba(170,151,218,.08);
+  font-family:'DM Sans',sans-serif;
+}
+#bora-chat-panel.open{display:flex;animation:bora-rise .26s cubic-bezier(.2,.8,.2,1)}
+.bora-chat-head{
+  position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;gap:13px;
+  min-height:105px;padding:18px 18px 17px;background:linear-gradient(115deg,#28244d 0%,#354d76 56%,#7b78a8 100%);color:#fff;
+}
+.bora-chat-head:after{content:"";position:absolute;z-index:-1;width:180px;height:180px;right:-44px;top:-100px;border:1px solid #ffffff25;border-radius:50%;box-shadow:0 0 0 22px #ffffff09,0 0 0 46px #ffffff08}
+.bora-chat-avatar{width:59px;height:59px;flex:none;display:grid;place-items:center;overflow:hidden;border-radius:19px;background:linear-gradient(145deg,#d9c8f4,#a6dcf4);box-shadow:0 7px 18px #111b3c66,inset 0 1px 0 #ffffffaa}
+.bora-chat-avatar img{width:125%;height:125%;object-fit:contain;filter:drop-shadow(0 5px 6px #17213b55);animation:bora-float 3.6s ease-in-out infinite}
+.bora-chat-head-copy{position:relative;z-index:1;flex:1;min-width:0}
+.bora-kicker{display:block;margin-bottom:3px;color:#d4d4f0;font-size:8px;font-weight:800;letter-spacing:.2em}
+.bora-chat-head-copy strong{display:block;font:700 25px/1.1 'Playfair Display',serif;letter-spacing:.015em;color:#fff}
+.bora-wave{color:#cbb9f0;font:14px 'DM Sans',sans-serif;vertical-align:middle}
+.bora-chat-head-copy small{display:flex;align-items:center;gap:7px;margin-top:7px;color:#e1e9fa;font-size:10px}
+.bora-online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#9df0c5;box-shadow:0 0 0 4px #9df0c522}
+#bora-chat-close{width:34px;height:34px;flex:none;border:1px solid #ffffff35;border-radius:50%;background:#ffffff16;color:#fff;font-size:21px;line-height:1;transition:background .18s,transform .18s}
+#bora-chat-close:hover{background:#ffffff30;transform:rotate(90deg)}
+#bora-chat-messages{display:flex;flex:1;flex-direction:column;gap:12px;overflow:auto;padding:20px 17px 14px;background:radial-gradient(ellipse at 0% 0%,#eee9ff 0%,transparent 45%),linear-gradient(180deg,#f8f8ff,#f3f8fc);scroll-behavior:smooth}
+.bora-welcome{position:relative;max-width:95%;padding:17px 17px 15px;border:1px solid #e1d9f1;border-radius:18px 18px 18px 5px;background:#fff;box-shadow:0 7px 20px #30375a0b}
+.bora-welcome-eyebrow{display:block;margin-bottom:8px;color:#8c79b4;font-size:8px;font-weight:800;letter-spacing:.17em}
+.bora-welcome h3{margin:0 0 8px;color:#283653;font:600 21px/1.18 'Playfair Display',serif}
+.bora-welcome h3 span{font:15px 'DM Sans',sans-serif}
+.bora-welcome p{margin:0;color:#66748a;font-size:12px;line-height:1.75}
+.bora-welcome-whisper{display:block;margin-top:10px;color:#8c79b4;font-size:10px;font-weight:700}
+.bora-msg{max-width:88%;padding:11px 14px;border:1px solid transparent;border-radius:16px;font-size:12px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 4px 13px #24304a0a}
+.bora-msg.agent{align-self:flex-start;background:#fff;color:#40516b;border-color:#e5e9f1;border-bottom-left-radius:5px}
+.bora-msg.user{align-self:flex-end;background:linear-gradient(135deg,#7767a8,#5c6fa5);color:#fff;border-bottom-right-radius:5px}
+.bora-quick-label{padding:0 17px 7px;background:#f4f7fc;color:#91a0b4;font-size:8px;font-weight:800;letter-spacing:.2em}
+.bora-chat-quick{display:flex;flex-wrap:wrap;gap:7px;padding:0 14px 14px;background:#f4f7fc}
+.bora-chat-quick button{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:7px 10px;border:1px solid #dce2ef;border-radius:999px;background:#fff;color:#596984;font-size:10px;font-weight:700;transition:all .18s}
+.bora-chat-quick button span{color:#8c79b4;font-size:12px}
+.bora-chat-quick button:hover{border-color:#aa98d4;background:#f0ebfa;color:#514477;transform:translateY(-1px)}
+.bora-chat-compose{display:flex;gap:9px;padding:13px 14px 10px;border-top:1px solid #e4e8f1;background:#fff}
+#bora-chat-input{min-width:0;flex:1;height:45px;padding:0 16px;border:1px solid #dce2ed;border-radius:15px;background:#f7f9fd;color:#263650;font:12px 'DM Sans',sans-serif;outline:none;transition:border-color .18s,box-shadow .18s}
+#bora-chat-input::placeholder{color:#9ba8ba}
+#bora-chat-input:focus{border-color:#9b89c7;box-shadow:0 0 0 3px #a995d522}
+#bora-chat-send{width:45px;height:45px;flex:none;border:0;border-radius:15px;background:linear-gradient(135deg,#7969a9,#536d9e);color:#fff;font-size:19px;box-shadow:0 5px 13px #536d9e33;transition:transform .18s,filter .18s}
+#bora-chat-send:hover{transform:translateY(-2px);filter:brightness(1.08)}
+#bora-chat-send:disabled,#bora-chat-input:disabled{opacity:.55;cursor:wait}
+.bora-chat-foot{padding:2px 12px 13px;background:#fff;color:#9aa6b7;font-size:9px;line-height:1.6;text-align:center}
+.bora-whatsapp-support{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:7px;padding:8px 13px;border:1px solid #b9dfd0;border-radius:999px;background:#edf9f3;color:#287654;font-size:10px;font-weight:800;text-decoration:none;transition:all .18s}
+.bora-whatsapp-support:hover{background:#dff4e9;transform:translateY(-1px)}
+.bora-whatsapp-support:focus-visible,#bora-chat-launcher:focus-visible,#bora-chat-close:focus-visible{outline:3px solid #9b89c7;outline-offset:3px}
+@keyframes bora-float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
+@media(max-width:520px){
+ #bora-chat-launcher{left:14px;right:auto;bottom:14px;min-height:59px;padding:7px 13px 7px 7px;border-radius:19px}
+ #bora-chat-launcher .bora-orb{width:44px;height:44px;border-radius:14px}
+ .bora-launcher-copy strong{font-size:13px}.bora-launcher-copy small{font-size:9px}
+ #bora-chat-panel{left:10px;right:10px;bottom:84px;width:auto;height:min(650px,calc(100dvh - 100px));border-radius:23px}
+ .bora-chat-head{min-height:94px;padding:15px}
+ #bora-chat-messages{padding:16px 13px 12px}
+ .bora-chat-quick{gap:6px;padding-inline:11px}
+ .bora-chat-quick button{font-size:9px;padding:7px 9px}
+}
+@media(prefers-reduced-motion:reduce){#bora-chat-panel.open{animation:none}#bora-chat-launcher .bora-orb img,.bora-chat-avatar img{animation:none}}
+</style>
+
 </head>
 <body>
 <div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
@@ -2245,12 +2328,11 @@ renderProducts();updateCart();
     }
   });
 </script>
-<button id="bora-chat-launcher" type="button" aria-label="Chat with Agent BORA" aria-expanded="false"><span class="bora-orb">🐋</span><span>Chat with Agent BORA</span></button>
+<button id="bora-chat-launcher" type="button" aria-label="Chat with BORA" aria-expanded="false"><span class="bora-orb"><img src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></span><span class="bora-launcher-copy"><strong>Meet BORA</strong><small>Your 7ECLIPSES ocean guide</small></span><span class="bora-launcher-spark" aria-hidden="true">✦</span></button>
 <section id="bora-chat-panel" role="dialog" aria-label="Agent BORA product help" aria-modal="false">
-  <header class="bora-chat-head"><div class="bora-chat-avatar">🐋</div><div class="bora-chat-head-copy"><strong>Agent BORA</strong><small>7ECLIPSES product guide · Here to help</small></div><button id="bora-chat-close" type="button" aria-label="Close chat">×</button></header>
-  <div id="bora-chat-messages" aria-live="polite"><div class="bora-msg agent">Hey! I’m Agent BORA 🐋 Welcome to 7ECLIPSES.
-Ask me about our tees, sizes, colours, fabric or ordering. If you need personal help, I can connect you with our team.</div></div>
-  <div class="bora-chat-quick"><button type="button" data-bora-quick="Tell me about the tees">Our tees</button><button type="button" data-bora-quick="What sizes are available?">Size guide</button><button type="button" data-bora-quick="What colours are available?">Colours</button><button type="button" data-bora-quick="I want to talk to your team">Talk to us</button></div>
+  <header class="bora-chat-head"><div class="bora-chat-avatar"><img src="/public/images/52hz-real-whale-cutout.png" alt="BORA the whale" draggable="false"></div><div class="bora-chat-head-copy"><span class="bora-kicker">YOUR OCEAN FRIEND</span><strong>BORA <span class="bora-wave">✦</span></strong><small><i class="bora-online-dot"></i> Here to help you find your flow</small></div><button id="bora-chat-close" type="button" aria-label="Close chat">×</button></header>
+  <div id="bora-chat-messages" aria-live="polite"><div class="bora-welcome"><span class="bora-welcome-eyebrow">A LITTLE HELP FROM THE DEEP</span><h3>Hey there, ocean soul. <span>🌊</span></h3><p>I’m BORA — your friendly 7ECLIPSES guide. Looking for your next favourite tee, a size recommendation, or a hand with an order? Let’s dive in.</p><span class="bora-welcome-whisper">No question is too small. 💜</span></div></div>
+  <div class="bora-quick-label">QUICK DIPS</div><div class="bora-chat-quick"><button type="button" data-bora-quick="Tell me about the tees"><span>✦</span> Explore tees</button><button type="button" data-bora-quick="What sizes are available?"><span>↗</span> Find my size</button><button type="button" data-bora-quick="What colours are available?"><span>◉</span> Colours</button><button type="button" data-bora-quick="I want to talk to your team"><span>♡</span> Human help</button></div>
   <form class="bora-chat-compose" id="bora-chat-form"><input id="bora-chat-input" type="text" maxlength="400" placeholder="Ask Agent BORA anything…" autocomplete="off" aria-label="Message Agent BORA"><button id="bora-chat-send" type="submit" aria-label="Send message">➤</button></form>
   <div class="bora-chat-foot">For order-specific help, connect with our team:<br><a class="bora-whatsapp-support" href="https://wa.me/919220657676" target="_blank" rel="noopener noreferrer" aria-label="Chat with 7ECLIPSES support on WhatsApp"> <span aria-hidden="true">☏</span> Chat with us on WhatsApp </a></div>
 </section>
