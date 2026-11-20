@@ -91,29 +91,50 @@ RULES:
       parts: [{ text: item.content }]
     }));
 
-    const aiResponse = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": apiKey,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: system }] },
-          contents: geminiContents,
-          generationConfig: {
-            temperature: 0.6,
-            maxOutputTokens: 450
-          }
-        })
+    const requestBody = JSON.stringify({
+      systemInstruction: { parts: [{ text: system }] },
+      contents: geminiContents,
+      generationConfig: {
+        temperature: 0.6,
+        maxOutputTokens: 450
       }
-    );
+    });
 
-    const result = await aiResponse.json().catch(() => ({}));
-    if (!aiResponse.ok) {
-      console.error("Agent BORA Gemini API error:", aiResponse.status, result.error || "Unknown error");
-      return res.status(502).json({ error: "BORA could not reach the AI service. Please try again." });
+    // Try the primary model first, then a lighter backup if Google is temporarily overloaded.
+    const models = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+    let result = {};
+    let aiResponse;
+    for (const model of models) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          aiResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+            {
+              method: "POST",
+              headers: {
+                "x-goog-api-key": apiKey,
+                "Content-Type": "application/json"
+              },
+              body: requestBody
+            }
+          );
+          result = await aiResponse.json().catch(() => ({}));
+          if (aiResponse.ok) break;
+          const retryable = aiResponse.status === 429 || aiResponse.status >= 500;
+          if (!retryable) break;
+          console.error(`Agent BORA Gemini ${model} temporary error:`, aiResponse.status, result.error || "Unknown error");
+          if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 700));
+        } catch (requestError) {
+          console.error(`Agent BORA Gemini ${model} request failed:`, requestError);
+          if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 700));
+        }
+      }
+      if (aiResponse && aiResponse.ok) break;
+    }
+
+    if (!aiResponse || !aiResponse.ok) {
+      console.error("Agent BORA: primary and backup Gemini models are unavailable.");
+      return res.status(502).json({ error: "BORA is temporarily busy. Please try again in a moment or use WhatsApp support." });
     }
 
     const reply = result.candidates && result.candidates[0] &&
