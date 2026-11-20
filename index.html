@@ -562,6 +562,38 @@
  100%{opacity:0;transform:translate3d(var(--bubble-drift,12px),-75px,0) scale(1.45)}
 }
 @media(prefers-reduced-motion:reduce){.whale-tap-bubble{animation-duration:.5s}}
+
+/* A second 52Hz whale swims on a separate, offset path. */
+#sevenEclipsesSwimmingWhaleTwo{
+ position:fixed;z-index:14;left:-175px;top:68vh;
+ width:clamp(95px,14vw,185px);height:auto;aspect-ratio:2.1/1;
+ pointer-events:auto;cursor:pointer;touch-action:manipulation;
+ user-select:none;opacity:.72;
+ filter:drop-shadow(0 8px 16px rgba(125,190,255,.2));
+ animation:sevenEclipsesWhaleSwim 46s linear -17s infinite reverse;
+}
+#sevenEclipsesSwimmingWhaleTwo .whale-body,
+#sevenEclipsesSwimmingWhaleTwo .whale-tail{
+ position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;
+}
+#sevenEclipsesSwimmingWhaleTwo .whale-body{
+ clip-path:polygon(0 0,100% 0,100% 29%,84% 39%,78% 50%,84% 61%,100% 71%,100% 100%,0 100%);
+}
+#sevenEclipsesSwimmingWhaleTwo .whale-tail{
+ clip-path:polygon(73% 25%,100% 16%,100% 84%,73% 75%);
+ transform-origin:77% 50%;animation:sevenEclipsesWhaleTail 1.8s ease-in-out infinite;
+}
+#sevenEclipsesSwimmingWhaleTwo .whale-body,
+#sevenEclipsesSwimmingWhaleTwo .whale-tail{transition:scale .45s ease}
+#sevenEclipsesSwimmingWhaleTwo.turning .whale-body,
+#sevenEclipsesSwimmingWhaleTwo.turning .whale-tail{scale:-1 1}
+@media(max-width:650px){
+ #sevenEclipsesSwimmingWhaleTwo{width:112px;top:69vh;left:-145px;animation-duration:42s;opacity:.68}
+}
+@media(prefers-reduced-motion:reduce){
+ #sevenEclipsesSwimmingWhaleTwo{animation:none;left:auto;right:12px;top:auto;bottom:145px;width:100px;opacity:.65}
+ #sevenEclipsesSwimmingWhaleTwo .whale-tail{animation:none;transform:none}
+}
 </style>
 
 <style id="7e-ocean-full-page-size-guide">
@@ -873,6 +905,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 </head>
 <body>
 <div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
+<div id="sevenEclipsesSwimmingWhaleTwo" class="second-52hz-whale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
 <div class="announcement">A DEEP REMINDER: BE YOURSELF. ALWAYS.</div>
 <header class="nav"><div class="nav-inner">
 <button class="iconbtn account-profile-button" id="accountOpen" aria-label="My Account"><span class="account-profile-avatar" id="accountProfileAvatar">👤</span><span class="account-profile-name" id="accountProfileName"></span></button>
@@ -2734,26 +2767,29 @@ renderProducts();updateCart();
 
 <script id="52hz-whale-interaction">
 (function(){
- const whale=document.getElementById("sevenEclipsesSwimmingWhale");
- if(!whale)return;
- let headingReversed=false;
- whale.addEventListener("pointerdown",function(event){
-   if(event.button!==undefined&&event.button!==0)return;
-   event.preventDefault();
-   headingReversed=!headingReversed;
-   whale.classList.toggle("turning",headingReversed);
-   whale.style.animationDirection=headingReversed?"reverse":"normal";
-   const count=4;
-   for(let i=0;i<count;i++){
-     const bubble=document.createElement("span");
-     bubble.className="whale-tap-bubble";
-     const spread=(i-(count-1)/2)*13;
-     bubble.style.left=(event.clientX+spread-4)+"px";
-     bubble.style.top=(event.clientY+Math.abs(spread)*.35-4)+"px";
-     bubble.style.setProperty("--bubble-drift",(i%2===0?"-":"")+ (8+Math.random()*16)+"px");
-     document.body.appendChild(bubble);
-     bubble.addEventListener("animationend",()=>bubble.remove(),{once:true});
-   }
+ const whales=[
+   document.getElementById("sevenEclipsesSwimmingWhale"),
+   document.getElementById("sevenEclipsesSwimmingWhaleTwo")
+ ].filter(Boolean);
+ whales.forEach(function(whale){
+   let headingReversed=whale.id==="sevenEclipsesSwimmingWhaleTwo";
+   whale.addEventListener("pointerdown",function(event){
+     if(event.button!==undefined&&event.button!==0)return;
+     event.preventDefault();
+     headingReversed=!headingReversed;
+     whale.classList.toggle("turning",headingReversed);
+     whale.style.animationDirection=headingReversed?"reverse":"normal";
+     for(let i=0;i<4;i++){
+       const bubble=document.createElement("span");
+       bubble.className="whale-tap-bubble";
+       const spread=(i-1.5)*13;
+       bubble.style.left=(event.clientX+spread-4)+"px";
+       bubble.style.top=(event.clientY+Math.abs(spread)*.35-4)+"px";
+       bubble.style.setProperty("--bubble-drift",(i%2===0?"-":"")+(8+Math.random()*16)+"px");
+       document.body.appendChild(bubble);
+       bubble.addEventListener("animationend",()=>bubble.remove(),{once:true});
+     }
+   });
  });
 })();
 </script>
