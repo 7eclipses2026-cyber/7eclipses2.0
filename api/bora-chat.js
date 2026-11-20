@@ -130,7 +130,7 @@ CHECKOUT & PAYMENT GUIDANCE:
       ...messages
     ];
 
-    // Send free-form customer questions directly to Gemini 2.5 Flash-Lite.
+    // Send free-form customer questions directly to Gemini 3.5 Flash-Lite.
     // This model has a published free tier; requests stay server-side.
     let reply = "";
     try {
@@ -139,7 +139,7 @@ CHECKOUT & PAYMENT GUIDANCE:
         role: item.role === "assistant" ? "model" : "user",
         parts: [{ text: item.content }]
       }));
-      const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent", {
+      const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent", {
         method: "POST",
         headers: {
           "x-goog-api-key": geminiApiKey,
