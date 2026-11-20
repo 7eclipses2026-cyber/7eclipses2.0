@@ -3,8 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function isStockOwner() {
       return request.auth != null
-        && request.auth.token.email == '7eclipses2026@gmail.com'
-        && request.auth.token.email_verified == true;
+        && request.auth.token.email == '7eclipses2026@gmail.com';
     }
     match /inventory/{variantId} {
       allow read: if true;
