@@ -1825,6 +1825,14 @@ addressForm.onsubmit = async e => {
   e.preventDefault();
   const d = getDetails();
   if (!d || !cart.length) return;
+  const unavailableItem = cart.find(item => {
+    const available = getVariantStock(item.id, item.color, item.size);
+    return available === null || available < item.qty;
+  });
+  if (unavailableItem) {
+    notify("Stock changed or is not configured for " + unavailableItem.name + " · " + unavailableItem.color + " · " + unavailableItem.size + ". Please update your Ocean.");
+    return;
+  }
   const method = document.querySelector('input[name="paymentMethod"]:checked')?.value || "upi";
   const order = buildSheetOrder(d, method);
   placeOrderBtn.disabled = true;
