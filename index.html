@@ -533,16 +533,18 @@
  animation:sevenEclipsesWhaleTail 1.8s ease-in-out infinite;
 }
 @keyframes sevenEclipsesWhaleSwim{
- /* A wandering ocean route: broad turns, diagonal climbs and gentle dives. */
- 0%{transform:translate3d(0,0,0) rotate(-3deg)}
- 12%{transform:translate3d(34vw,-13vh,0) rotate(-10deg)}
- 25%{transform:translate3d(72vw,-4vh,0) rotate(5deg)}
- 38%{transform:translate3d(108vw,13vh,0) rotate(12deg)}
- 51%{transform:translate3d(78vw,23vh,0) rotate(2deg)}
- 64%{transform:translate3d(35vw,9vh,0) rotate(-9deg)}
- 77%{transform:translate3d(62vw,-15vh,0) rotate(-5deg)}
- 89%{transform:translate3d(122vw,-7vh,0) rotate(8deg)}
- 100%{transform:translate3d(145vw,0,0) rotate(-2deg)}
+ /* The whale banks into a visible 180-degree turn before swimming back. */
+ 0%{transform:perspective(700px) translate3d(0,0,0) rotateY(0deg) rotateZ(-3deg)}
+ 12%{transform:perspective(700px) translate3d(34vw,-13vh,0) rotateY(0deg) rotateZ(-10deg)}
+ 25%{transform:perspective(700px) translate3d(72vw,-4vh,0) rotateY(0deg) rotateZ(5deg)}
+ 38%{transform:perspective(700px) translate3d(108vw,13vh,0) rotateY(0deg) rotateZ(12deg)}
+ 44%{transform:perspective(700px) translate3d(101vw,19vh,0) rotateY(90deg) rotateZ(9deg)}
+ 51%{transform:perspective(700px) translate3d(78vw,23vh,0) rotateY(180deg) rotateZ(2deg)}
+ 64%{transform:perspective(700px) translate3d(35vw,9vh,0) rotateY(180deg) rotateZ(-9deg)}
+ 70%{transform:perspective(700px) translate3d(43vw,-4vh,0) rotateY(90deg) rotateZ(-7deg)}
+ 77%{transform:perspective(700px) translate3d(62vw,-15vh,0) rotateY(0deg) rotateZ(-5deg)}
+ 89%{transform:perspective(700px) translate3d(122vw,-7vh,0) rotateY(0deg) rotateZ(8deg)}
+ 100%{transform:perspective(700px) translate3d(145vw,0,0) rotateY(0deg) rotateZ(-2deg)}
 }
 @keyframes sevenEclipsesWhaleTail{
  0%,100%{transform:rotate(-7deg)}
