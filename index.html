@@ -229,6 +229,7 @@
 
 #productModal .product-gallery {
   grid-column: 1;
+  grid-row: 2 / span 3;
   min-width: 0;
   margin: 0;
 }
@@ -308,6 +309,7 @@
 
 #productModal #choiceAdd {
   grid-column: 2;
+  grid-row: 4;
   width: 100%;
   min-height: 56px;
   border-radius: 8px;
@@ -331,8 +333,10 @@
   #productModal .modal-head,
   #productModal .product-gallery,
   #productModal .form-grid,
+  #productModal .product-details-info,
   #productModal #choiceAdd {
     grid-column: 1;
+    grid-row: auto;
   }
 
   #productModal .gallery-main {
@@ -927,9 +931,17 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 
 
 
+
+/* Product-view price and restock guidance */
+#productModal .choice-price{grid-column:1;grid-row:2;margin:0;color:#fff;font-size:25px;font-weight:800;letter-spacing:.04em}
+#productModal .restock-prompt{margin:8px 0 0;color:#c9a9e8;font-size:11px;line-height:1.6}
+#productModal .restock-prompt a{color:#d9c5f2;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+#productModal .restock-prompt[hidden]{display:none}
+@media(max-width:700px){#productModal .choice-price{grid-column:1;grid-row:auto;margin:0 0 2px;font-size:22px}}
+
 <style id="7ecl-product-details-panel">
 /* Product information panel — uses the existing product popup palette */
-#productModal .product-details-info{margin-top:18px;padding-top:15px;border-top:1px solid rgba(201,169,232,.2);text-align:left}
+#productModal .product-details-info{grid-column:2;grid-row:3;align-self:start;margin-top:0;padding-top:15px;border-top:1px solid rgba(201,169,232,.2);text-align:left}
 #productModal .product-details-kicker{display:block;color:#c9a9e8;font-size:9px;font-weight:700;letter-spacing:.2em;margin-bottom:7px}
 #productModal .product-details-intro p{margin:0 0 12px;color:#c6d2dc;font-size:12px;line-height:1.65}
 #productModal .product-detail-accordion{border-top:1px solid rgba(255,255,255,.1)}
@@ -1023,7 +1035,6 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
   <div id="galleryLabel" class="gallery-label">FRONT VIEW</div>
   <div id="galleryThumbnails" class="gallery-thumbnails"></div>
 
-  <p id="choicePrice" style="font-weight:bold;margin-top:12px">₹599</p>
 </div>
 
     <div class="form-grid">
@@ -1041,7 +1052,9 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
           <button type="button" class="size-option" data-size="XL" aria-pressed="false">XL</button>
         </div>
         <p id="choiceStockStatus" class="stock-availability" aria-live="polite">Choose a size to check live availability.</p>
+        <p id="choiceRestockPrompt" class="restock-prompt" hidden></p>
       </div>
+      <p id="choicePrice" class="choice-price">₹599</p>
     </div>
 
     <section class="product-details-info" id="productDetailsInfo" aria-label="Product information">
@@ -1391,7 +1404,28 @@ function refreshSizeAvailability() {
   });
   const status = document.getElementById("choiceStockStatus");
   const qty = selectedSize ? getVariantStock(selectedProduct.id, selectedColor, selectedSize) : null;
-  if (status) status.textContent = selectedSize && qty !== null ? (qty > 0 ? qty + " available in " + selectedSize : "Sold out in " + selectedSize) : "Choose a size to check live availability. Unupdated stock cannot be ordered.";
+  const soldOutSizes = ["S","M","L","XL"].filter(size => getVariantStock(selectedProduct.id, selectedColor, size) === 0);
+  if (status) {
+    status.textContent = selectedSize && qty !== null
+      ? (qty > 0 ? (qty <= 3 ? "Only " + qty + " left in " + selectedSize : qty + " available in " + selectedSize) : "Sold out in " + selectedSize)
+      : "Choose a size to check live availability. Unupdated stock cannot be ordered.";
+  }
+  const restockPrompt = document.getElementById("choiceRestockPrompt");
+  if (restockPrompt) {
+    if (soldOutSizes.length) {
+      const message = "Hi 7ECLIPSES! Please let me know when " + selectedProduct.name + " in " + selectedColor + " (" + soldOutSizes.join(", ") + ") is restocked.";
+      const link = document.createElement("a");
+      link.href = "https://wa.me/919220657676?text=" + encodeURIComponent(message);
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "Ask us about a restock";
+      restockPrompt.replaceChildren(document.createTextNode("A size is sold out? "), link);
+      restockPrompt.hidden = false;
+    } else {
+      restockPrompt.replaceChildren();
+      restockPrompt.hidden = true;
+    }
+  }
   const add = document.getElementById("choiceAdd");
   if (add) add.disabled = !selectedSize || !selectedAvailable;
 }
