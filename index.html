@@ -1702,13 +1702,29 @@ renderProducts();updateCart();
 
   .account-box {
     width: 100%;
-    max-width: 390px;
+    max-width: 430px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
     background: #17151e;
     color: white;
     padding: 26px;
     border-radius: 14px;
     position: relative;
   }
+  .my-orders-section{margin:22px 0 14px;padding-top:18px;border-top:1px solid rgba(201,169,232,.25)}
+  .my-orders-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .my-orders-heading h3{font:22px 'Playfair Display',serif;margin:0 0 5px;color:#f2eaff}
+  .my-orders-heading p{font-size:11px;line-height:1.5;color:#b8aeca;margin:0}
+  .account-box .my-orders-refresh{flex:0 0 auto;padding:7px 10px;font-size:11px;margin:0}
+  .my-order-card{padding:13px;margin-top:12px;border:1px solid rgba(201,169,232,.24);border-radius:9px;background:#211d29}
+  .my-order-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .my-order-id{font-size:11px;font-weight:700;color:#e8d7ff;overflow-wrap:anywhere}
+  .my-order-status{font-size:10px;color:#c9a9e8;text-align:right}
+  .my-order-detail{font-size:11px;line-height:1.65;color:#d4cbdc;margin:8px 0 0;overflow-wrap:anywhere}
+  .my-order-card .my-order-cancel{margin:10px 0 0;padding:8px 11px;font-size:10px;background:transparent;color:#ffb7c1;border-color:#a65c70}
+  .my-order-card .my-order-cancel:disabled{opacity:.55;cursor:not-allowed}
+  .my-orders-empty{font-size:12px;line-height:1.6;color:#b8aeca;padding:12px 0;margin:0}
+  @media(max-width:480px){.account-box{padding:22px 17px}.my-order-top{flex-direction:column}.my-order-status{text-align:left}}
 
   .account-box input {
     display: block;
@@ -1939,6 +1955,13 @@ renderProducts();updateCart();
           <p class="profile-hint">Your picture or emoji and display name will appear on your account.</p>
         </div>
       </div>
+      <section id="myOrdersSection" class="my-orders-section">
+        <div class="my-orders-heading">
+          <div><h3>My Orders</h3><p>Track your purchases and manage eligible cancellations.</p></div>
+          <button type="button" id="loadMyOrdersBtn" class="my-orders-refresh">Refresh</button>
+        </div>
+        <div id="myOrdersList" aria-live="polite"><p class="my-orders-empty">Your orders will appear here.</p></div>
+      </section>
       <button type="button" id="logoutBtn">Log out</button>
     </div>
 
@@ -2222,6 +2245,113 @@ renderProducts();updateCart();
     finally{btn.disabled=false;}
   };
 
+
+  const myOrdersList = document.getElementById("myOrdersList");
+  const loadMyOrdersBtn = document.getElementById("loadMyOrdersBtn");
+
+  function escapeOrderHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[char]);
+  }
+
+  function orderCanBeCancelled(order) {
+    const status = String(order.status || "Processing").toLowerCase();
+    const tracking = String(order.trackingStatus || "").toLowerCase();
+    const blocked = ["shipped", "out for delivery", "delivered", "cancelled", "cancellation requested"];
+    return !blocked.some(word => status.includes(word) || tracking.includes(word));
+  }
+
+  function formatOrderDate(value) {
+    if (!value) return "Date unavailable";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) :
+      date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  }
+
+  async function callOrdersApi(action, orderId) {
+    if (!currentUser) throw new Error("Please log in to view your orders.");
+    const token = await currentUser.getIdToken();
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ action, ...(orderId ? { orderId } : {}) })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || result.message || "We couldn't load your orders. Please try again.");
+    }
+    return result;
+  }
+
+  function renderMyOrders(orders) {
+    if (!Array.isArray(orders) || !orders.length) {
+      myOrdersList.innerHTML = '<p class="my-orders-empty">No orders were found for this account yet.</p>';
+      return;
+    }
+    myOrdersList.innerHTML = orders.map(order => {
+      const id = escapeOrderHtml(order.orderId || "Order");
+      const status = escapeOrderHtml(order.status || "Processing");
+      const product = escapeOrderHtml(order.product || "7ECLIPSES product");
+      const date = escapeOrderHtml(formatOrderDate(order.timestamp));
+      const variant = [order.color, order.size].filter(Boolean).map(escapeOrderHtml).join(" · ");
+      const tracking = order.trackingId ? "Tracking ID: " + escapeOrderHtml(order.trackingId) : "Tracking ID not added yet";
+      const trackingStatus = order.trackingStatus ? " · " + escapeOrderHtml(order.trackingStatus) : "";
+      const canCancel = orderCanBeCancelled(order);
+      return '<article class="my-order-card">' +
+        '<div class="my-order-top"><span class="my-order-id">' + id + '</span><span class="my-order-status">' + status + '</span></div>' +
+        '<p class="my-order-detail"><strong>' + product + '</strong><br>' +
+        (variant ? variant + '<br>' : '') +
+        'Quantity: ' + escapeOrderHtml(order.quantity || "1") + '<br>' +
+        'Payment: ' + escapeOrderHtml(order.payment || "Not available") + '<br>' +
+        'Placed: ' + date + '<br>' + tracking + trackingStatus + '</p>' +
+        (canCancel ? '<button type="button" class="my-order-cancel" data-cancel-order="' + id + '">Cancel order</button>' : '') +
+        '</article>';
+    }).join("");
+  }
+
+  async function loadMyOrders() {
+    if (!currentUser) {
+      myOrdersList.innerHTML = '<p class="my-orders-empty">Log in to see your orders.</p>';
+      return;
+    }
+    loadMyOrdersBtn.disabled = true;
+    loadMyOrdersBtn.textContent = "Loading…";
+    myOrdersList.innerHTML = '<p class="my-orders-empty">Loading your orders…</p>';
+    try {
+      const result = await callOrdersApi("getMyOrders");
+      renderMyOrders(result.orders || []);
+    } catch (error) {
+      console.error("My Orders load failed:", error);
+      myOrdersList.innerHTML = '<p class="my-orders-empty">' + escapeOrderHtml(error.message) + '</p>';
+    } finally {
+      loadMyOrdersBtn.disabled = false;
+      loadMyOrdersBtn.textContent = "Refresh";
+    }
+  }
+
+  loadMyOrdersBtn.addEventListener("click", loadMyOrders);
+  myOrdersList.addEventListener("click", async event => {
+    const button = event.target.closest("[data-cancel-order]");
+    if (!button) return;
+    const orderId = button.getAttribute("data-cancel-order");
+    if (!window.confirm("Are you sure you want to cancel order " + orderId + "?")) return;
+    button.disabled = true;
+    button.textContent = "Requesting…";
+    try {
+      const result = await callOrdersApi("cancelOrder", orderId);
+      showMessage(result.message || "Your cancellation request was submitted.");
+      await loadMyOrders();
+    } catch (error) {
+      showMessage(error.message);
+      button.disabled = false;
+      button.textContent = "Cancel order";
+    }
+  });
+
   onAuthStateChanged(auth, async user => {
     const changeToken = ++authChangeToken;
     const form = document.getElementById("accountForm");
@@ -2255,6 +2385,7 @@ renderProducts();updateCart();
     }
 
     currentUser = user;
+    loadMyOrders();
     window.customerAccountName = user.displayName || "";
     window.customerAccountEmail = user.email || "";
     status.textContent = "Logged in as " + (user.displayName ? user.displayName + " · " : "") + user.email + " · Syncing your Ocean and Wishlist…";
