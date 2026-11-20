@@ -2220,7 +2220,7 @@ renderProducts();updateCart();
   document.getElementById("cancelEditProfileBtn").addEventListener("click", () => {
     profileNameInput.value = currentUser?.displayName || window.customerAccountName || "";
     updateProfileNamePreview(profileNameInput.value);
-    profilePhoto.value = "";
+    document.getElementById("profilePhoto").value = "";
     closeProfileEditor();
   });
   function updateProfileNamePreview(name) {
