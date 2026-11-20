@@ -2221,6 +2221,7 @@ renderProducts();updateCart();
   #productModal .gallery-main { height: clamp(140px, 23vh, 195px); }
   #productModal #choiceAdd { min-height: 50px; }
 }
+.marketing-consent{display:flex;align-items:flex-start;gap:10px;margin:4px 0 14px;padding:12px;border:1px solid rgba(142,207,255,.22);border-radius:12px;color:#c1d3df;font-size:12px;line-height:1.5;text-align:left;cursor:pointer}.marketing-consent input{width:16px;height:16px;flex:0 0 16px;margin:2px 0 0;accent-color:#8ecfff}.marketing-consent small{display:block;color:#8ca6b7;margin-top:4px;font-size:11px}
 </style>
 
 <div id="accountModal">
@@ -2234,6 +2235,7 @@ renderProducts();updateCart();
       <input id="accountName" type="text" placeholder="Name or nickname (for new accounts)" autocomplete="nickname" maxlength="40">
       <input id="accountEmail" type="email" placeholder="Email address" autocomplete="email">
       <input id="accountPassword" type="password" placeholder="Password (minimum 6 characters)" autocomplete="current-password">
+      <label class="marketing-consent" for="marketingConsent"><input id="marketingConsent" type="checkbox"> <span>Yes, I'd love to receive updates about new 7ECLIPSES collections and special offers. <small>Optional. You can withdraw your consent anytime.</small></span></label>
 
       <button type="button" id="loginBtn">Log in</button>
       <button type="button" id="signupBtn">Create account</button>
@@ -2476,7 +2478,7 @@ renderProducts();updateCart();
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(credential.user, { displayName: name });
       window.customerAccountName = name;
-      await setDoc(doc(db, "users", credential.user.uid), { displayName: name, updatedAt: serverTimestamp() }, { merge: true });
+      await setDoc(doc(db, "users", credential.user.uid), { displayName: name, marketingConsent: document.getElementById("marketingConsent").checked, marketingConsentUpdatedAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true });
       showMessage("Your account has been created!");
     } catch (error) {
       showMessage(error.message);
