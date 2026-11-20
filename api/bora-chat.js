@@ -77,11 +77,11 @@ module.exports = async function handler(req, res) {
 
 
 
-  // AI Gateway: prefer a dedicated key when configured; Vercel deployments
-  // can authenticate with their short-lived OIDC token without another secret.
-  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || req.headers["x-vercel-oidc-token"] || req.headers["X-Vercel-OIDC-Token"];
-  if (!gatewayToken) {
-    console.error("Agent BORA: AI Gateway credentials are unavailable; using prepared fallback.");
+  // Use Google's Gemini Developer API directly, avoiding Vercel AI Gateway billing verification.
+  // Keep the API key in Vercel environment variables; never expose it to the browser.
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  if (!geminiApiKey) {
+    console.error("Agent BORA: GEMINI_API_KEY is not configured; using prepared fallback.");
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).json({ reply: orderHelp, handoff: true });
   }
@@ -130,30 +130,38 @@ CHECKOUT & PAYMENT GUIDANCE:
       ...messages
     ];
 
-    // Route free-form questions through Vercel AI Gateway.
-    // Both model IDs are confirmed in the live Gateway model catalog.
+    // Send free-form customer questions directly to Gemini 2.5 Flash-Lite.
+    // This model has a published free tier; requests stay server-side.
     let reply = "";
-    const models = ["google/gemini-2.5-flash-lite", "google/gemini-2.5-flash"];
-    for (const model of models) {
-      try {
-        const aiResponse = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
-          method: "POST",
-          headers: { "Authorization": "Bearer " + gatewayToken, "Content-Type": "application/json" },
-          body: JSON.stringify({ model, messages: chatMessages, temperature: 0.6, max_tokens: 450 })
-        });
-        const result = await aiResponse.json().catch(() => ({}));
-        if (!aiResponse.ok) {
-          console.error("Agent BORA AI Gateway " + model + " error:", aiResponse.status, result.error || "Unknown error");
-          continue;
-        }
-        reply = String(result.choices?.[0]?.message?.content || "").trim();
-        if (reply) break;
-      } catch (requestError) {
-        console.error("Agent BORA AI Gateway " + model + " request failed:", requestError);
+    try {
+      const systemText = chatMessages[0].content;
+      const contents = chatMessages.slice(1).map(item => ({
+        role: item.role === "assistant" ? "model" : "user",
+        parts: [{ text: item.content }]
+      }));
+      const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent", {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": geminiApiKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemText }] },
+          contents,
+          generationConfig: { temperature: 0.6, maxOutputTokens: 450 }
+        })
+      });
+      const result = await aiResponse.json().catch(() => ({}));
+      if (!aiResponse.ok) {
+        console.error("Agent BORA Gemini API error:", aiResponse.status, result.error || "Unknown error");
+      } else {
+        reply = String(result.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("") || "").trim();
       }
+    } catch (requestError) {
+      console.error("Agent BORA Gemini API request failed:", requestError);
     }
     if (!reply) {
-      console.error("Agent BORA: AI Gateway models did not return a reply; using prepared fallback.");
+      console.error("Agent BORA: Gemini did not return a reply; using prepared fallback.");
       res.setHeader("Cache-Control", "no-store");
       return res.status(200).json({ reply: orderHelp, handoff: true });
     }
