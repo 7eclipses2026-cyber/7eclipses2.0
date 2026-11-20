@@ -40,6 +40,44 @@ module.exports = async function handler(req, res) {
     });
   }
 
+  // BORA's dependable order-help mode: answer common store questions locally,
+  // without relying on an external AI service or API key.
+  const orderHelp = (() => {
+    if (/^(hi|hello|hey|good morning|good afternoon|good evening|hii|helo)[!.\\s]*$/i.test(question)) {
+      return "Hi! 🐋 I'm BORA, your 7ECLIPSES order guide. I can help you place an order, understand checkout, find your order details, or track an order. What would you like help with?";
+    }
+    if (/(how (?:do|can) i order|how to order|place an order|buy (?:a|an|the|this)|purchase|add to (?:cart|bag|ocean)|checkout|order process)/i.test(question)) {
+      return "To place an order: 1) Open Shop or Explore and choose a T-shirt. 2) Select an available colour and size. 3) Tap Add to Ocean (your bag). 4) Open Ocean, review your item, and continue to checkout. 5) Enter your details and follow the payment/order steps shown on the website. Your order is placed only after the website displays an order confirmation.";
+    }
+    if (/(payment (?:failed|issue|problem)|money (?:deducted|debited)|amount (?:deducted|debited)|paid but|payment stuck|payment not confirmed)/i.test(question)) {
+      return "If money was deducted but you did not receive an order confirmation, please don't try the payment repeatedly. Contact our team on WhatsApp at +91 9220657676 and share your order or payment reference there. Never share your OTP, card PIN, CVV, or UPI PIN: https://wa.me/919220657676";
+    }
+    if (/(payment method|how (?:can|do) i pay|cash on delivery|\\bcod\\b|upi|card payment)/i.test(question)) {
+      return "Please check the payment options shown at checkout, as available methods can vary. BORA can't confirm COD or a payment option for a specific order. If you need help, message our team on WhatsApp: +91 9220657676 — https://wa.me/919220657676";
+    }
+    if (/(guest checkout|without (?:an )?account|create (?:an )?account|sign ?up|register|login|log in|sign in)/i.test(question)) {
+      return "You can use the account option to create an account or sign in with your email and password. The website also supports guest checkout if you prefer not to create an account. Keep the email and phone number you enter handy for order-related support.";
+    }
+    if (/(order confirmation|confirmation email|did my order (?:go through|place)|is my order placed|order placed)/i.test(question)) {
+      return "After checkout, look for the order confirmation on the website and note your order ID. If you don't see a confirmation, don't assume the order was placed. If payment was deducted, don't pay again—contact our team on WhatsApp at +91 9220657676: https://wa.me/919220657676";
+    }
+    if (/(my orders|order details|order status|status of my order|check my order|where can i find my order)/i.test(question)) {
+      return "To view your order details, sign in to your 7ECLIPSES account, open your profile/account area, and select My Orders. Choose an order to see the details and current status. I can't access your private account or look up an order here. For personal help, WhatsApp our team with your order ID: +91 9220657676 — https://wa.me/919220657676";
+    }
+    if (/(shipping|delivery|when will|how long.*deliver|delivery time|dispatch)/i.test(question)) {
+      return "For an accurate delivery or dispatch update, please contact our team on WhatsApp at +91 9220657676 and share your order ID. I don't want to guess a delivery date: https://wa.me/919220657676";
+    }
+    if (/(wrong item|damaged|defective|exchange|return|refund)/i.test(question)) {
+      return "I'm sorry there's an issue with your order. Please contact our support team on WhatsApp at +91 9220657676 and share your order ID and a brief description. For a damaged or wrong item, keep an opening video and photos ready for the team's review: https://wa.me/919220657676";
+    }
+    if (/(size|colour|color|available|stock)/i.test(question)) {
+      return "Choose a T-shirt on the website and check the available colour and size options on its product page. The stock shown there is the best current guide. If the option you want isn't available, ask our team about it on WhatsApp: +91 9220657676 — https://wa.me/919220657676";
+    }
+    return "I can guide you through placing an order, checkout, account sign-in, order confirmation, and finding your order details. For a specific order, delivery update, or help from our team, WhatsApp us at +91 9220657676: https://wa.me/919220657676";
+  })();
+  res.setHeader("Cache-Control", "no-store");
+  return res.status(200).json({ reply: orderHelp, handoff: /order|track|delivery|refund|return|exchange|damaged|defective/i.test(question) });
+
   // AI Gateway: prefer a dedicated key when configured; Vercel deployments
   // can authenticate with their short-lived OIDC token without another secret.
   const gatewayToken = process.env.AI_GATEWAY_API_KEY || req.headers["x-vercel-oidc-token"] || req.headers["X-Vercel-OIDC-Token"];
