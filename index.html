@@ -2283,6 +2283,27 @@ renderProducts();updateCart();
     applyingCloudData = false;
   }
 
+
+  // BORA chat history is stored in the signed-in customer's own Firestore user document.
+  window.boraChatStore = {
+    async load() {
+      if (!currentUser) return [];
+      const uid = currentUser.uid;
+      const snap = await getDoc(doc(db, "users", uid));
+      if (!currentUser || currentUser.uid !== uid || !snap.exists()) return [];
+      const saved = snap.data().boraChatHistory;
+      return Array.isArray(saved) ? saved.filter(item => item && ["user", "assistant"].includes(item.role) && typeof item.content === "string").slice(-100) : [];
+    },
+    async save(history) {
+      if (!currentUser || !Array.isArray(history)) return false;
+      const uid = currentUser.uid;
+      const safeHistory = history.filter(item => item && ["user", "assistant"].includes(item.role) && typeof item.content === "string").slice(-100).map(item => ({ role: item.role, content: item.content.slice(0, 3000) }));
+      if (!currentUser || currentUser.uid !== uid) return false;
+      await setDoc(doc(db, "users", uid), { boraChatHistory: safeHistory, boraChatUpdatedAt: serverTimestamp() }, { merge: true });
+      return true;
+    }
+  };
+
   window.syncShoppingData = async () => {
     if (!currentUser || applyingCloudData) return;
     try {
@@ -2659,6 +2680,7 @@ renderProducts();updateCart();
     loggedInArea.style.display = user ? "block" : "none";
 
     if (!user) {
+      window.dispatchEvent(new CustomEvent("bora-auth-changed", { detail: { signedIn: false } }));
       updateHeaderProfile({type:"emoji",value:"👤"}, "");
       if (shoppingUnsubscribe) {
         shoppingUnsubscribe();
@@ -2682,6 +2704,7 @@ renderProducts();updateCart();
     }
 
     currentUser = user;
+    window.dispatchEvent(new CustomEvent("bora-auth-changed", { detail: { signedIn: true, uid: user.uid } }));
     loadMyOrders();
     window.customerAccountName = user.displayName || "";
     window.customerAccountEmail = user.email || "";
@@ -2778,35 +2801,30 @@ renderProducts();updateCart();
 (()=>{
  const launcher=document.getElementById("bora-chat-launcher"),panel=document.getElementById("bora-chat-panel"),close=document.getElementById("bora-chat-close"),messages=document.getElementById("bora-chat-messages"),form=document.getElementById("bora-chat-form"),input=document.getElementById("bora-chat-input"),sendButton=document.getElementById("bora-chat-send");
  if(!launcher||!panel||!messages||!form||!input)return;
- const history=[];
+ let history=[],savedTranscript=[],signedIn=false,loadToken=0;
+ const welcome=messages.innerHTML;
  function open(){panel.classList.add("open");launcher.setAttribute("aria-expanded","true");input.focus()}
  function shut(){panel.classList.remove("open");launcher.setAttribute("aria-expanded","false");launcher.focus()}
- launcher.addEventListener("click",()=>panel.classList.contains("open")?shut():open());
- close.addEventListener("click",shut);
+ launcher.addEventListener("click",()=>panel.classList.contains("open")?shut():open());close.addEventListener("click",shut);
  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open"))shut()});
  function add(text,who){const node=document.createElement("div");node.className="bora-msg "+who;node.textContent=text;messages.appendChild(node);messages.scrollTop=messages.scrollHeight;return node}
- function humanLink(message){const url="https://wa.me/919220657676?text="+encodeURIComponent("Hi 7ECLIPSES! I need help with a product inquiry.\n\n"+message);const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";a.textContent="Chat with our team on WhatsApp";a.style.cssText="display:inline-block;margin:2px 0 4px;padding:10px 13px;border-radius:999px;background:#b8a1dd;color:#211b38;font-size:12px;font-weight:700;text-decoration:none";messages.appendChild(a);messages.scrollTop=messages.scrollHeight}
+ function renderTranscript(items){messages.innerHTML=welcome;items.forEach(item=>add(item.content,item.role==="user"?"user":"agent"));}
+ function persist(){if(signedIn&&window.boraChatStore)window.boraChatStore.save(savedTranscript).catch(error=>console.error("Could not save BORA chat history:",error));}
+ async function restore(){const token=++loadToken;history=[];savedTranscript=[];renderTranscript([]);if(!signedIn||!window.boraChatStore)return;try{const items=await window.boraChatStore.load();if(token!==loadToken)return;savedTranscript=items;history=items.slice(-12).map(item=>({role:item.role,content:item.content}));renderTranscript(items);if(items.length)add("Welcome back! I’ve kept our previous conversation here. 🌊","agent");}catch(error){console.error("Could not load BORA chat history:",error);}}
+ window.addEventListener("bora-auth-changed",event=>{signedIn=!!(event.detail&&event.detail.signedIn);restore();});
+ function humanLink(message){const url="https://wa.me/919220657676?text="+encodeURIComponent("Hi 7ECLIPSES! I need help with a product inquiry.\\n\\n"+message);const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";a.textContent="Chat with our team on WhatsApp";a.style.cssText="display:inline-block;margin:2px 0 4px;padding:10px 13px;border-radius:999px;background:#b8a1dd;color:#211b38;font-size:12px;font-weight:700;text-decoration:none";messages.appendChild(a);messages.scrollTop=messages.scrollHeight}
  async function send(q){
   q=q.trim();if(!q)return;
-  add(q,"user");history.push({role:"user",content:q});
-  while(history.length>12)history.shift();
-  input.disabled=true;sendButton.disabled=true;
-  const pending=add("BORA is thinking…","agent");
+  add(q,"user");const userItem={role:"user",content:q};history.push(userItem);savedTranscript.push(userItem);while(history.length>12)history.shift();savedTranscript=savedTranscript.slice(-100);persist();
+  input.disabled=true;sendButton.disabled=true;const pending=add("BORA is thinking…","agent");
   try{
-   const response=await fetch("/api/bora-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});
-   const data=await response.json().catch(()=>({}));
-   if(!response.ok)throw new Error(data.error||"BORA is taking a little ocean break.");
-   const answer=String(data.reply||"I couldn't prepare an answer just now. Please try again.").slice(0,3000);
-   pending.textContent=answer;history.push({role:"assistant",content:answer});
-   if(data.handoff)humanLink(q);
-  }catch(error){
-   pending.textContent="I’m having trouble connecting to my AI brain right now. Please try again in a moment, or message our team directly.";
-   humanLink(q);
-   console.error("Agent BORA request failed:",error);
-  }finally{input.disabled=false;sendButton.disabled=false;input.focus();messages.scrollTop=messages.scrollHeight}
+   const response=await fetch("/api/bora-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"BORA is taking a little ocean break.");
+   const answer=String(data.reply||"I couldn't prepare an answer just now. Please try again.").slice(0,3000);pending.textContent=answer;const assistantItem={role:"assistant",content:answer};history.push(assistantItem);savedTranscript.push(assistantItem);savedTranscript=savedTranscript.slice(-100);persist();if(data.handoff)humanLink(q);
+  }catch(error){pending.textContent="I’m having trouble connecting to my AI brain right now. Please try again in a moment, or message our team directly.";humanLink(q);console.error("Agent BORA request failed:",error);}
+  finally{input.disabled=false;sendButton.disabled=false;input.focus();messages.scrollTop=messages.scrollHeight}
  }
  form.addEventListener("submit",e=>{e.preventDefault();const q=input.value;input.value="";send(q)});
- panel.querySelectorAll("[data-bora-quick]").forEach(b=>b.addEventListener("click",()=>send(b.dataset.boraQuick)));
+ panel.querySelectorAll("[data-bora-quick]").forEach(button=>button.addEventListener("click",()=>send(button.dataset.boraQuick)));
 })();
 </script>
 
