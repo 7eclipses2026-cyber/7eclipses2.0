@@ -570,7 +570,7 @@
  pointer-events:auto;cursor:pointer;touch-action:manipulation;
  user-select:none;opacity:.72;
  filter:drop-shadow(0 8px 16px rgba(125,190,255,.2));
- animation:sevenEclipsesWhaleSwim 46s linear -17s infinite reverse;
+ animation:sevenEclipsesWhaleSwim 46s linear -17s infinite;
 }
 #sevenEclipsesSwimmingWhaleTwo .whale-body,
 #sevenEclipsesSwimmingWhaleTwo .whale-tail{
@@ -2818,7 +2818,7 @@ renderProducts();updateCart();
  ].filter(Boolean);
  const reducedMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
  whales.forEach(function(whale,index){
-   let headingReversed=whale.id==="sevenEclipsesSwimmingWhaleTwo";
+   let headingReversed=false;
    let restTimer=null;
    let wakeTimer=null;
    function scheduleRest(delay){
