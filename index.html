@@ -1671,7 +1671,16 @@ renderProducts();updateCart();
 </script>
 
 <style id="profile-editor-style">
-.profile-editor{display:grid;grid-template-columns:82px 1fr;gap:16px;align-items:start;margin:18px 0;padding:16px;background:#211d29;border:1px solid #665777;border-radius:12px}
+.profile-editor{display:block;margin:18px 0;padding:16px;background:#211d29;border:1px solid #665777;border-radius:12px}
+.profile-editor[hidden]{display:none!important}
+.account-summary{display:flex;align-items:center;gap:15px;padding:15px 0 18px;border-bottom:1px solid rgba(201,169,232,.25)}
+.account-summary-copy{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.account-summary-copy strong{font-size:16px;color:#f2eaff;overflow-wrap:anywhere}
+.account-summary-copy span{font-size:11px;color:#b8aeca;overflow-wrap:anywhere}
+.account-summary-copy button{margin:3px 0 0;padding:8px 12px;font-size:11px}
+.profile-edit-title{font:20px 'Playfair Display',serif;margin:0 0 12px;color:#f2eaff}
+.profile-edit-actions{display:flex;gap:7px;flex-wrap:wrap}
+.account-box .profile-cancel-btn{background:transparent;color:#e6d9f2;border-color:#76658a}
 .account-profile-button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:54px;padding:4px 7px!important;line-height:1.1}.account-profile-avatar{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:23px;overflow:hidden;border-radius:50%}.account-profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}.account-profile-name{display:block;max-width:90px;font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit}
 .profile-avatar-stack{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}.profile-preview{width:76px;height:76px;border-radius:50%;background:#0b3045;border:2px solid #8ecfff;display:flex;align-items:center;justify-content:center;font-size:34px;overflow:hidden;flex-shrink:0}.profile-name-under-avatar{max-width:112px;text-align:center;color:#fff;font-size:13px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
 .profile-preview img{width:100%;height:100%;object-fit:cover}
@@ -1681,7 +1690,7 @@ renderProducts();updateCart();
 .profile-emojis{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 12px}
 .profile-emojis button{padding:5px 7px;margin:0;font-size:18px;background:#302a3a;border:1px solid #665777;color:white}
 .profile-hint{font-size:11px;line-height:1.5;color:#b8aeca;margin:8px 0}
-@media(max-width:420px){.profile-editor{grid-template-columns:1fr}.profile-preview{margin:auto}}
+@media(max-width:420px){.account-summary{align-items:center}.profile-preview{width:64px;height:64px}}
 </style>
 <!-- 7ECLIPSES ACCOUNT POPUP -->
 <style>
@@ -1942,25 +1951,36 @@ renderProducts();updateCart();
     </div>
 
     <div id="loggedInArea" style="display:none">
-      <div class="profile-editor">
+      <section class="account-summary">
         <div class="profile-avatar-stack"><div class="profile-preview" id="profilePreview">🌊</div><div class="profile-name-under-avatar" id="profileNameUnderAvatar">Your name</div></div>
+        <div class="account-summary-copy">
+          <strong id="accountSummaryName">Your account</strong>
+          <span id="accountSummaryEmail"></span>
+          <button type="button" id="editProfileBtn">Edit profile</button>
+        </div>
+      </section>
+      <section id="myOrdersSection" class="my-orders-section">
+        <div class="my-orders-heading">
+          <div><h3>My Orders</h3><p>View order status, tracking and cancellations.</p></div>
+          <button type="button" id="loadMyOrdersBtn" class="my-orders-refresh">Refresh</button>
+        </div>
+        <div id="myOrdersList" aria-live="polite"><p class="my-orders-empty">Your orders will appear here.</p></div>
+      </section>
+      <section class="profile-editor" id="profileEditor" hidden>
         <div class="profile-fields">
+          <h3 class="profile-edit-title">Edit your profile</h3>
           <label for="profileName">Your display name</label><input id="profileName" type="text" maxlength="40" placeholder="Name or nickname">
           <label for="profilePhoto">Profile picture</label><input id="profilePhoto" type="file" accept="image/*">
           <div class="emoji-label">Or choose an emoji</div>
           <div class="profile-emojis" id="profileEmojis">
             <button type="button" data-emoji="🌊">🌊</button><button type="button" data-emoji="🐋">🐋</button><button type="button" data-emoji="🪼">🪼</button><button type="button" data-emoji="🦋">🦋</button><button type="button" data-emoji="🌙">🌙</button><button type="button" data-emoji="⭐">⭐</button><button type="button" data-emoji="🖤">🖤</button><button type="button" data-emoji="✨">✨</button><button type="button" data-emoji="🌸">🌸</button><button type="button" data-emoji="🐚">🐚</button>
           </div>
-          <button type="button" id="saveProfileBtn">Save profile</button>
-          <p class="profile-hint">Your picture or emoji and display name will appear on your account.</p>
+          <div class="profile-edit-actions">
+            <button type="button" id="saveProfileBtn">Save changes</button>
+            <button type="button" id="cancelEditProfileBtn" class="profile-cancel-btn">Cancel</button>
+          </div>
+          <p class="profile-hint">Your profile picture and display name are visible on your account.</p>
         </div>
-      </div>
-      <section id="myOrdersSection" class="my-orders-section">
-        <div class="my-orders-heading">
-          <div><h3>My Orders</h3><p>Track your purchases and manage eligible cancellations.</p></div>
-          <button type="button" id="loadMyOrdersBtn" class="my-orders-refresh">Refresh</button>
-        </div>
-        <div id="myOrdersList" aria-live="polite"><p class="my-orders-empty">Your orders will appear here.</p></div>
       </section>
       <button type="button" id="logoutBtn">Log out</button>
     </div>
@@ -2183,6 +2203,26 @@ renderProducts();updateCart();
   }
   const profileNameInput = document.getElementById("profileName");
   const profileNameUnderAvatar = document.getElementById("profileNameUnderAvatar");
+  const profileEditor = document.getElementById("profileEditor");
+  const editProfileBtn = document.getElementById("editProfileBtn");
+  const accountSummaryName = document.getElementById("accountSummaryName");
+  const accountSummaryEmail = document.getElementById("accountSummaryEmail");
+  function closeProfileEditor() {
+    profileEditor.hidden = true;
+    editProfileBtn.hidden = false;
+  }
+  editProfileBtn.addEventListener("click", () => {
+    profileNameInput.value = currentUser?.displayName || window.customerAccountName || "";
+    profileEditor.hidden = false;
+    editProfileBtn.hidden = true;
+    showMessage("");
+  });
+  document.getElementById("cancelEditProfileBtn").addEventListener("click", () => {
+    profileNameInput.value = currentUser?.displayName || window.customerAccountName || "";
+    updateProfileNamePreview(profileNameInput.value);
+    profilePhoto.value = "";
+    closeProfileEditor();
+  });
   function updateProfileNamePreview(name) {
     profileNameUnderAvatar.textContent = name.trim() || "Your name";
   }
@@ -2238,9 +2278,12 @@ renderProducts();updateCart();
       await setDoc(doc(db,"users",currentUser.uid),{displayName:name,profileAvatar:selectedProfileAvatar,updatedAt:serverTimestamp()},{merge:true});
       window.customerAccountName=name;
       updateProfileNamePreview(name);
+      accountSummaryName.textContent = name;
+      accountSummaryEmail.textContent = currentUser.email || "";
       showMessage("Your profile has been saved!");
       document.getElementById("accountStatus").textContent="Logged in as "+name+" · "+currentUser.email;
       updateHeaderProfile(selectedProfileAvatar, name);
+      closeProfileEditor();
     }catch(error){console.error("Profile save failed:",error);showMessage("Could not save your profile. Please try again.");}
     finally{btn.disabled=false;}
   };
@@ -2388,6 +2431,8 @@ renderProducts();updateCart();
     loadMyOrders();
     window.customerAccountName = user.displayName || "";
     window.customerAccountEmail = user.email || "";
+    accountSummaryName.textContent = user.displayName || "7ECLIPSES customer";
+    accountSummaryEmail.textContent = user.email || "";
     status.textContent = "Logged in as " + (user.displayName ? user.displayName + " · " : "") + user.email + " · Syncing your Ocean and Wishlist…";
 
     if (shoppingUnsubscribe) {
@@ -2418,7 +2463,10 @@ renderProducts();updateCart();
 
       const cloudData = snapshot.exists() ? snapshot.data() : {};
       document.getElementById("profileName").value = cloudData.displayName || user.displayName || "";
+      accountSummaryName.textContent = cloudData.displayName || user.displayName || "7ECLIPSES customer";
+      accountSummaryEmail.textContent = user.email || "";
       updateProfileNamePreview(document.getElementById("profileName").value);
+      closeProfileEditor();
       showProfileAvatar(cloudData.profileAvatar || {type:"emoji",value:"🌊"});
       updateHeaderProfile(cloudData.profileAvatar || {type:"emoji",value:"🌊"}, cloudData.displayName || user.displayName || "");
       const mergedBag = mergeBags(guestBag, cloudData.bag || []);
