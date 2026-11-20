@@ -97,7 +97,7 @@ CHECKOUT & PAYMENT GUIDANCE:
     let reply = "";
     const geminiKey = process.env.GEMINI_API_KEY;
     if (geminiKey) {
-      const models = ["gemini-2.5-flash-lite", "gemini-2.5-flash"];
+      const models = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
       for (const model of models) {
         try {
           const contents = messages.map(item => ({
