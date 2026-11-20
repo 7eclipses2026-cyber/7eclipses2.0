@@ -1720,8 +1720,17 @@ renderProducts();updateCart();
     border-radius: 14px;
     position: relative;
   }
-  .my-orders-section{margin:22px 0 14px;padding-top:18px;border-top:1px solid rgba(201,169,232,.25)}
-  .my-orders-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .account-workspace{display:grid;grid-template-columns:112px minmax(0,1fr);gap:16px;align-items:start;margin-top:18px}
+  .account-tabs{display:flex;flex-direction:column;gap:8px;position:sticky;top:0}
+  .account-box .account-tabs .account-tab{width:100%;margin:0;padding:12px 9px;text-align:left;font-size:12px;background:#211d29;color:#d9c8eb;border:1px solid rgba(201,169,232,.28);border-radius:9px}
+  .account-box .account-tabs .account-tab.active{background:#c9a9e8;color:#17151e;border-color:#c9a9e8;font-weight:700}
+  .account-panels{min-width:0}
+  .account-panel{display:none;min-width:0}
+  .account-panel.active{display:block}
+  .account-panel-title{font:22px 'Playfair Display',serif;color:#f2eaff;margin:0 0 12px}
+  .account-summary{border:1px solid rgba(201,169,232,.22);border-radius:10px;padding:13px;background:#211d29;align-items:flex-start}
+  .my-orders-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+
   .my-orders-heading h3{font:22px 'Playfair Display',serif;margin:0 0 5px;color:#f2eaff}
   .my-orders-heading p{font-size:11px;line-height:1.5;color:#b8aeca;margin:0}
   .account-box .my-orders-refresh{flex:0 0 auto;padding:7px 10px;font-size:11px;margin:0}
@@ -1734,6 +1743,16 @@ renderProducts();updateCart();
   .my-order-card .my-order-cancel:disabled{opacity:.55;cursor:not-allowed}
   .my-orders-empty{font-size:12px;line-height:1.6;color:#b8aeca;padding:12px 0;margin:0}
   @media(max-width:480px){.account-box{padding:22px 17px}.my-order-top{flex-direction:column}.my-order-status{text-align:left}}
+  .my-order-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 14px}
+  .account-box .my-order-tabs .my-order-tab{margin:0;padding:8px 10px;background:#211d29;color:#e8d7ff;border:1px solid rgba(201,169,232,.35);border-radius:8px;font-size:11px;font-weight:700}
+  .account-box .my-order-tabs .my-order-tab.active{background:#c9a9e8;color:#17151e;border-color:#c9a9e8}
+  .my-order-selected{margin-top:0}
+  @media(max-width:560px){
+    .account-workspace{grid-template-columns:1fr;gap:12px}
+    .account-tabs{position:static;flex-direction:row}
+    .account-box .account-tabs .account-tab{text-align:center;flex:1}
+  }
+
 
   .account-box input {
     display: block;
@@ -1950,23 +1969,23 @@ renderProducts();updateCart();
       <button type="button" id="resetBtn">Forgot password?</button>
     </div>
 
-    <div id="loggedInArea" style="display:none">
-      <section class="account-summary">
-        <div class="profile-avatar-stack"><div class="profile-preview" id="profilePreview">🌊</div><div class="profile-name-under-avatar" id="profileNameUnderAvatar">Your name</div></div>
-        <div class="account-summary-copy">
-          <strong id="accountSummaryName">Your account</strong>
-          <span id="accountSummaryEmail"></span>
-          <button type="button" id="editProfileBtn">Edit profile</button>
-        </div>
-      </section>
-      <section id="myOrdersSection" class="my-orders-section">
-        <div class="my-orders-heading">
-          <div><h3>My Orders</h3><p>View order status, tracking and cancellations.</p></div>
-          <button type="button" id="loadMyOrdersBtn" class="my-orders-refresh">Refresh</button>
-        </div>
-        <div id="myOrdersList" aria-live="polite"><p class="my-orders-empty">Your orders will appear here.</p></div>
-      </section>
-      <section class="profile-editor" id="profileEditor" hidden>
+    <div id="loggedInArea" class="account-workspace" style="display:none">
+      <nav class="account-tabs" aria-label="Account sections">
+        <button type="button" class="account-tab active" data-account-tab="profile" aria-selected="true">My Profile</button>
+        <button type="button" class="account-tab" data-account-tab="orders" aria-selected="false">My Orders</button>
+      </nav>
+      <div class="account-panels">
+        <section id="profilePanel" class="account-panel active">
+          <h3 class="account-panel-title">My Profile</h3>
+          <section class="account-summary">
+            <div class="profile-avatar-stack"><div class="profile-preview" id="profilePreview">🌊</div><div class="profile-name-under-avatar" id="profileNameUnderAvatar">Your name</div></div>
+            <div class="account-summary-copy">
+              <strong id="accountSummaryName">Your account</strong>
+              <span id="accountSummaryEmail"></span>
+              <button type="button" id="editProfileBtn">Edit profile</button>
+            </div>
+          </section>
+          <section class="profile-editor" id="profileEditor" hidden>
         <div class="profile-fields">
           <h3 class="profile-edit-title">Edit your profile</h3>
           <label for="profileName">Your display name</label><input id="profileName" type="text" maxlength="40" placeholder="Name or nickname">
@@ -1981,7 +2000,17 @@ renderProducts();updateCart();
           </div>
           <p class="profile-hint">Your profile picture and display name are visible on your account.</p>
         </div>
-      </section>
+          </section>
+        </section>
+        <section id="ordersPanel" class="account-panel">
+          <div class="my-orders-heading">
+            <div><h3>My Orders</h3><p>Select an order ID to view its details.</p></div>
+            <button type="button" id="loadMyOrdersBtn" class="my-orders-refresh">Refresh</button>
+          </div>
+          <div id="myOrdersList" aria-live="polite"><p class="my-orders-empty">Your orders will appear here.</p></div>
+          <div id="myOrderDetails" aria-live="polite"><p class="my-orders-empty">Choose an order ID to see its details.</p></div>
+        </section>
+      </div>
       <button type="button" id="logoutBtn">Log out</button>
     </div>
 
@@ -2291,6 +2320,7 @@ renderProducts();updateCart();
 
   const myOrdersList = document.getElementById("myOrdersList");
   const loadMyOrdersBtn = document.getElementById("loadMyOrdersBtn");
+  const myOrderDetails = document.getElementById("myOrderDetails");
 
   function escapeOrderHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -2330,30 +2360,51 @@ renderProducts();updateCart();
     return result;
   }
 
-  function renderMyOrders(orders) {
-    if (!Array.isArray(orders) || !orders.length) {
-      myOrdersList.innerHTML = '<p class="my-orders-empty">No orders were found for this account yet.</p>';
+  let currentMyOrders = [];
+  let selectedMyOrderId = "";
+
+  function renderSelectedOrder(order) {
+    if (!order) {
+      myOrderDetails.innerHTML = '<p class="my-orders-empty">Choose an order ID to see its details.</p>';
       return;
     }
-    myOrdersList.innerHTML = orders.map(order => {
-      const id = escapeOrderHtml(order.orderId || "Order");
-      const status = escapeOrderHtml(order.status || "Processing");
-      const product = escapeOrderHtml(order.product || "7ECLIPSES product");
-      const date = escapeOrderHtml(formatOrderDate(order.timestamp));
-      const variant = [order.color, order.size].filter(Boolean).map(escapeOrderHtml).join(" · ");
-      const tracking = order.trackingId ? "Tracking ID: " + escapeOrderHtml(order.trackingId) : "Tracking ID not added yet";
-      const trackingStatus = order.trackingStatus ? " · " + escapeOrderHtml(order.trackingStatus) : "";
-      const canCancel = orderCanBeCancelled(order);
-      return '<article class="my-order-card">' +
-        '<div class="my-order-top"><span class="my-order-id">' + id + '</span><span class="my-order-status">' + status + '</span></div>' +
-        '<p class="my-order-detail"><strong>' + product + '</strong><br>' +
-        (variant ? variant + '<br>' : '') +
-        'Quantity: ' + escapeOrderHtml(order.quantity || "1") + '<br>' +
-        'Payment: ' + escapeOrderHtml(order.payment || "Not available") + '<br>' +
-        'Placed: ' + date + '<br>' + tracking + trackingStatus + '</p>' +
-        (canCancel ? '<button type="button" class="my-order-cancel" data-cancel-order="' + id + '">Cancel order</button>' : '') +
-        '</article>';
-    }).join("");
+    const id = escapeOrderHtml(order.orderId || "Order");
+    const status = escapeOrderHtml(order.status || "Processing");
+    const product = escapeOrderHtml(order.product || "7ECLIPSES product");
+    const date = escapeOrderHtml(formatOrderDate(order.timestamp));
+    const variant = [order.color, order.size].filter(Boolean).map(escapeOrderHtml).join(" · ");
+    const tracking = order.trackingId ? "Tracking ID: " + escapeOrderHtml(order.trackingId) : "Tracking ID not added yet";
+    const trackingStatus = order.trackingStatus ? " · " + escapeOrderHtml(order.trackingStatus) : "";
+    const canCancel = orderCanBeCancelled(order);
+    myOrderDetails.innerHTML = '<article class="my-order-card my-order-selected">' +
+      '<div class="my-order-top"><strong class="my-order-id">Order ID: ' + id + '</strong><span class="my-order-status">' + status + '</span></div>' +
+      '<p class="my-order-detail"><strong>' + product + '</strong><br>' +
+      (variant ? variant + '<br>' : '') +
+      'Quantity: ' + escapeOrderHtml(order.quantity || "1") + '<br>' +
+      'Payment: ' + escapeOrderHtml(order.payment || "Not available") + '<br>' +
+      'Placed: ' + date + '<br>' + tracking + trackingStatus + '</p>' +
+      (canCancel ? '<button type="button" class="my-order-cancel" data-cancel-order="' + id + '">Cancel order</button>' : '') +
+      '</article>';
+  }
+
+  function renderMyOrders(orders) {
+    currentMyOrders = Array.isArray(orders) ? orders : [];
+    if (!currentMyOrders.length) {
+      myOrdersList.innerHTML = '<p class="my-orders-empty">No orders were found for this account yet.</p>';
+      myOrderDetails.innerHTML = '<p class="my-orders-empty">Your order details will appear here.</p>';
+      selectedMyOrderId = "";
+      return;
+    }
+    if (!currentMyOrders.some(order => String(order.orderId) === selectedMyOrderId)) {
+      selectedMyOrderId = String(currentMyOrders[0].orderId || "");
+    }
+    myOrdersList.innerHTML = '<div class="my-order-tabs">' + currentMyOrders.map(order => {
+      const id = String(order.orderId || "Order");
+      const safeId = escapeOrderHtml(id);
+      const active = id === selectedMyOrderId ? " active" : "";
+      return '<button type="button" class="my-order-tab' + active + '" data-order-tab="' + safeId + '" aria-pressed="' + (id === selectedMyOrderId) + '">' + safeId + '</button>';
+    }).join("") + '</div>';
+    renderSelectedOrder(currentMyOrders.find(order => String(order.orderId) === selectedMyOrderId));
   }
 
   async function loadMyOrders() {
@@ -2375,6 +2426,31 @@ renderProducts();updateCart();
       loadMyOrdersBtn.textContent = "Refresh";
     }
   }
+
+  document.querySelector(".account-tabs").addEventListener("click", event => {
+    const tab = event.target.closest("[data-account-tab]");
+    if (!tab) return;
+    const name = tab.dataset.accountTab;
+    document.querySelectorAll(".account-tab").forEach(item => {
+      const active = item === tab;
+      item.classList.toggle("active", active);
+      item.setAttribute("aria-selected", String(active));
+    });
+    document.querySelectorAll(".account-panel").forEach(panel => panel.classList.toggle("active", panel.id === (name === "profile" ? "profilePanel" : "ordersPanel")));
+    if (name === "orders" && currentUser && !currentMyOrders.length) loadMyOrders();
+  });
+
+  myOrdersList.addEventListener("click", event => {
+    const tab = event.target.closest("[data-order-tab]");
+    if (!tab) return;
+    selectedMyOrderId = tab.getAttribute("data-order-tab");
+    myOrdersList.querySelectorAll(".my-order-tab").forEach(item => {
+      const active = item === tab;
+      item.classList.toggle("active", active);
+      item.setAttribute("aria-pressed", String(active));
+    });
+    renderSelectedOrder(currentMyOrders.find(order => String(order.orderId) === selectedMyOrderId));
+  });
 
   loadMyOrdersBtn.addEventListener("click", loadMyOrders);
   myOrdersList.addEventListener("click", async event => {
