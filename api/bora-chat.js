@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
 
   // AI Gateway: prefer a dedicated key when configured; Vercel deployments
   // can authenticate with their short-lived OIDC token without another secret.
-  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+  const gatewayToken = process.env.AI_GATEWAY_API_KEY || req.headers["x-vercel-oidc-token"] || req.headers["X-Vercel-OIDC-Token"];
   if (!gatewayToken) {
     console.error("Agent BORA: AI Gateway credentials are unavailable.");
     return res.status(503).json({ error: "BORA's AI Gateway connection is not configured." });
