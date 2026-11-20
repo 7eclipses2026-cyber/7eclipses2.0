@@ -2795,7 +2795,7 @@ renderProducts();updateCart();
   <div id="bora-chat-messages" aria-live="polite"><div class="bora-welcome"><span class="bora-welcome-eyebrow">A LITTLE HELP FROM THE DEEP</span><h3>Hey there, ocean soul. <span>🌊</span></h3><p>I’m BORA — your friendly 7ECLIPSES guide. Looking for your next favourite tee, a size recommendation, or a hand with an order? Let’s dive in.</p><span class="bora-welcome-whisper">No question is too small. 💜</span></div></div>
   <div class="bora-quick-label">QUICK DIPS</div><div class="bora-chat-quick"><button type="button" data-bora-quick="Tell me about the tees"><span>✦</span> Explore tees</button><button type="button" data-bora-quick="What sizes are available?"><span>↗</span> Find my size</button><button type="button" data-bora-quick="What colours are available?"><span>◉</span> Colours</button><button type="button" data-bora-quick="I want to talk to your team"><span>♡</span> Human help</button></div>
   <form class="bora-chat-compose" id="bora-chat-form"><input id="bora-chat-input" type="text" maxlength="400" placeholder="Ask Agent BORA anything…" autocomplete="off" aria-label="Message Agent BORA"><button id="bora-chat-send" type="submit" aria-label="Send message">➤</button></form>
-  <div class="bora-chat-foot">For order-specific help, connect with our team:<br><a class="bora-whatsapp-support" href="https://wa.me/919220657676" target="_blank" rel="noopener noreferrer" aria-label="Chat with 7ECLIPSES support on WhatsApp"> <span aria-hidden="true">☏</span> Chat with us on WhatsApp </a></div>
+  <div class="bora-chat-foot">For order-specific help, connect with our team:<br><a class="bora-whatsapp-support" href="https://wa.me/919220657676" target="_blank" rel="noopener noreferrer" aria-label="Chat with 7ECLIPSES support on WhatsApp"> <span aria-hidden="true">☏</span> Chat with us on WhatsApp </a><br><button id="bora-clear-history" type="button" style="display:none;margin-top:10px;padding:7px 12px;border:1px solid #c8b9dc;border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer">Clear chat history</button></div>
 </section>
 <script id="agent-bora-script">
 (()=>{
@@ -2809,9 +2809,18 @@ renderProducts();updateCart();
  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open"))shut()});
  function add(text,who){const node=document.createElement("div");node.className="bora-msg "+who;node.textContent=text;messages.appendChild(node);messages.scrollTop=messages.scrollHeight;return node}
  function renderTranscript(items){messages.innerHTML=welcome;items.forEach(item=>add(item.content,item.role==="user"?"user":"agent"));}
+ const clearHistoryButton=document.getElementById("bora-clear-history");
+ if(clearHistoryButton)clearHistoryButton.addEventListener("click",async()=>{
+  if(!signedIn||!window.boraChatStore)return;
+  if(!window.confirm("Clear your saved BORA chat history? This cannot be undone."))return;
+  clearHistoryButton.disabled=true;
+  try{await window.boraChatStore.save([]);history=[];savedTranscript=[];renderTranscript([]);add("Your chat history has been cleared. How can I help you today? 🌊","agent");}
+  catch(error){console.error("Could not clear BORA chat history:",error);add("I couldn’t clear your saved history just now. Please try again.","agent");}
+  finally{clearHistoryButton.disabled=false;}
+ });
  function persist(){if(signedIn&&window.boraChatStore)window.boraChatStore.save(savedTranscript).catch(error=>console.error("Could not save BORA chat history:",error));}
  async function restore(){const token=++loadToken;history=[];savedTranscript=[];renderTranscript([]);if(!signedIn||!window.boraChatStore)return;try{const items=await window.boraChatStore.load();if(token!==loadToken)return;savedTranscript=items;history=items.slice(-12).map(item=>({role:item.role,content:item.content}));renderTranscript(items);if(items.length)add("Welcome back! I’ve kept our previous conversation here. 🌊","agent");}catch(error){console.error("Could not load BORA chat history:",error);}}
- window.addEventListener("bora-auth-changed",event=>{signedIn=!!(event.detail&&event.detail.signedIn);restore();});
+ window.addEventListener("bora-auth-changed",event=>{signedIn=!!(event.detail&&event.detail.signedIn);if(clearHistoryButton)clearHistoryButton.style.display=signedIn?"inline-block":"none";restore();});
  function humanLink(message){const url="https://wa.me/919220657676?text="+encodeURIComponent("Hi 7ECLIPSES! I need help with a product inquiry.\\n\\n"+message);const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";a.textContent="Chat with our team on WhatsApp";a.style.cssText="display:inline-block;margin:2px 0 4px;padding:10px 13px;border-radius:999px;background:#b8a1dd;color:#211b38;font-size:12px;font-weight:700;text-decoration:none";messages.appendChild(a);messages.scrollTop=messages.scrollHeight}
  async function send(q){
   q=q.trim();if(!q)return;
