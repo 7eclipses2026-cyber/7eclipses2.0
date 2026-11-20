@@ -1289,6 +1289,8 @@ function addItem(id) {
 
   document.getElementById("choiceName").textContent =
     selectedProduct.name;
+  document.getElementById("choiceDescription").textContent =
+    selectedProduct.name + " — a graphic tee made to bring your own frequency to everyday wear.";
 
   const colorHex = {Black:"#101114",White:"#f4f1e9",Lavender:"#bca8cc",Brown:"#795443"};
   const colorOptions = document.getElementById("choiceColorOptions");
