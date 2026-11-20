@@ -558,6 +558,9 @@
 #sevenEclipsesSwimmingWhale .whale-tail{transition:scale .45s ease}
 #sevenEclipsesSwimmingWhale.turning .whale-body,
 #sevenEclipsesSwimmingWhale.turning .whale-tail{scale:-1 1}
+/* Keep the fluke still during the direction flip to avoid a distracting tail flick. */
+#sevenEclipsesSwimmingWhale.turning .whale-tail{animation-play-state:paused!important;transition:none}
+
 .whale-tap-bubble{
  position:fixed;z-index:16;pointer-events:none;width:9px;height:9px;
  border:1.5px solid rgba(190,231,255,.9);border-radius:50%;
@@ -596,6 +599,8 @@
 #sevenEclipsesSwimmingWhaleTwo .whale-tail{transition:scale .45s ease}
 #sevenEclipsesSwimmingWhaleTwo.turning .whale-body,
 #sevenEclipsesSwimmingWhaleTwo.turning .whale-tail{scale:-1 1}
+#sevenEclipsesSwimmingWhaleTwo.turning .whale-tail{animation-play-state:paused!important;transition:none}
+
 @media(max-width:650px){
  #sevenEclipsesSwimmingWhaleTwo{width:112px;top:69vh;left:-145px;animation-duration:42s;opacity:.68}
 }
