@@ -1740,6 +1740,8 @@ renderProducts();updateCart();
   .my-order-id{font-size:11px;font-weight:700;color:#e8d7ff;overflow-wrap:anywhere}
   .my-order-status{font-size:10px;color:#c9a9e8;text-align:right}
   .my-order-detail{font-size:11px;line-height:1.65;color:#d4cbdc;margin:8px 0 0;overflow-wrap:anywhere}
+  .my-order-track{display:inline-block;margin-top:7px;padding:8px 12px;border-radius:7px;background:#c9a9e8;color:#17151e!important;font-size:11px;font-weight:700;text-decoration:none}
+  .my-order-track:hover{background:#e1cafa}
   .my-order-card .my-order-cancel{margin:10px 0 0;padding:8px 11px;font-size:10px;background:transparent;color:#ffb7c1;border-color:#a65c70}
   .my-order-card .my-order-cancel:disabled{opacity:.55;cursor:not-allowed}
   .my-orders-empty{font-size:12px;line-height:1.6;color:#b8aeca;padding:12px 0;margin:0}
@@ -2374,7 +2376,10 @@ renderProducts();updateCart();
     const product = escapeOrderHtml(order.product || "7ECLIPSES product");
     const date = escapeOrderHtml(formatOrderDate(order.timestamp));
     const variant = [order.color, order.size].filter(Boolean).map(escapeOrderHtml).join(" · ");
-    const tracking = order.trackingId ? "Tracking ID: " + escapeOrderHtml(order.trackingId) : "Tracking ID not added yet";
+    const trackingId = String(order.trackingId || "").trim();
+    const tracking = trackingId
+      ? 'Tracking ID: <strong>' + escapeOrderHtml(trackingId) + '</strong><br><a class="my-order-track" href="https://www.delhivery.com/tracking?uniqueIdentifier=' + encodeURIComponent(trackingId) + '" target="_blank" rel="noopener noreferrer">Track My Order ↗</a>'
+      : 'Tracking ID not added yet';
     const trackingStatus = order.trackingStatus ? " · " + escapeOrderHtml(order.trackingStatus) : "";
     const canCancel = orderCanBeCancelled(order);
     myOrderDetails.innerHTML = '<article class="my-order-card my-order-selected">' +
