@@ -40,8 +40,7 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // BORA's dependable order-help mode: answer common store questions locally,
-  // without relying on an external AI service or API key.
+  // Keep a prepared answer ready in case the AI Gateway is unavailable.
   const orderHelp = (() => {
     if (/^(hi|hello|hey|good morning|good afternoon|good evening|hii|helo)[!.\\s]*$/i.test(question)) {
       return "Hi! 🐋 I'm BORA, your 7ECLIPSES order guide. I can help you place an order, understand checkout, find your order details, or track an order. What would you like help with?";
@@ -75,15 +74,16 @@ module.exports = async function handler(req, res) {
     }
     return "I can guide you through placing an order, checkout, account sign-in, order confirmation, and finding your order details. For a specific order, delivery update, or help from our team, WhatsApp us at +91 9220657676: https://wa.me/919220657676";
   })();
-  res.setHeader("Cache-Control", "no-store");
-  return res.status(200).json({ reply: orderHelp, handoff: /order|track|delivery|refund|return|exchange|damaged|defective/i.test(question) });
+
+
 
   // AI Gateway: prefer a dedicated key when configured; Vercel deployments
   // can authenticate with their short-lived OIDC token without another secret.
-  const gatewayToken = process.env.AI_GATEWAY_API_KEY || req.headers["x-vercel-oidc-token"] || req.headers["X-Vercel-OIDC-Token"];
+  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || req.headers["x-vercel-oidc-token"] || req.headers["X-Vercel-OIDC-Token"];
   if (!gatewayToken) {
-    console.error("Agent BORA: AI Gateway credentials are unavailable.");
-    return res.status(503).json({ error: "BORA's AI Gateway connection is not configured." });
+    console.error("Agent BORA: AI Gateway credentials are unavailable; using prepared fallback.");
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(200).json({ reply: orderHelp, handoff: true });
   }
 
   try {
@@ -130,82 +130,33 @@ CHECKOUT & PAYMENT GUIDANCE:
       ...messages
     ];
 
-    // Prefer the project's existing Gemini API key. This avoids AI Gateway's
-    // account-verification requirement while keeping the key server-side.
+    // Route free-form questions through Vercel AI Gateway.
+    // Both model IDs are confirmed in the live Gateway model catalog.
     let reply = "";
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (geminiKey) {
-      const models = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
-      for (const model of models) {
-        try {
-          const contents = messages.map(item => ({
-            role: item.role === "assistant" ? "model" : "user",
-            parts: [{ text: item.content }]
-          }));
-          const aiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-goog-api-key": geminiKey
-              },
-              body: JSON.stringify({
-                systemInstruction: { parts: [{ text: system }] },
-                contents,
-                generationConfig: { temperature: 0.6, maxOutputTokens: 450 }
-              })
-            }
-          );
-          const result = await aiResponse.json().catch(() => ({}));
-          if (!aiResponse.ok) {
-            console.error(`Agent BORA Gemini ${model} error:`, aiResponse.status, result.error || "Unknown error");
-            continue;
-          }
-          reply = (result.candidates?.[0]?.content?.parts || [])
-            .map(part => part.text || "")
-            .join("")
-            .trim();
-          if (reply) break;
-          console.error(`Agent BORA Gemini ${model} returned no text.`);
-        } catch (requestError) {
-          console.error(`Agent BORA Gemini ${model} request failed:`, requestError);
+    const models = ["google/gemini-2.5-flash-lite", "google/gemini-2.5-flash"];
+    for (const model of models) {
+      try {
+        const aiResponse = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + gatewayToken, "Content-Type": "application/json" },
+          body: JSON.stringify({ model, messages: chatMessages, temperature: 0.6, max_tokens: 450 })
+        });
+        const result = await aiResponse.json().catch(() => ({}));
+        if (!aiResponse.ok) {
+          console.error("Agent BORA AI Gateway " + model + " error:", aiResponse.status, result.error || "Unknown error");
+          continue;
         }
-      }
-    } else {
-      // Keep AI Gateway as a fallback for environments without GEMINI_API_KEY.
-      const models = ["google/gemini-2.5-flash-lite", "google/gemini-2.5-flash"];
-      for (const model of models) {
-        try {
-          const aiResponse = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${gatewayToken}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ model, messages: chatMessages, temperature: 0.6, max_tokens: 450 })
-          });
-          const result = await aiResponse.json().catch(() => ({}));
-          if (!aiResponse.ok) {
-            console.error(`Agent BORA AI Gateway ${model} error:`, aiResponse.status, result.error || "Unknown error");
-            continue;
-          }
-          reply = String(result.choices?.[0]?.message?.content || "").trim();
-          if (reply) break;
-        } catch (requestError) {
-          console.error(`Agent BORA AI Gateway ${model} request failed:`, requestError);
-        }
+        reply = String(result.choices?.[0]?.message?.content || "").trim();
+        if (reply) break;
+      } catch (requestError) {
+        console.error("Agent BORA AI Gateway " + model + " request failed:", requestError);
       }
     }
-
     if (!reply) {
-      console.error("Agent BORA: Gemini and configured AI fallback did not return a reply.");
-      return res.status(502).json({
-        error: "BORA is temporarily busy. Please try again in a moment or use WhatsApp support."
-      });
+      console.error("Agent BORA: AI Gateway models did not return a reply; using prepared fallback.");
+      res.setHeader("Cache-Control", "no-store");
+      return res.status(200).json({ reply: orderHelp, handoff: true });
     }
-
-    if (!reply) return res.status(502).json({ error: "BORA received an empty reply. Please try again." });
 
     const lastQuestion = messages[messages.length - 1].content;
     const handoff = /(order status|track my order|tracking|where is my order|in stock|available now|stock check|delivery status|complaint|refund|return|talk to (a )?human|real person|contact (the )?team)/i.test(lastQuestion);
@@ -214,6 +165,7 @@ CHECKOUT & PAYMENT GUIDANCE:
     return res.status(200).json({ reply, handoff });
   } catch (error) {
     console.error("Agent BORA API error:", error);
-    return res.status(500).json({ error: "Something went wrong. Please try again." });
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(200).json({ reply: orderHelp, handoff: true });
   }
 };
