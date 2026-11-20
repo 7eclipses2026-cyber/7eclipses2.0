@@ -3325,4 +3325,20 @@ renderProducts();updateCart();
 }
 </style>
 
+
+
+<style id="mobile-tap-highlight-fix">
+/* Prevent the browser's translucent blue tap flash on mobile controls and navigation. */
+a, button, [role="button"], input, select, textarea, label, summary {
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+}
+/* Keep keyboard navigation visible without showing a blue box after ordinary taps. */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible) {
+  outline: none;
+}
+</style>
+
 </body></html>
