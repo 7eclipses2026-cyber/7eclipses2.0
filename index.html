@@ -3422,4 +3422,18 @@ button:focus:not(:focus-visible),
 }
 </style>
 
+
+<style id="7e-flexible-stock-manager-css">
+.stock-add-product{padding:14px;border:1px solid rgba(201,169,232,.28);border-radius:12px;background:#211d29;margin:14px 0}
+.stock-add-product h4{font:17px 'Playfair Display',serif;color:#f2eaff;margin:0 0 12px}
+.stock-product-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stock-product-form label{display:flex;flex-direction:column;gap:5px;color:#d9c8eb;font-size:10px}
+.stock-product-form input,.stock-product-form textarea{width:100%;min-width:0;border:1px solid #665777;border-radius:7px;background:#17151e;color:#fff;padding:10px;font:12px 'DM Sans',sans-serif}
+.stock-form-wide{grid-column:1/-1}.stock-form-hint{font-size:10px;color:#a99bb9;line-height:1.5}
+.stock-add-button{background:#c9a9e8;color:#17121d;border:0;border-radius:8px;padding:11px 14px;font-weight:700;font-size:11px}
+.stock-product-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.stock-product-actions button{font-size:10px;padding:7px 10px}
+.stock-product-actions .stock-hide{background:#655476}.stock-product-actions .stock-delete{background:#7b3946}
+@media(max-width:650px){.stock-product-form{grid-template-columns:1fr}.stock-form-wide{grid-column:auto}.stock-add-button{width:100%}}
+</style>
 </body></html>
