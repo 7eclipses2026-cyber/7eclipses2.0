@@ -1275,16 +1275,24 @@ const cart = (() => {
 const rupee=n=>"₹"+n.toLocaleString("en-IN");
 const grid=document.getElementById("productGrid");
 
-// Open the product detail popup when a customer clicks anywhere on a product card.
-// Keep the wishlist, colour swatches and add-to-bag controls independent.
+// Open product details reliably, including on mobile/touch screens.
+// Capture the click before child handlers; keep card controls independent.
 grid.addEventListener("click", event => {
-  const card = event.target.closest(".product-card");
+  const target = event.target instanceof Element ? event.target : event.target.parentElement;
+  const card = target && target.closest(".product-card");
   if (!card || !grid.contains(card)) return;
-  if (event.target.closest("button, a, input, select, textarea")) return;
-  const clickedProduct = products.find(p => p.id === Number(card.dataset.product));
-  if (!clickedProduct || clickedProduct.status === "coming-soon" || clickedProduct.status === "sold-out" || clickedProduct.status === "hidden") return;
-  addItem(Number(card.dataset.product));
-});
+  if (target.closest("button, a, input, select, textarea, [data-add], [data-wishlist], [data-color]")) return;
+  const productId = Number(card.dataset.product);
+  const clickedProduct = products.find(p => Number(p.id) === productId);
+  if (!clickedProduct || ["coming-soon", "sold-out", "hidden"].includes(clickedProduct.status)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  try {
+    addItem(productId);
+  } catch (error) {
+    console.error("7ECLIPSES product viewer could not open:", error);
+  }
+}, true);
 
 
 function card(p){
@@ -3642,6 +3650,10 @@ button:focus:not(:focus-visible),
 </style>
 
 
+<style id="7e-product-card-tap-fix">
+.product-card{cursor:pointer;touch-action:manipulation}
+.product-card .product-photo,.product-card .product-info,.product-card .product-info h3,.product-card .product-meta,.product-card .price{cursor:pointer}
+</style>
 <style id="7e-universal-tab-tap-fix">
 /* Make every navigation and account tab an obvious, reliable touch target. */
 .navlinks a,
