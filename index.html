@@ -1275,26 +1275,6 @@ const cart = (() => {
 const rupee=n=>"₹"+n.toLocaleString("en-IN");
 const grid=document.getElementById("productGrid");
 
-// Open product details reliably, including on mobile/touch screens.
-// Capture the click before child handlers; keep card controls independent.
-grid.addEventListener("click", event => {
-  const target = event.target instanceof Element ? event.target : event.target.parentElement;
-  const card = target && target.closest(".product-card");
-  if (!card || !grid.contains(card)) return;
-  if (target.closest("button, a, input, select, textarea, [data-add], [data-wishlist], [data-color]")) return;
-  const productId = Number(card.dataset.product);
-  const clickedProduct = products.find(p => Number(p.id) === productId);
-  if (!clickedProduct || ["coming-soon", "sold-out", "hidden"].includes(clickedProduct.status)) return;
-  event.preventDefault();
-  event.stopPropagation();
-  try {
-    addItem(productId);
-  } catch (error) {
-    console.error("7ECLIPSES product viewer could not open:", error);
-  }
-}, true);
-
-
 function card(p){
   let firstColor = p.colors[0], image = p.images[firstColor];
 
@@ -1322,7 +1302,8 @@ function card(p){
 let wishlist = JSON.parse(localStorage.getItem("7eclipsesWishlist") || "[]");
   function renderProducts(filter="all"){
 grid.innerHTML=products.filter(p=>p.active!==false&&p.status!=="hidden"&&(filter==="all"||p.group===filter)).sort((a,b)=>Number((b.badges||[]).includes("featured"))-Number((a.badges||[]).includes("featured"))).map(card).join("");
-grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addItem(Number(b.dataset.add)));grid.querySelectorAll("[data-wishlist]").forEach(b=>{
+grid.querySelectorAll(".product-card").forEach(card => card.addEventListener("click", event => { const target = event.target instanceof Element ? event.target : event.target.parentElement; if (target && target.closest("button, a, input, select, textarea, [data-add], [data-wishlist], [data-color]")) return; openProductViewer(card.dataset.product); }));
+grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>openProductViewer(b.dataset.add));grid.querySelectorAll("[data-wishlist]").forEach(b=>{
   const id = Number(b.dataset.wishlist);
   b.textContent = wishlist.includes(id) ? "♥︎" : "♡";
   b.classList.toggle("active", wishlist.includes(id));
@@ -1480,8 +1461,10 @@ document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
     refreshSizeAvailability();
   });
 });
-function addItem(id) {
-  selectedProduct = products.find(p => p.id === id);
+function openProductViewer(id) {
+  selectedProduct = products.find(p => Number(p.id) === Number(id));
+  if (!selectedProduct) { console.error("7ECLIPSES: product not found for viewer", id); return; }
+  if (["coming-soon", "sold-out", "hidden"].includes(selectedProduct.status)) return;
 
   document.getElementById("choiceName").textContent = selectedProduct.name;
   const activePrice = (selectedProduct.badges || []).includes("sale") && Number(selectedProduct.salePrice) > 0 ? Number(selectedProduct.salePrice) : Number(selectedProduct.price || 599);
@@ -1760,7 +1743,7 @@ const overlay=document.getElementById("overlay"),drawer=document.getElementById(
   `).join("");
 
   items.querySelectorAll("[data-wishlist-open]").forEach(b => {
-    b.onclick = () => addItem(Number(b.dataset.wishlistOpen));
+    b.onclick = () => openProductViewer(b.dataset.wishlistOpen);
   });
 
   items.querySelectorAll("[data-wishlist-remove]").forEach(b => {
