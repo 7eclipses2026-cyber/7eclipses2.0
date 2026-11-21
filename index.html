@@ -2397,7 +2397,7 @@ renderProducts();updateCart();
     });
     renderProducts();
     if (typeof updateCart === "function") updateCart();
-    if (stockTab && isStockOwner() && document.getElementById("stockPanel")?.classList.contains("active")) renderStockManager();
+    if (stockTab && canManageStock() && document.getElementById("stockPanel")?.classList.contains("active")) renderStockManager();
   }, error => console.error("Product catalogue listener failed:", error));
 
   let currentUser = null;
@@ -2910,7 +2910,7 @@ renderProducts();updateCart();
     const toggle = event.target.closest("[data-stock-toggle]");
     if (toggle) {
       const product = products.find(p => p.id === Number(toggle.dataset.stockToggle));
-      if (!product || !isStockOwner()) return;
+      if (!product || !canManageStock()) return;
       toggle.disabled = true;
       try {
         await setDoc(doc(db,"products",String(product.id)),{active:product.active===false,updatedAt:serverTimestamp(),updatedBy:currentUser.email},{merge:true});
@@ -2921,7 +2921,7 @@ renderProducts();updateCart();
     }
     const button = event.target.closest("[data-stock-save]");
     if (!button) return;
-    if (!canManageStock()) { stockMessage.textContent = "Only the owner account can update stock."; return; }
+    if (!canManageStock()) { stockMessage.textContent = "Only an approved Stock Manager can update stock."; return; }
     const id = button.dataset.stockSave, input = stockRows.querySelector('[data-stock-qty="' + id + '"]');
     const raw = input?.value.trim(), quantity = Number(raw);
     if (raw === "" || !Number.isInteger(quantity) || quantity < 0 || quantity > 9999) { stockMessage.textContent = "Enter a whole number from 0 to 9999."; return; }
@@ -2961,7 +2961,7 @@ renderProducts();updateCart();
   });
   const addStockProductBtn = document.getElementById("addStockProductBtn");
   if (addStockProductBtn) addStockProductBtn.addEventListener("click", async () => {
-    if (!canManageStock()) { stockMessage.textContent = "Only the owner account can add products."; return; }
+    if (!canManageStock()) { stockMessage.textContent = "Only an approved Stock Manager can add products."; return; }
     const value = id => document.getElementById(id)?.value.trim() || "";
     const name=value("newProductName"), category=value("newProductCategory"), price=Number(value("newProductPrice"));
     const imageUrls = Array.from(document.querySelectorAll("#newProductImagesList .new-product-image-url")).map(input=>input.value.trim()).filter(Boolean);
