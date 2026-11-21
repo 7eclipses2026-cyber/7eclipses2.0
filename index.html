@@ -996,6 +996,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 <div class="announcement">A DEEP REMINDER: BE YOURSELF. ALWAYS.</div>
 <header class="nav"><div class="nav-inner">
 <button class="iconbtn account-profile-button" id="accountOpen" aria-label="My Account"><span class="account-profile-avatar" id="accountProfileAvatar">👤</span><span class="account-profile-name" id="accountProfileName"></span></button>
+<button type="button" class="iconbtn stock-manager-nav-button" id="stockManagerNavButton" hidden>Stock Manager</button>
 <a class="brand" href="#home"><img class="brand-whale-mark" src="/7%20Eclipse%20Whale%20logo.svg" alt="" aria-hidden="true"><span>7ECLIPSES<small>BE YOUR OWN FREQUENCY</small></span></a>
 <nav class="navlinks" id="navlinks"><a href="#shop">Shop</a><a href="/52hz.html">The 52Hz story</a><a href="#beliefs">What we believe</a><a href="#fabric">Fabric & fit</a><a href="#size">Size chart</a><a href="#order">How to order</a></nav>
 <div class="nav-actions">   <button class="iconbtn menu-toggle" id="menuBtn" aria-label="Open menu">☰</button>    <button class="iconbtn" id="wishlistOpen" aria-label="Wishlist">     ♡ Wishlist   </button>    <button class="iconbtn" id="cartOpen">     Ocean <span class="cart-count" id="cartCount">0</span>   </button> </div>
@@ -2243,6 +2244,7 @@ renderProducts();updateCart();
   #productModal #choiceAdd { min-height: 50px; }
 }
 .marketing-consent{display:flex;align-items:flex-start;gap:10px;margin:4px 0 14px;padding:12px;border:1px solid rgba(142,207,255,.22);border-radius:12px;color:#c1d3df;font-size:12px;line-height:1.5;text-align:left;cursor:pointer}.marketing-consent input{width:16px;height:16px;flex:0 0 16px;margin:2px 0 0;accent-color:#8ecfff}.marketing-consent small{display:block;color:#8ca6b7;margin-top:4px;font-size:11px}
+.stock-manager-nav-button{display:block;margin:6px 0 0 auto;padding:7px 12px;border:1px solid rgba(201,169,232,.55);border-radius:999px;background:#211d29;color:#e8d7ff;font-size:11px;font-weight:700;cursor:pointer}.stock-manager-nav-button:hover{background:#c9a9e8;color:#17151e}.stock-manager-nav-button[hidden]{display:none!important}
 </style>
 
 <div id="accountModal">
@@ -2805,6 +2807,7 @@ renderProducts();updateCart();
   let liveInventory = {};
   let inventoryReady = false;
   const stockTab = document.getElementById("stockManagerTab");
+  const stockManagerNavButton = document.getElementById("stockManagerNavButton");
   const stockMessage = document.getElementById("stockManagerMessage");
   const stockRows = document.getElementById("stockManagerRows");
   window.getStockAvailability = (productId, color, size) => {
@@ -2942,6 +2945,18 @@ renderProducts();updateCart();
     window.dispatchEvent(new CustomEvent("7e-stock-updated"));
   });
 
+  if (stockManagerNavButton) stockManagerNavButton.addEventListener("click", () => {
+    if (!isStockOwner()) return;
+    accountModal.classList.add("show");
+    document.querySelectorAll(".account-tab").forEach(tab => {
+      const active = tab.dataset.accountTab === "stock";
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", String(active));
+    });
+    document.querySelectorAll(".account-panel").forEach(panel => panel.classList.toggle("active", panel.id === "stockPanel"));
+    renderStockManager();
+  });
+
   document.querySelector(".account-tabs").addEventListener("click", event => {
     const tab = event.target.closest("[data-account-tab]");
     if (!tab) return;
@@ -2997,6 +3012,7 @@ renderProducts();updateCart();
     loggedInArea.style.display = user ? "block" : "none";
 
     if (!user) {
+      if (stockManagerNavButton) stockManagerNavButton.hidden = true;
       if (stockTab) stockTab.hidden = true;
       if (document.getElementById("stockPanel").classList.contains("active")) {
         document.getElementById("stockPanel").classList.remove("active"); document.getElementById("profilePanel").classList.add("active");
@@ -3026,6 +3042,8 @@ renderProducts();updateCart();
     }
 
     currentUser = user;
+    if (stockManagerNavButton) stockManagerNavButton.hidden = !isStockOwner();
+    if (stockTab) stockTab.hidden = !isStockOwner();
     if (stockTab) stockTab.hidden = !isStockOwner();
     window.dispatchEvent(new CustomEvent("bora-auth-changed", { detail: { signedIn: true, uid: user.uid } }));
     loadMyOrders();
