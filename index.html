@@ -2309,6 +2309,12 @@ renderProducts();updateCart();
         </section>
         <section id="stockPanel" class="account-panel">
           <div class="stock-manager-heading"><div><h3>Stock & Product Manager</h3><p>Add products, create future categories, set prices and manage stock. Published products appear in the shop automatically.</p></div><span class="stock-owner-label">OWNER ACCESS</span></div>
+          <section class="stock-add-product" id="stockManagersAdminPanel" hidden>
+            <h4>Manage Stock Manager access</h4>
+            <p class="stock-form-hint">Add a person's sign-in email to let them manage products and inventory. You can remove access at any time.</p>
+            <div class="stock-manager-invite-row"><input id="stockManagerEmailInput" type="email" autocomplete="off" placeholder="name@example.com" aria-label="Stock Manager email address"><button type="button" class="stock-add-button" id="addStockManagerBtn">＋ Add Stock Manager</button></div>
+            <div id="stockManagersList" class="stock-managers-list" aria-live="polite"><p class="stock-form-hint">Loading access list…</p></div>
+          </section>
           <section class="stock-add-product">
             <h4>Add a new product</h4>
             <div class="stock-product-form">
@@ -2356,6 +2362,7 @@ renderProducts();updateCart();
     doc,
     getDoc,
     setDoc,
+    deleteDoc,
     onSnapshot,
     serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -2804,6 +2811,12 @@ renderProducts();updateCart();
 
 
   const STOCK_OWNER_EMAIL = "7eclipses2026@gmail.com";
+  let hasStockAccess = false;
+  let stockManagersUnsubscribe = null;
+  const stockManagersAdminPanel = document.getElementById("stockManagersAdminPanel");
+  const stockManagerEmailInput = document.getElementById("stockManagerEmailInput");
+  const stockManagersList = document.getElementById("stockManagersList");
+  const addStockManagerBtn = document.getElementById("addStockManagerBtn");
   let liveInventory = {};
   let inventoryReady = false;
   const stockTab = document.getElementById("stockManagerTab");
@@ -2818,8 +2831,50 @@ renderProducts();updateCart();
   function stockToken(value) { return String(value || "default").toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || "default"; }
   function stockDocumentId(productId, color, size) { return "p" + Number(productId) + "_" + stockToken(color) + "_" + stockToken(size); }
   function isStockOwner() { return !!currentUser && String(currentUser.email || "").toLowerCase() === STOCK_OWNER_EMAIL; }
+  function canManageStock() { return hasStockAccess && !!currentUser; }
+  function renderStockManagers(snapshot) {
+    if (!stockManagersList || !isStockOwner()) return;
+    const entries = snapshot.docs.map(item => ({id:item.id,email:item.data().email || item.id})).filter(item => item.email.toLowerCase() !== STOCK_OWNER_EMAIL);
+    stockManagersList.innerHTML = entries.length ? entries.map(item => '<div class="stock-manager-person"><span>' + escapeOrderHtml(item.email) + '</span><button type="button" data-remove-stock-manager="' + escapeOrderHtml(item.id) + '">Remove access</button></div>').join("") : '<p class="stock-form-hint">No additional Stock Managers yet.</p>';
+  }
+  function startStockManagersListener() {
+    if (!isStockOwner() || stockManagersUnsubscribe) return;
+    stockManagersUnsubscribe = onSnapshot(collection(db,"stockManagers"),renderStockManagers,error => {
+      console.error("Stock Manager access list failed:",error);
+      if (stockManagersList) stockManagersList.textContent = "Could not load the access list.";
+    });
+  }
+  if (addStockManagerBtn) addStockManagerBtn.addEventListener("click", async () => {
+    if (!canManageStock()) return;
+    const email = String(stockManagerEmailInput?.value || "").trim().toLowerCase();
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { stockMessage.textContent = "Enter a valid email address."; return; }
+    if (email === STOCK_OWNER_EMAIL) { stockMessage.textContent = "The main owner already has Stock Manager access."; return; }
+    addStockManagerBtn.disabled = true;
+    try {
+      await setDoc(doc(db,"stockManagers",email),{email,addedAt:serverTimestamp(),addedBy:STOCK_OWNER_EMAIL});
+      stockManagerEmailInput.value = "";
+      stockMessage.textContent = email + " can now access Stock Manager after signing in.";
+    } catch(error) {
+      console.error("Adding Stock Manager failed:",error);
+      stockMessage.textContent = "Could not add this Stock Manager. Publish the updated firestore.rules first.";
+    } finally { addStockManagerBtn.disabled = false; }
+  });
+  if (stockManagersList) stockManagersList.addEventListener("click", async event => {
+    const button = event.target.closest("[data-remove-stock-manager]");
+    if (!button || !isStockOwner()) return;
+    const email = button.dataset.removeStockManager;
+    if (!confirm("Remove Stock Manager access for " + email + "?")) return;
+    button.disabled = true;
+    try {
+      await deleteDoc(doc(db,"stockManagers",email));
+      stockMessage.textContent = "Stock Manager access removed for " + email + ".";
+    } catch(error) {
+      stockMessage.textContent = "Could not remove access: " + (error.message || "Please try again.");
+      button.disabled = false;
+    }
+  });
   function renderStockManager() {
-    if (!isStockOwner()) return;
+    if (!canManageStock()) return;
     if (!inventoryReady) { stockMessage.textContent = "Connecting to live inventory…"; return; }
     stockMessage.textContent = "Set a quantity for every option. 0 means sold out. Product status and badges control how it appears in the shop.";
     stockRows.innerHTML = products.map(product => {
@@ -2841,13 +2896,13 @@ renderProducts();updateCart();
     const statusSelect = event.target.closest("[data-product-status]");
     const badgesSelect = event.target.closest("[data-product-badges]");
     if (!statusSelect && !badgesSelect) return;
-    if (!isStockOwner()) return;
+    if (!canManageStock()) return;
     const productId = Number((statusSelect || badgesSelect).dataset.productStatus || (statusSelect || badgesSelect).dataset.productBadges);
     const product = products.find(p => p.id === productId);
     if (!product) return;
     const update = statusSelect ? {status:statusSelect.value,active:statusSelect.value!=="hidden"} : {badges:Array.from(badgesSelect.selectedOptions).map(o=>o.value)};
     try {
-      await setDoc(doc(db,"products",String(productId)),{...update,updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL},{merge:true});
+      await setDoc(doc(db,"products",String(productId)),{...update,updatedAt:serverTimestamp(),updatedBy:currentUser.email},{merge:true});
       stockMessage.textContent = "Updated " + product.name + ".";
     } catch(error) { stockMessage.textContent = "Could not update product: " + (error.message || "Please try again."); }
   });
@@ -2858,7 +2913,7 @@ renderProducts();updateCart();
       if (!product || !isStockOwner()) return;
       toggle.disabled = true;
       try {
-        await setDoc(doc(db,"products",String(product.id)),{active:product.active===false,updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL},{merge:true});
+        await setDoc(doc(db,"products",String(product.id)),{active:product.active===false,updatedAt:serverTimestamp(),updatedBy:currentUser.email},{merge:true});
         stockMessage.textContent = product.name + (product.active===false ? " is visible in the shop." : " is hidden from the shop.");
       } catch(error) { stockMessage.textContent = "Could not update product: " + (error.message || "Please try again."); }
       finally { toggle.disabled = false; }
@@ -2866,7 +2921,7 @@ renderProducts();updateCart();
     }
     const button = event.target.closest("[data-stock-save]");
     if (!button) return;
-    if (!isStockOwner()) { stockMessage.textContent = "Only the owner account can update stock."; return; }
+    if (!canManageStock()) { stockMessage.textContent = "Only the owner account can update stock."; return; }
     const id = button.dataset.stockSave, input = stockRows.querySelector('[data-stock-qty="' + id + '"]');
     const raw = input?.value.trim(), quantity = Number(raw);
     if (raw === "" || !Number.isInteger(quantity) || quantity < 0 || quantity > 9999) { stockMessage.textContent = "Enter a whole number from 0 to 9999."; return; }
@@ -2875,7 +2930,7 @@ renderProducts();updateCart();
     if (!product || !color || !size) return;
     button.disabled = true; button.textContent = "Saving…";
     try {
-      await setDoc(doc(db,"inventory",id),{productId:product.id,productName:product.name,color,size,quantity,updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL});
+      await setDoc(doc(db,"inventory",id),{productId:product.id,productName:product.name,color,size,quantity,updatedAt:serverTimestamp(),updatedBy:currentUser.email});
       stockMessage.textContent = "Saved " + product.name + " · " + color + " · " + size + ": " + quantity + " available.";
     } catch(error) {
       console.error("Stock update failed:",error);
@@ -2906,7 +2961,7 @@ renderProducts();updateCart();
   });
   const addStockProductBtn = document.getElementById("addStockProductBtn");
   if (addStockProductBtn) addStockProductBtn.addEventListener("click", async () => {
-    if (!isStockOwner()) { stockMessage.textContent = "Only the owner account can add products."; return; }
+    if (!canManageStock()) { stockMessage.textContent = "Only the owner account can add products."; return; }
     const value = id => document.getElementById(id)?.value.trim() || "";
     const name=value("newProductName"), category=value("newProductCategory"), price=Number(value("newProductPrice"));
     const imageUrls = Array.from(document.querySelectorAll("#newProductImagesList .new-product-image-url")).map(input=>input.value.trim()).filter(Boolean);
@@ -2918,7 +2973,7 @@ renderProducts();updateCart();
     if (colors.length>12 || sizes.length>20 || colors.some(x=>x.length>30) || sizes.some(x=>x.length>30)) { stockMessage.textContent="Please use up to 12 colours and 20 variants (30 characters each)."; return; }
     if (badges.includes("sale") && (!salePrice || salePrice>=price)) { stockMessage.textContent="For a sale, enter a sale price lower than the regular price."; return; }
     const productId=Date.now();
-    const product={id:productId,name,category,group:stockToken(category),price,description,image,galleryImages:imageUrls,images:Object.fromEntries((colors.length?colors:["Default"]).map(c=>[c,image])),colors:colors.length?colors:["Default"],sizes:sizes.length?sizes:["One size"],status,badges,salePrice:salePrice||null,isCustom:true,active:status!=="hidden",createdAt:serverTimestamp(),updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL};
+    const product={id:productId,name,category,group:stockToken(category),price,description,image,galleryImages:imageUrls,images:Object.fromEntries((colors.length?colors:["Default"]).map(c=>[c,image])),colors:colors.length?colors:["Default"],sizes:sizes.length?sizes:["One size"],status,badges,salePrice:salePrice||null,isCustom:true,active:status!=="hidden",createdAt:serverTimestamp(),updatedAt:serverTimestamp(),updatedBy:currentUser.email};
     addStockProductBtn.disabled=true;addStockProductBtn.textContent="Adding…";
     try {
       await setDoc(doc(db,"products",String(productId)),product);
@@ -2946,7 +3001,7 @@ renderProducts();updateCart();
   });
 
   if (stockManagerNavButton) stockManagerNavButton.addEventListener("click", () => {
-    if (!isStockOwner()) return;
+    if (!canManageStock()) return;
     accountModal.classList.add("show");
     document.querySelectorAll(".account-tab").forEach(tab => {
       const active = tab.dataset.accountTab === "stock";
@@ -3012,8 +3067,11 @@ renderProducts();updateCart();
     loggedInArea.style.display = user ? "block" : "none";
 
     if (!user) {
+      hasStockAccess = false;
+      if (stockManagersUnsubscribe) { stockManagersUnsubscribe(); stockManagersUnsubscribe = null; }
       if (stockManagerNavButton) stockManagerNavButton.hidden = true;
       if (stockTab) stockTab.hidden = true;
+      if (stockManagersAdminPanel) stockManagersAdminPanel.hidden = true;
       if (document.getElementById("stockPanel").classList.contains("active")) {
         document.getElementById("stockPanel").classList.remove("active"); document.getElementById("profilePanel").classList.add("active");
         document.querySelectorAll(".account-tab").forEach(tab => { const active = tab.dataset.accountTab === "profile"; tab.classList.toggle("active", active); tab.setAttribute("aria-selected", String(active)); });
@@ -3042,9 +3100,18 @@ renderProducts();updateCart();
     }
 
     currentUser = user;
-    if (stockManagerNavButton) stockManagerNavButton.hidden = !isStockOwner();
-    if (stockTab) stockTab.hidden = !isStockOwner();
-    if (stockTab) stockTab.hidden = !isStockOwner();
+    hasStockAccess = isStockOwner();
+    if (!hasStockAccess) {
+      try {
+        const managerAccess = await getDoc(doc(db,"stockManagers",String(user.email || "").toLowerCase()));
+        if (changeToken !== authChangeToken) return;
+        hasStockAccess = managerAccess.exists() && String(managerAccess.data().email || "").toLowerCase() === String(user.email || "").toLowerCase();
+      } catch(error) { console.error("Stock Manager access check failed:",error); }
+    }
+    if (stockManagerNavButton) stockManagerNavButton.hidden = !hasStockAccess;
+    if (stockTab) stockTab.hidden = !hasStockAccess;
+    if (stockManagersAdminPanel) stockManagersAdminPanel.hidden = !isStockOwner();
+    if (isStockOwner()) startStockManagersListener();
     window.dispatchEvent(new CustomEvent("bora-auth-changed", { detail: { signedIn: true, uid: user.uid } }));
     loadMyOrders();
     window.customerAccountName = user.displayName || "";
@@ -3557,7 +3624,7 @@ button:focus:not(:focus-visible),
 
 
 <style id="7e-flexible-stock-manager-css">
-.stock-add-product{padding:14px;border:1px solid rgba(201,169,232,.28);border-radius:12px;background:#211d29;margin:14px 0}
+.stock-manager-invite-row{display:flex;gap:8px;margin:10px 0}.stock-manager-invite-row input{flex:1;min-width:0;padding:11px;border:1px solid #665777;border-radius:7px;background:#17151e;color:#fff}.stock-managers-list{display:grid;gap:8px;margin-top:12px}.stock-manager-person{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid rgba(201,169,232,.2);border-radius:8px;color:#eee}.stock-manager-person button{background:#65404d;color:#fff;border:1px solid #986879;border-radius:7px;padding:7px 10px;font-size:10px}@media(max-width:650px){.stock-manager-invite-row{flex-direction:column}.stock-manager-invite-row button{width:100%}}\n.stock-add-product{padding:14px;border:1px solid rgba(201,169,232,.28);border-radius:12px;background:#211d29;margin:14px 0}
 .stock-add-product h4{font:17px 'Playfair Display',serif;color:#f2eaff;margin:0 0 12px}
 .stock-product-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .stock-product-form label{display:flex;flex-direction:column;gap:5px;color:#d9c8eb;font-size:10px}
