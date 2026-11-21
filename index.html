@@ -1294,23 +1294,23 @@ function card(p){
   return `<article class="product-card" data-product="${p.id}">
     <div class="product-image">
       <img class="product-photo" src="${image}" alt="${p.name} - ${firstColor}" loading="lazy" onerror="this.parentElement.classList.add('photo-error')">
-      <span class="product-tag">200 GSM · UNISEX</span>
+      <span class="product-tag">${p.status === "coming-soon" ? "COMING SOON" : p.status === "pre-order" ? "PRE-ORDER" : p.status === "sold-out" ? "SOLD OUT" : (p.badges || []).includes("limited-edition") ? "LIMITED EDITION" : (p.badges || []).includes("new-launch") ? "NEW LAUNCH" : (p.badges || []).includes("featured") ? "FEATURED" : p.isCustom ? (p.category || "NEW ARRIVAL").toUpperCase() : "200 GSM · UNISEX"}</span>
       <button type="button" class="wishlist-btn" data-wishlist="${p.id}" aria-label="Add ${p.name} to wishlist">♡</button>
     </div>
     <div class="product-info">
       <h3>${p.name}</h3>
       <div class="product-meta">${p.description || (p.isCustom ? p.category : "Loose fit · Drop shoulder · DTF print")}</div>
-      <div class="price">₹${Number(p.price || 599).toLocaleString("en-IN")}</div>
+      <div class="price">${(p.badges || []).includes("sale") && Number(p.salePrice) > 0 ? '<del>₹' + Number(p.price).toLocaleString("en-IN") + '</del> ' : ''}₹${Number((p.badges || []).includes("sale") && Number(p.salePrice) > 0 ? p.salePrice : (p.price || 599)).toLocaleString("en-IN")}</div>
       <div class="product-bottom">
         <div class="swatches">${swatches}</div>
-        <button class="add-btn" data-add="${p.id}">Add to Ocean +</button>
+        ${p.status === "coming-soon" ? '<span class="add-btn" aria-label="Coming soon">Coming Soon</span>' : p.status === "sold-out" ? '<span class="add-btn" aria-label="Sold out">Sold Out</span>' : p.status === "hidden" ? '' : '<button class="add-btn" data-add="' + p.id + '">' + (p.status === "pre-order" ? 'Pre-order +' : 'Add to Ocean +') + '</button>'}
       </div>
     </div>
   </article>`;
 }
 let wishlist = JSON.parse(localStorage.getItem("7eclipsesWishlist") || "[]");
   function renderProducts(filter="all"){
-grid.innerHTML=products.filter(p=>p.active!==false&&(filter==="all"||p.group===filter)).map(card).join("");
+grid.innerHTML=products.filter(p=>p.active!==false&&p.status!=="hidden"&&(filter==="all"||p.group===filter)).sort((a,b)=>Number((b.badges||[]).includes("featured"))-Number((a.badges||[]).includes("featured"))).map(card).join("");
 grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addItem(Number(b.dataset.add)));grid.querySelectorAll("[data-wishlist]").forEach(b=>{
   const id = Number(b.dataset.wishlist);
   b.textContent = wishlist.includes(id) ? "♥︎" : "♡";
@@ -2313,8 +2313,11 @@ renderProducts();updateCart();
               <label class="stock-form-wide">Description<textarea id="newProductDescription" maxlength="500" rows="2" placeholder="A short description for customers"></textarea></label>
               <label>Colours / options<input id="newProductColors" maxlength="180" placeholder="Black, White (or Default)"></label>
               <label>Sizes / variants<input id="newProductSizes" maxlength="180" placeholder="S, M, L, XL (or One size)"></label>
+              <label>Shop status<select id="newProductStatus"><option value="available">Available now</option><option value="coming-soon">Coming soon</option><option value="pre-order">Pre-order</option><option value="sold-out">Sold out</option><option value="hidden">Hidden / Draft</option></select></label>
+              <label>Badges<select id="newProductBadges" multiple size="4"><option value="new-launch">New Launch</option><option value="featured">Featured</option><option value="limited-edition">Limited Edition</option><option value="sale">Sale</option></select></label>
+              <label>Sale price (₹)<input id="newProductSalePrice" type="number" min="1" max="1000000" step="1" placeholder="Optional"></label>
             </div>
-            <p class="stock-form-hint">For non-clothing items, use “Default” for colour and “One size” for variant. Separate multiple options with commas.</p>
+            <p class="stock-form-hint">For non-clothing items, use “Default” for colour and “One size” for variant. Separate multiple options with commas. Hold Ctrl (Windows) to choose multiple badges.</p>
             <button type="button" id="addStockProductBtn" class="stock-add-button">＋ Add product to shop</button>
           </section>
           <p id="stockManagerMessage" class="stock-manager-message" aria-live="polite">Loading inventory…</p>
@@ -2786,40 +2789,96 @@ renderProducts();updateCart();
     const item = liveInventory[stockDocumentId(productId, color, size)];
     return item && Number.isInteger(item.quantity) ? item.quantity : null;
   };
-  function stockDocumentId(productId, color, size) { return "p" + Number(productId) + "_" + String(color).toLowerCase() + "_" + String(size).toLowerCase(); }
+  function stockToken(value) { return String(value || "default").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "default"; }
+  function stockDocumentId(productId, color, size) { return "p" + Number(productId) + "_" + stockToken(color) + "_" + stockToken(size); }
   function isStockOwner() { return !!currentUser && String(currentUser.email || "").toLowerCase() === STOCK_OWNER_EMAIL; }
   function renderStockManager() {
     if (!isStockOwner()) return;
     if (!inventoryReady) { stockMessage.textContent = "Connecting to live inventory…"; return; }
-    stockMessage.textContent = "Enter a whole number for each variant. Blank = not configured; 0 = sold out.";
-    stockRows.innerHTML = products.map(product => '<section class="stock-product-group"><h4>' + escapeOrderHtml(product.name) + '</h4>' +
-      product.colors.map(color => ["S","M","L","XL"].map(size => {
+    stockMessage.textContent = "Set a quantity for every option. 0 means sold out. Product status and badges control how it appears in the shop.";
+    stockRows.innerHTML = products.map(product => {
+      const colors = product.colors || ["Default"], sizes = product.sizes || ["One size"];
+      const variants = colors.flatMap(color => sizes.map(size => {
         const id = stockDocumentId(product.id, color, size), item = liveInventory[id];
         const value = item && Number.isInteger(item.quantity) ? String(item.quantity) : "";
         const state = item ? (item.quantity > 0 ? item.quantity + " available" : "Sold out") : "Not configured";
-        return '<div class="stock-variant-row"><span class="stock-variant-label">' + escapeOrderHtml(color) + ' · ' + size + '</span><input type="number" min="0" max="9999" step="1" inputmode="numeric" placeholder="Qty" aria-label="' + escapeOrderHtml(product.name + " " + color + " " + size + " quantity") + '" data-stock-qty="' + id + '" value="' + value + '"><button type="button" data-stock-save="' + id + '">Save</button><span class="stock-variant-status">' + state + '</span></div>';
-      }).join("")).join("") + '</section>').join("");
+        return '<div class="stock-variant-row"><span class="stock-variant-label">' + escapeOrderHtml(color + " · " + size) + '</span><input type="number" min="0" max="9999" step="1" inputmode="numeric" placeholder="Qty" aria-label="' + escapeOrderHtml(product.name + " " + color + " " + size + " quantity") + '" data-stock-qty="' + id + '" value="' + value + '"><button type="button" data-stock-save="' + id + '" data-product-id="' + product.id + '" data-color="' + escapeOrderHtml(color) + '" data-size="' + escapeOrderHtml(size) + '">Save</button><span class="stock-variant-status">' + state + '</span></div>';
+      })).join("");
+      const statusOptions = [["available","Available now"],["coming-soon","Coming Soon"],["pre-order","Pre-order"],["sold-out","Sold Out"],["hidden","Hidden / Draft"]];
+      return '<section class="stock-product-group"><h4>' + escapeOrderHtml(product.name) + ' · ' + rupee(Number(product.price || 599)) + '</h4>' +
+        '<div class="stock-product-actions"><label>Status <select data-product-status="' + product.id + '">' + statusOptions.map(([v,label]) => '<option value="' + v + '"' + ((product.status || "available")===v ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
+        '<label>Badges <select multiple size="4" data-product-badges="' + product.id + '">' + [["new-launch","New Launch"],["featured","Featured"],["limited-edition","Limited Edition"],["sale","Sale"]].map(([v,label]) => '<option value="' + v + '"' + ((product.badges||[]).includes(v) ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
+        '<button type="button" class="stock-hide" data-stock-toggle="' + product.id + '">' + (product.active===false ? "Show in shop" : "Hide from shop") + '</button></div>' + variants + '</section>';
+    }).join("");
   }
+  stockRows.addEventListener("change", async event => {
+    const statusSelect = event.target.closest("[data-product-status]");
+    const badgesSelect = event.target.closest("[data-product-badges]");
+    if (!statusSelect && !badgesSelect) return;
+    if (!isStockOwner()) return;
+    const productId = Number((statusSelect || badgesSelect).dataset.productStatus || (statusSelect || badgesSelect).dataset.productBadges);
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    const update = statusSelect ? {status:statusSelect.value} : {badges:Array.from(badgesSelect.selectedOptions).map(o=>o.value)};
+    try {
+      await setDoc(doc(db,"products",String(productId)),{...update,updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL},{merge:true});
+      stockMessage.textContent = "Updated " + product.name + ".";
+    } catch(error) { stockMessage.textContent = "Could not update product: " + (error.message || "Please try again."); }
+  });
   stockRows.addEventListener("click", async event => {
+    const toggle = event.target.closest("[data-stock-toggle]");
+    if (toggle) {
+      const product = products.find(p => p.id === Number(toggle.dataset.stockToggle));
+      if (!product || !isStockOwner()) return;
+      toggle.disabled = true;
+      try {
+        await setDoc(doc(db,"products",String(product.id)),{active:product.active===false,updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL},{merge:true});
+        stockMessage.textContent = product.name + (product.active===false ? " is visible in the shop." : " is hidden from the shop.");
+      } catch(error) { stockMessage.textContent = "Could not update product: " + (error.message || "Please try again."); }
+      finally { toggle.disabled = false; }
+      return;
+    }
     const button = event.target.closest("[data-stock-save]");
     if (!button) return;
     if (!isStockOwner()) { stockMessage.textContent = "Only the owner account can update stock."; return; }
     const id = button.dataset.stockSave, input = stockRows.querySelector('[data-stock-qty="' + id + '"]');
     const raw = input?.value.trim(), quantity = Number(raw);
-    if (raw === "" || !Number.isInteger(quantity) || quantity < 0 || quantity > 9999) { stockMessage.textContent = "Enter a whole number from 0 to 9999. Use 0 for sold out."; return; }
-    const parts = id.match(/^p([0-9]+)_([a-z]+)_([smlx]+)$/);
-    const product = parts && products.find(p => p.id === Number(parts[1]));
-    const color = parts && product?.colors.find(c => c.toLowerCase() === parts[2]);
-    const size = parts && parts[3].toUpperCase();
-    if (!product || !color || !["S","M","L","XL"].includes(size)) return;
+    if (raw === "" || !Number.isInteger(quantity) || quantity < 0 || quantity > 9999) { stockMessage.textContent = "Enter a whole number from 0 to 9999."; return; }
+    const product = products.find(p => p.id === Number(button.dataset.productId));
+    const color = button.dataset.color, size = button.dataset.size;
+    if (!product || !color || !size) return;
     button.disabled = true; button.textContent = "Saving…";
     try {
-      await setDoc(doc(db, "inventory", id), { productId: product.id, productName: product.name, color, size, quantity, updatedAt: serverTimestamp(), updatedBy: STOCK_OWNER_EMAIL });
+      await setDoc(doc(db,"inventory",id),{productId:product.id,productName:product.name,color,size,quantity,updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL});
       stockMessage.textContent = "Saved " + product.name + " · " + color + " · " + size + ": " + quantity + " available.";
-    } catch (error) {
-      console.error("Stock update failed:", error);
-      stockMessage.textContent = error.code === "permission-denied" ? "Firestore blocked this update. Publish the owner-only rules in firestore.rules, then try again." : "Could not save stock: " + (error.message || "Please try again.");
-    } finally { button.disabled = false; button.textContent = "Save"; }
+    } catch(error) {
+      console.error("Stock update failed:",error);
+      stockMessage.textContent = error.code==="permission-denied" ? "Firestore blocked this update. Publish the updated firestore.rules file first." : "Could not save stock: " + (error.message || "Please try again.");
+    } finally { button.disabled=false;button.textContent="Save"; }
+  });
+  const addStockProductBtn = document.getElementById("addStockProductBtn");
+  if (addStockProductBtn) addStockProductBtn.addEventListener("click", async () => {
+    if (!isStockOwner()) { stockMessage.textContent = "Only the owner account can add products."; return; }
+    const value = id => document.getElementById(id)?.value.trim() || "";
+    const name=value("newProductName"), category=value("newProductCategory"), price=Number(value("newProductPrice")), image=value("newProductImage");
+    const description=value("newProductDescription"), colors=value("newProductColors").split(",").map(x=>x.trim()).filter(Boolean), sizes=value("newProductSizes").split(",").map(x=>x.trim()).filter(Boolean);
+    const status=value("newProductStatus") || "available", badges=Array.from(document.getElementById("newProductBadges").selectedOptions).map(o=>o.value), salePrice=Number(value("newProductSalePrice")) || 0;
+    if (!name || !category || !Number.isFinite(price) || price<1 || price>1000000 || !/^https?:\/\//i.test(image)) { stockMessage.textContent="Enter a product name, category, valid price and image URL."; return; }
+    if (colors.length>12 || sizes.length>20 || colors.some(x=>x.length>30) || sizes.some(x=>x.length>30)) { stockMessage.textContent="Please use up to 12 colours and 20 variants (30 characters each)."; return; }
+    if (badges.includes("sale") && (!salePrice || salePrice>=price)) { stockMessage.textContent="For a sale, enter a sale price lower than the regular price."; return; }
+    const productId=Date.now();
+    const product={id:productId,name,category,group:stockToken(category),price,description,image,images:Object.fromEntries((colors.length?colors:["Default"]).map(c=>[c,image])),colors:colors.length?colors:["Default"],sizes:sizes.length?sizes:["One size"],status,badges,salePrice:salePrice||null,isCustom:true,active:status!=="hidden",createdAt:serverTimestamp(),updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL};
+    addStockProductBtn.disabled=true;addStockProductBtn.textContent="Adding…";
+    try {
+      await setDoc(doc(db,"products",String(productId)),product);
+      stockMessage.textContent=name+" has been added. It will appear in the shop according to its status.";
+      ["newProductName","newProductCategory","newProductPrice","newProductImage","newProductDescription","newProductColors","newProductSizes","newProductSalePrice"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+      document.getElementById("newProductStatus").value="available";
+      Array.from(document.getElementById("newProductBadges").options).forEach(o=>o.selected=false);
+    } catch(error) {
+      console.error("Add product failed:",error);
+      stockMessage.textContent=error.code==="permission-denied" ? "Firestore blocked product creation. Publish the updated firestore.rules file first." : "Could not add product: "+(error.message||"Please try again.");
+    } finally { addStockProductBtn.disabled=false;addStockProductBtn.textContent="＋ Add product to shop"; }
   });
   if (stockTab) stockTab.hidden = true;
   onSnapshot(collection(db, "inventory"), snapshot => {
@@ -3442,5 +3501,9 @@ button:focus:not(:focus-visible),
 .stock-product-actions button{font-size:10px;padding:7px 10px}
 .stock-product-actions .stock-hide{background:#655476}.stock-product-actions .stock-delete{background:#7b3946}
 @media(max-width:650px){.stock-product-form{grid-template-columns:1fr}.stock-form-wide{grid-column:auto}.stock-add-button{width:100%}}
+</style>
+
+<style id="7e-product-status-controls">
+.stock-product-actions{align-items:flex-end}.stock-product-actions label{display:flex;flex-direction:column;gap:4px;color:#d9c8eb;font-size:10px}.stock-product-actions select{background:#17151e;color:#fff;border:1px solid #665777;border-radius:6px;padding:7px;max-width:160px}.product-tag{z-index:2}.product-card .price del{font-size:12px;opacity:.55;margin-right:5px}
 </style>
 </body></html>
