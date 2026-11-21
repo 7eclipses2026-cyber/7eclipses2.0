@@ -13,7 +13,7 @@ service cloud.firestore {
       allow create, update: if isStockOwner()
         && request.resource.data.keys().hasOnly([
           'id', 'name', 'category', 'group', 'price', 'description', 'image',
-          'images', 'colors', 'sizes', 'status', 'badges', 'salePrice',
+          'images', 'galleryImages', 'colors', 'sizes', 'status', 'badges', 'salePrice',
           'isCustom', 'active', 'createdAt', 'updatedAt', 'updatedBy'
         ])
         && request.resource.data.name is string
