@@ -1299,8 +1299,8 @@ function card(p){
     </div>
     <div class="product-info">
       <h3>${p.name}</h3>
-      <div class="product-meta">Loose fit · Drop shoulder · DTF print</div>
-      <div class="price">₹599</div>
+      <div class="product-meta">${p.description || (p.isCustom ? p.category : "Loose fit · Drop shoulder · DTF print")}</div>
+      <div class="price">₹${Number(p.price || 599).toLocaleString("en-IN")}</div>
       <div class="product-bottom">
         <div class="swatches">${swatches}</div>
         <button class="add-btn" data-add="${p.id}">Add to Ocean +</button>
@@ -1310,7 +1310,7 @@ function card(p){
 }
 let wishlist = JSON.parse(localStorage.getItem("7eclipsesWishlist") || "[]");
   function renderProducts(filter="all"){
-grid.innerHTML=products.filter(p=>filter==="all"||p.group===filter).map(card).join("");
+grid.innerHTML=products.filter(p=>p.active!==false&&(filter==="all"||p.group===filter)).map(card).join("");
 grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addItem(Number(b.dataset.add)));grid.querySelectorAll("[data-wishlist]").forEach(b=>{
   const id = Number(b.dataset.wishlist);
   b.textContent = wishlist.includes(id) ? "♥︎" : "♡";
@@ -1367,6 +1367,7 @@ function showGallerySlide() {
 
 function updateChoiceImage() {
   const color = selectedColor;
+  if (selectedProduct?.isCustom) { gallerySlides = [{ src: selectedProduct.images[color], label: "PRODUCT VIEW" }]; gallerySlideIndex = 0; showGallerySlide(); return; }
 
   const backImageFiles = {
     Lavender: "Lavender back.jpg",
@@ -1471,8 +1472,10 @@ document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
 function addItem(id) {
   selectedProduct = products.find(p => p.id === id);
 
-  document.getElementById("choiceName").textContent =
-    selectedProduct.name;
+  document.getElementById("choiceName").textContent = selectedProduct.name;
+  document.getElementById("choicePrice").textContent = rupee(Number(selectedProduct.price || 599));
+  document.getElementById("choiceAdd").textContent = "ADD TO MY OCEAN · " + rupee(Number(selectedProduct.price || 599));
+  document.getElementById("choiceDescription").textContent = selectedProduct.description || "A new piece from 7ECLIPSES.";
   const productMeanings = {
     "MY EGO IS MY PROTECTION -2.18-": "Sometimes what looks like ego is actually a defence mechanism.",
     "BE STRONG": "Keep going, even when life gets difficult.",
@@ -1500,6 +1503,9 @@ function addItem(id) {
   chooseProductColor(selectedProduct.colors[0]);
 
   selectedSize = "";
+  const sizeOptions = document.getElementById("choiceSizeOptions");
+  sizeOptions.innerHTML = (selectedProduct.sizes || ["S","M","L","XL"]).map(size => '<button type="button" class="size-option" data-size="' + escapeOrderHtml(size) + '" aria-pressed="false">' + escapeOrderHtml(size) + '</button>').join("");
+  sizeOptions.querySelectorAll(".size-option").forEach(button => button.addEventListener("click", () => { if (button.disabled) return; selectedSize = button.dataset.size; sizeOptions.querySelectorAll(".size-option").forEach(option => { const active = option === button; option.classList.toggle("active", active); option.setAttribute("aria-pressed", String(active)); }); refreshSizeAvailability(); }));
   document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
     button.classList.remove("active");
     button.setAttribute("aria-pressed", "false");
@@ -1649,9 +1655,10 @@ document.getElementById("choiceAdd").onclick = () => {
   notify("Your favourite tee has been added to your Ocean!");
 };
 
+function productPrice(item) { const product = products.find(p => p.id === Number(item.id)); return Number(product?.price || 599); }
 function totals(){
   const qty = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
-  const sub = qty * 599;
+  const sub = cart.reduce((sum, item) => sum + productPrice(item) * Number(item.qty || 0), 0);
   return { qty, sub, delivery: 0, total: sub };
 }
 
@@ -1713,7 +1720,7 @@ function updateCheckoutSummary(){
 }
 
   function updateCart(){localStorage.setItem("7eclipsesBag", JSON.stringify(cart));window.syncShoppingData?.();let t=totals();document.getElementById("cartCount").textContent=t.qty;document.getElementById("bagSub").textContent=`(${t.qty})`;document.getElementById("subtotal").textContent=rupee(t.sub);document.getElementById("delivery").textContent="Calculated at checkout";document.getElementById("total").textContent=rupee(t.sub);updateBagDiscount();document.getElementById("giftMessage").style.display=t.qty>0?"block":"none";document.getElementById("giftMessage").innerHTML=t.qty>=2&&t.qty<=3?"<strong>🎁 Combo offer unlocked!</strong>Your 2–3 tee combo includes a FREE GIFT. Prepaid orders also get FREE DELIVERY.":t.qty===1?"<strong>Unlock your combo offer</strong>Add one more tee to get a FREE GIFT on your 2–3 tee combo.":"<strong>7ECLIPSES combo offer</strong>Free gift on 2–3 tee combo orders. Contact us for 4+ tees.";updateCheckoutSummary();
-let el=document.getElementById("cartItems");el.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-item"><img   class="mini-tee"   src="${products.find(p=>p.id===x.id).images[x.color]}"   alt="${x.name}"   loading="lazy" ><div><h4>${x.name}</h4><small>${x.color} · Size ${x.size}</small><div class="qty-controls"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></div><div><b>${rupee(x.qty*599)}</b><div class="qty-controls"><button class="remove" data-del="${i}">Remove</button></div></div></div>`).join(""):'<div class="empty">Your Ocean is waiting for its first frequency.</div>';
+let el=document.getElementById("cartItems");el.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-item"><img   class="mini-tee"   src="${products.find(p=>p.id===x.id).images[x.color]}"   alt="${x.name}"   loading="lazy" ><div><h4>${x.name}</h4><small>${x.color} · Size ${x.size}</small><div class="qty-controls"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></div><div><b>${rupee(x.qty*productPrice(x))}</b><div class="qty-controls"><button class="remove" data-del="${i}">Remove</button></div></div></div>`).join(""):'<div class="empty">Your Ocean is waiting for its first frequency.</div>';
 el.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{const item=cart[+b.dataset.inc];const qty=getVariantStock(item.id,item.color,item.size);if(qty===null||item.qty>=qty){notify(qty===null?"Stock has not been updated yet.":"No more stock is available for this size.");return;}item.qty++;updateCart()});el.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart[+b.dataset.dec];x.qty--;if(x.qty<=0)cart.splice(+b.dataset.dec,1);updateCart()});el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{cart.splice(+b.dataset.del,1);updateCart()})}
 function notify(s){let t=document.getElementById("toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
 const overlay=document.getElementById("overlay"),drawer=document.getElementById("cartDrawer");function openCart() { overlay.classList.add("show"); drawer.classList.add("show"); drawer.setAttribute("aria-hidden","false"); document.getElementById("cartOpen").setAttribute("aria-expanded","true"); } function closeCart() { overlay.classList.remove("show"); drawer.classList.remove("show"); drawer.setAttribute("aria-hidden","true"); document.getElementById("cartOpen").setAttribute("aria-expanded","false"); }  function renderWishlist() {
