@@ -1369,7 +1369,7 @@ function showGallerySlide() {
 
 function updateChoiceImage() {
   const color = selectedColor;
-  if (selectedProduct?.isCustom) { gallerySlides = [{ src: selectedProduct.images[color], label: "PRODUCT VIEW" }]; gallerySlideIndex = 0; showGallerySlide(); return; }
+  if (selectedProduct?.isCustom) { const photos = Array.isArray(selectedProduct.galleryImages) && selectedProduct.galleryImages.length ? selectedProduct.galleryImages : [selectedProduct.images[color]]; gallerySlides = photos.map((src,index)=>({src,label:index===0?"MAIN VIEW":"PRODUCT VIEW "+(index+1)})); gallerySlideIndex = 0; showGallerySlide(); return; }
 
   const backImageFiles = {
     Lavender: "Lavender back.jpg",
@@ -2313,7 +2313,7 @@ renderProducts();updateCart();
               <label>Product name<input id="newProductName" maxlength="80" placeholder="e.g. 52Hz Whale Tote Bag" required></label>
               <label>Category<input id="newProductCategory" maxlength="40" placeholder="e.g. Accessories" required></label>
               <label>Price (₹)<input id="newProductPrice" type="number" min="1" max="1000000" step="1" placeholder="e.g. 499" required></label>
-              <label>Product image URL<input id="newProductImage" type="url" placeholder="https://.../product-image.jpg" required></label>
+              <div class="stock-form-wide stock-image-inputs" id="newProductImagesList"><label>Product image URL<input id="newProductImage" class="new-product-image-url" type="url" placeholder="https://.../product-image.jpg" required></label></div><button type="button" id="addProductImageBtn" class="stock-add-button stock-add-image-button">＋ Add another image</button>
               <label class="stock-form-wide">Description<textarea id="newProductDescription" maxlength="500" rows="2" placeholder="A short description for customers"></textarea></label>
               <label>Colours / options<input id="newProductColors" maxlength="180" placeholder="Black, White (or Default)"></label>
               <label>Sizes / variants<input id="newProductSizes" maxlength="180" placeholder="S, M, L, XL (or One size)"></label>
@@ -2321,7 +2321,7 @@ renderProducts();updateCart();
               <label>Badges<select id="newProductBadges" multiple size="4"><option value="new-launch">New Launch</option><option value="featured">Featured</option><option value="limited-edition">Limited Edition</option><option value="sale">Sale</option></select></label>
               <label>Sale price (₹)<input id="newProductSalePrice" type="number" min="1" max="1000000" step="1" placeholder="Optional"></label>
             </div>
-            <p class="stock-form-hint">For non-clothing items, use “Default” for colour and “One size” for variant. Separate multiple options with commas. Hold Ctrl (Windows) to choose multiple badges.</p>
+            <p class="stock-form-hint">Add the main product photo first, then use “Add another image” for extra views. Customers can browse all product photos. For non-clothing items, use “Default” for colour and “One size” for variant. Separate multiple options with commas. Hold Ctrl (Windows) to choose multiple badges.</p>
             <button type="button" id="addStockProductBtn" class="stock-add-button">＋ Add product to shop</button>
           </section>
           <p id="stockManagerMessage" class="stock-manager-message" aria-live="polite">Loading inventory…</p>
@@ -2879,23 +2879,49 @@ renderProducts();updateCart();
       stockMessage.textContent = error.code==="permission-denied" ? "Firestore blocked this update. Publish the updated firestore.rules file first." : "Could not save stock: " + (error.message || "Please try again.");
     } finally { button.disabled=false;button.textContent="Save"; }
   });
+  const imageList = document.getElementById("newProductImagesList");
+  const addProductImageBtn = document.getElementById("addProductImageBtn");
+  if (addProductImageBtn && imageList) addProductImageBtn.addEventListener("click", () => {
+    const row = document.createElement("div");
+    row.className = "stock-image-row";
+    const label = document.createElement("label");
+    label.textContent = "Additional product image URL";
+    const input = document.createElement("input");
+    input.type = "url";
+    input.className = "new-product-image-url";
+    input.placeholder = "https://.../another-view.jpg";
+    input.required = true;
+    label.appendChild(input);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "stock-image-remove";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => row.remove());
+    row.append(label, remove);
+    imageList.appendChild(row);
+    input.focus();
+  });
   const addStockProductBtn = document.getElementById("addStockProductBtn");
   if (addStockProductBtn) addStockProductBtn.addEventListener("click", async () => {
     if (!isStockOwner()) { stockMessage.textContent = "Only the owner account can add products."; return; }
     const value = id => document.getElementById(id)?.value.trim() || "";
-    const name=value("newProductName"), category=value("newProductCategory"), price=Number(value("newProductPrice")), image=value("newProductImage");
+    const name=value("newProductName"), category=value("newProductCategory"), price=Number(value("newProductPrice"));
+    const imageUrls = Array.from(document.querySelectorAll("#newProductImagesList .new-product-image-url")).map(input=>input.value.trim()).filter(Boolean);
+    const image=imageUrls[0] || "";
     const description=value("newProductDescription"), colors=value("newProductColors").split(",").map(x=>x.trim()).filter(Boolean), sizes=value("newProductSizes").split(",").map(x=>x.trim()).filter(Boolean);
     const status=value("newProductStatus") || "available", badges=Array.from(document.getElementById("newProductBadges").selectedOptions).map(o=>o.value), salePrice=Number(value("newProductSalePrice")) || 0;
-    if (!name || !category || !Number.isFinite(price) || price<1 || price>1000000 || !/^https?:\/\//i.test(image)) { stockMessage.textContent="Enter a product name, category, valid price and image URL."; return; }
+    if (!name || !category || !Number.isFinite(price) || price<1 || price>1000000 || !imageUrls.length || imageUrls.some(url=>!/^https?:\/\//i.test(url))) { stockMessage.textContent="Enter a product name, category, valid price and at least one valid image URL. Check every image URL."; return; }
+    if (imageUrls.length>20) { stockMessage.textContent="You can add up to 20 product images."; return; }
     if (colors.length>12 || sizes.length>20 || colors.some(x=>x.length>30) || sizes.some(x=>x.length>30)) { stockMessage.textContent="Please use up to 12 colours and 20 variants (30 characters each)."; return; }
     if (badges.includes("sale") && (!salePrice || salePrice>=price)) { stockMessage.textContent="For a sale, enter a sale price lower than the regular price."; return; }
     const productId=Date.now();
-    const product={id:productId,name,category,group:stockToken(category),price,description,image,images:Object.fromEntries((colors.length?colors:["Default"]).map(c=>[c,image])),colors:colors.length?colors:["Default"],sizes:sizes.length?sizes:["One size"],status,badges,salePrice:salePrice||null,isCustom:true,active:status!=="hidden",createdAt:serverTimestamp(),updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL};
+    const product={id:productId,name,category,group:stockToken(category),price,description,image,galleryImages:imageUrls,images:Object.fromEntries((colors.length?colors:["Default"]).map(c=>[c,image])),colors:colors.length?colors:["Default"],sizes:sizes.length?sizes:["One size"],status,badges,salePrice:salePrice||null,isCustom:true,active:status!=="hidden",createdAt:serverTimestamp(),updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL};
     addStockProductBtn.disabled=true;addStockProductBtn.textContent="Adding…";
     try {
       await setDoc(doc(db,"products",String(productId)),product);
-      stockMessage.textContent=name+" has been added. It will appear in the shop according to its status.";
-      ["newProductName","newProductCategory","newProductPrice","newProductImage","newProductDescription","newProductColors","newProductSizes","newProductSalePrice"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+      stockMessage.textContent=name+" has been added with "+imageUrls.length+" image"+(imageUrls.length===1?"":"s")+". It will appear in the shop according to its status.";
+      ["newProductName","newProductCategory","newProductPrice","newProductDescription","newProductColors","newProductSizes","newProductSalePrice"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+      imageList.innerHTML='<label>Product image URL<input id="newProductImage" class="new-product-image-url" type="url" placeholder="https://.../product-image.jpg" required></label>';
       document.getElementById("newProductStatus").value="available";
       Array.from(document.getElementById("newProductBadges").options).forEach(o=>o.selected=false);
     } catch(error) {
@@ -3518,7 +3544,7 @@ button:focus:not(:focus-visible),
 .stock-product-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .stock-product-form label{display:flex;flex-direction:column;gap:5px;color:#d9c8eb;font-size:10px}
 .stock-product-form input,.stock-product-form textarea{width:100%;min-width:0;border:1px solid #665777;border-radius:7px;background:#17151e;color:#fff;padding:10px;font:12px 'DM Sans',sans-serif}
-.stock-form-wide{grid-column:1/-1}.stock-form-hint{font-size:10px;color:#a99bb9;line-height:1.5}
+.stock-form-wide{grid-column:1/-1}.stock-form-hint{font-size:10px;color:#a99bb9;line-height:1.5}.stock-image-inputs{display:grid;grid-template-columns:1fr;gap:8px}.stock-image-inputs label{display:flex;flex-direction:column;gap:5px;color:#d9c8eb;font-size:10px}.stock-image-row{display:flex;gap:8px;align-items:end}.stock-image-row label{flex:1;min-width:0}.stock-image-remove{background:#65404d;color:#fff;border:1px solid #986879;border-radius:7px;padding:10px;font-size:10px}.stock-add-image-button{justify-self:start}.stock-image-inputs input{width:100%}
 .stock-add-button{background:#c9a9e8;color:#17121d;border:0;border-radius:8px;padding:11px 14px;font-weight:700;font-size:11px}
 .stock-product-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .stock-product-actions button{font-size:10px;padding:7px 10px}
