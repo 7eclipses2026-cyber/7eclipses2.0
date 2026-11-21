@@ -2295,7 +2295,21 @@ renderProducts();updateCart();
           <div id="myOrderDetails" aria-live="polite"><p class="my-orders-empty">Choose an order ID to see its details.</p></div>
         </section>
         <section id="stockPanel" class="account-panel">
-          <div class="stock-manager-heading"><div><h3>Stock Manager</h3><p>Set exact quantities for every design, colour and size. Customers see availability live.</p></div><span class="stock-owner-label">OWNER ACCESS</span></div>
+          <div class="stock-manager-heading"><div><h3>Stock & Product Manager</h3><p>Add products, create future categories, set prices and manage stock. Published products appear in the shop automatically.</p></div><span class="stock-owner-label">OWNER ACCESS</span></div>
+          <section class="stock-add-product">
+            <h4>Add a new product</h4>
+            <div class="stock-product-form">
+              <label>Product name<input id="newProductName" maxlength="80" placeholder="e.g. 52Hz Whale Tote Bag" required></label>
+              <label>Category<input id="newProductCategory" maxlength="40" placeholder="e.g. Accessories" required></label>
+              <label>Price (₹)<input id="newProductPrice" type="number" min="1" max="1000000" step="1" placeholder="e.g. 499" required></label>
+              <label>Product image URL<input id="newProductImage" type="url" placeholder="https://.../product-image.jpg" required></label>
+              <label class="stock-form-wide">Description<textarea id="newProductDescription" maxlength="500" rows="2" placeholder="A short description for customers"></textarea></label>
+              <label>Colours / options<input id="newProductColors" maxlength="180" placeholder="Black, White (or Default)"></label>
+              <label>Sizes / variants<input id="newProductSizes" maxlength="180" placeholder="S, M, L, XL (or One size)"></label>
+            </div>
+            <p class="stock-form-hint">For non-clothing items, use “Default” for colour and “One size” for variant. Separate multiple options with commas.</p>
+            <button type="button" id="addStockProductBtn" class="stock-add-button">＋ Add product to shop</button>
+          </section>
           <p id="stockManagerMessage" class="stock-manager-message" aria-live="polite">Loading inventory…</p>
           <div id="stockManagerRows" class="stock-manager-rows"></div>
         </section>
