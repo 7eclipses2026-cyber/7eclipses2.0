@@ -5,20 +5,38 @@ service cloud.firestore {
       return request.auth != null
         && request.auth.token.email == '7eclipses2026@gmail.com';
     }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update: if isStockOwner()
+        && request.resource.data.keys().hasOnly([
+          'id', 'name', 'category', 'group', 'price', 'description', 'image',
+          'images', 'colors', 'sizes', 'status', 'badges', 'salePrice',
+          'isCustom', 'active', 'createdAt', 'updatedAt', 'updatedBy'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.price is number
+        && request.resource.data.updatedBy == request.auth.token.email;
+      allow delete: if isStockOwner();
+    }
+
     match /inventory/{variantId} {
       allow read: if true;
       allow create, update: if isStockOwner()
-        && request.resource.data.keys().hasOnly(['productId', 'productName', 'color', 'size', 'quantity', 'updatedAt', 'updatedBy'])
+        && request.resource.data.keys().hasOnly([
+          'productId', 'productName', 'color', 'size', 'quantity', 'updatedAt', 'updatedBy'
+        ])
         && request.resource.data.productId is int
         && request.resource.data.productName is string
-        && request.resource.data.color in ['Black', 'White', 'Lavender', 'Brown']
-        && request.resource.data.size in ['S', 'M', 'L', 'XL']
+        && request.resource.data.color is string
+        && request.resource.data.size is string
         && request.resource.data.quantity is int
         && request.resource.data.quantity >= 0
         && request.resource.data.quantity <= 9999
         && request.resource.data.updatedBy == request.auth.token.email;
       allow delete: if isStockOwner();
     }
+
     match /users/{userId} {
       allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
     }
