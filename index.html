@@ -2845,7 +2845,7 @@ renderProducts();updateCart();
     });
   }
   if (addStockManagerBtn) addStockManagerBtn.addEventListener("click", async () => {
-    if (!canManageStock()) return;
+    if (!isStockOwner()) return;
     const email = String(stockManagerEmailInput?.value || "").trim().toLowerCase();
     if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { stockMessage.textContent = "Enter a valid email address."; return; }
     if (email === STOCK_OWNER_EMAIL) { stockMessage.textContent = "The main owner already has Stock Manager access."; return; }
