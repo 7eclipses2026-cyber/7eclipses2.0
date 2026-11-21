@@ -1280,6 +1280,8 @@ grid.addEventListener("click", event => {
   const card = event.target.closest(".product-card");
   if (!card || !grid.contains(card)) return;
   if (event.target.closest("button, a, input, select, textarea")) return;
+  const clickedProduct = products.find(p => p.id === Number(card.dataset.product));
+  if (!clickedProduct || clickedProduct.status === "coming-soon" || clickedProduct.status === "sold-out" || clickedProduct.status === "hidden") return;
   addItem(Number(card.dataset.product));
 });
 
@@ -1473,8 +1475,10 @@ function addItem(id) {
   selectedProduct = products.find(p => p.id === id);
 
   document.getElementById("choiceName").textContent = selectedProduct.name;
-  document.getElementById("choicePrice").textContent = rupee(Number(selectedProduct.price || 599));
-  document.getElementById("choiceAdd").textContent = "ADD TO MY OCEAN · " + rupee(Number(selectedProduct.price || 599));
+  const activePrice = (selectedProduct.badges || []).includes("sale") && Number(selectedProduct.salePrice) > 0 ? Number(selectedProduct.salePrice) : Number(selectedProduct.price || 599);
+  document.getElementById("choicePrice").textContent = rupee(activePrice);
+  document.getElementById("choiceAdd").textContent = (selectedProduct.status === "pre-order" ? "PRE-ORDER · " : "ADD TO MY OCEAN · ") + rupee(activePrice);
+  document.getElementById("choiceAdd").disabled = selectedProduct.status === "coming-soon" || selectedProduct.status === "sold-out" || selectedProduct.status === "hidden";
   document.getElementById("choiceDescription").textContent = selectedProduct.description || "A new piece from 7ECLIPSES.";
   const productMeanings = {
     "MY EGO IS MY PROTECTION -2.18-": "Sometimes what looks like ego is actually a defence mechanism.",
@@ -1655,7 +1659,7 @@ document.getElementById("choiceAdd").onclick = () => {
   notify("Your favourite tee has been added to your Ocean!");
 };
 
-function productPrice(item) { const product = products.find(p => p.id === Number(item.id)); return Number(product?.price || 599); }
+function productPrice(item) { const product = products.find(p => p.id === Number(item.id)); return (product?.badges || []).includes("sale") && Number(product?.salePrice) > 0 ? Number(product.salePrice) : Number(product?.price || 599); }
 function totals(){
   const qty = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
   const sub = cart.reduce((sum, item) => sum + productPrice(item) * Number(item.qty || 0), 0);
