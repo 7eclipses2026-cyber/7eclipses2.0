@@ -278,6 +278,36 @@
   border: 2px solid #8ecfff;
 }
 
+#productModal .choice-color-gallery-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+#productModal .choice-color-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#productModal .choice-thumbnails-panel {
+  flex: 0 0 116px;
+  min-width: 0;
+}
+#productModal .choice-thumbnails-panel .gallery-label {
+  margin: 0 0 8px;
+  font-size: 9px;
+  letter-spacing: 1.3px;
+}
+#productModal .choice-thumbnails-panel .gallery-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-content: start;
+  gap: 7px;
+  margin: 0;
+}
+#productModal .choice-thumbnails-panel .gallery-thumb {
+  width: 100%;
+  height: 58px;
+  padding: 3px;
+}
 #productModal .form-grid {
   grid-column: 2;
   align-self: start;
@@ -345,8 +375,17 @@
     height: min(55vh, 480px);
   }
 
+  #productModal .choice-color-gallery-row {
+    gap: 12px;
+  }
+  #productModal .choice-thumbnails-panel {
+    flex-basis: 104px;
+  }
+  #productModal .choice-thumbnails-panel .gallery-thumb {
+    height: 54px;
+  }
   #productModal .gallery-thumbnails {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 }
 
@@ -1059,16 +1098,21 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
     <button type="button" id="galleryNext" class="gallery-arrow">›</button>
   </div>
 
-  <div id="galleryLabel" class="gallery-label">FRONT VIEW</div>
-  <div id="galleryThumbnails" class="gallery-thumbnails"></div>
-
 </div>
 
     <div class="form-grid">
       <div class="field">
         <label>Choose colour</label>
-        <div class="color-options" id="choiceColorOptions" role="group" aria-label="Choose T-shirt colour"></div>
-        <p class="selected-color-name" id="selectedColorName" aria-live="polite"></p>
+        <div class="choice-color-gallery-row">
+          <div class="choice-color-panel">
+            <div class="color-options" id="choiceColorOptions" role="group" aria-label="Choose T-shirt colour"></div>
+            <p class="selected-color-name" id="selectedColorName" aria-live="polite"></p>
+          </div>
+          <div class="choice-thumbnails-panel">
+            <div id="galleryLabel" class="gallery-label">FRONT VIEW</div>
+            <div id="galleryThumbnails" class="gallery-thumbnails"></div>
+          </div>
+        </div>
       </div>
       <div class="field">
         <label>Choose size</label>
