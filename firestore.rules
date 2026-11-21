@@ -7,10 +7,18 @@ service cloud.firestore {
         && request.auth.token.email == '7eclipses2026@gmail.com';
     }
 
+    function isStockManager() {
+      return isStockOwner()
+        || (request.auth != null
+          && request.auth.token.email is string
+          && exists(/databases/$(database)/documents/stockManagers/$(request.auth.token.email))
+          && get(/databases/$(database)/documents/stockManagers/$(request.auth.token.email)).data.email == request.auth.token.email);
+    }
+
     match /products/{productId} {
       allow read: if true;
 
-      allow create, update: if isStockOwner()
+      allow create, update: if isStockManager()
         && request.resource.data.keys().hasOnly([
           'id', 'name', 'category', 'group', 'price', 'description', 'image',
           'images', 'galleryImages', 'colors', 'sizes', 'status', 'badges', 'salePrice',
@@ -21,7 +29,7 @@ service cloud.firestore {
             || request.resource.data.price is float)
         && request.resource.data.updatedBy == request.auth.token.email;
 
-      allow delete: if isStockOwner();
+      allow delete: if isStockManager();
     }
 
     match /inventory/{variantId} {
@@ -41,6 +49,16 @@ service cloud.firestore {
         && request.resource.data.quantity <= 9999
         && request.resource.data.updatedBy == request.auth.token.email;
 
+      allow delete: if isStockOwner();
+    }
+
+    match /stockManagers/{managerEmail} {
+      allow get: if isStockOwner()
+        || (request.auth != null && request.auth.token.email == managerEmail);
+      allow list: if isStockOwner();
+      allow create, update: if isStockOwner()
+        && request.resource.data.email is string
+        && request.resource.data.email == managerEmail;
       allow delete: if isStockOwner();
     }
 
