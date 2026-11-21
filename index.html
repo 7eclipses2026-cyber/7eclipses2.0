@@ -2842,7 +2842,7 @@ renderProducts();updateCart();
     const productId = Number((statusSelect || badgesSelect).dataset.productStatus || (statusSelect || badgesSelect).dataset.productBadges);
     const product = products.find(p => p.id === productId);
     if (!product) return;
-    const update = statusSelect ? {status:statusSelect.value} : {badges:Array.from(badgesSelect.selectedOptions).map(o=>o.value)};
+    const update = statusSelect ? {status:statusSelect.value,active:statusSelect.value!=="hidden"} : {badges:Array.from(badgesSelect.selectedOptions).map(o=>o.value)};
     try {
       await setDoc(doc(db,"products",String(productId)),{...update,updatedAt:serverTimestamp(),updatedBy:STOCK_OWNER_EMAIL},{merge:true});
       stockMessage.textContent = "Updated " + product.name + ".";
