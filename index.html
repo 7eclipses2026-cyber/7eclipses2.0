@@ -1462,6 +1462,13 @@ document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
     refreshSizeAvailability();
   });
 });
+// The order-page helper is inside a separate module and cannot be called from this script.
+function escapeOrderHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;', "'": "&#39;"
+  })[char]);
+}
+
 function openProductViewer(id) {
   selectedProduct = products.find(p => Number(p.id) === Number(id));
   if (!selectedProduct) { console.error("7ECLIPSES: product not found for viewer", id); return; }
