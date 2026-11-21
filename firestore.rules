@@ -35,7 +35,7 @@ service cloud.firestore {
     match /inventory/{variantId} {
       allow read: if true;
 
-      allow create, update: if isStockOwner()
+      allow create, update: if isStockManager()
         && request.resource.data.keys().hasOnly([
           'productId', 'productName', 'color', 'size', 'quantity',
           'updatedAt', 'updatedBy'
