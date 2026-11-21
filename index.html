@@ -3640,4 +3640,59 @@ button:focus:not(:focus-visible),
 <style id="7e-product-status-controls">
 .stock-product-actions{align-items:flex-end}.stock-product-actions label{display:flex;flex-direction:column;gap:4px;color:#d9c8eb;font-size:10px}.stock-product-actions select{background:#17151e;color:#fff;border:1px solid #665777;border-radius:6px;padding:7px;max-width:160px}.product-tag{z-index:2}.product-card .price del{font-size:12px;opacity:.55;margin-right:5px}
 </style>
+
+
+<style id="7e-universal-tab-tap-fix">
+/* Make every navigation and account tab an obvious, reliable touch target. */
+.navlinks a,
+.account-tabs .account-tab,
+.stock-manager-nav-button,
+.menu-toggle,
+.nav-actions .iconbtn {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+  tap-highlight-color: transparent !important;
+}
+/* Remove the translucent browser tap/focus rectangle after pointer or touch clicks. */
+a:active,
+button:active,
+[role="button"]:active,
+.navlinks a:focus:not(:focus-visible),
+.account-tabs .account-tab:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+/* Keep a clear focus indicator for keyboard users. */
+.navlinks a:focus-visible,
+.account-tabs .account-tab:focus-visible,
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--blue) !important;
+  outline-offset: 3px !important;
+}
+</style>
+<script id="7e-nav-tabs-click-behavior">
+(function(){
+  const nav = document.getElementById("navlinks");
+  const menu = document.getElementById("menuBtn");
+  if (!nav) return;
+  nav.addEventListener("click", function(event) {
+    const link = event.target.closest("a[href]");
+    if (!link) return;
+    nav.classList.remove("open");
+    if (menu) menu.setAttribute("aria-expanded", "false");
+  });
+  if (menu) {
+    menu.setAttribute("aria-expanded", nav.classList.contains("open") ? "true" : "false");
+  }
+})();
+</script>
+
 </body></html>
