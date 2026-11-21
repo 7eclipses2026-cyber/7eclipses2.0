@@ -1302,7 +1302,8 @@ function card(p){
 let wishlist = JSON.parse(localStorage.getItem("7eclipsesWishlist") || "[]");
   function renderProducts(filter="all"){
 grid.innerHTML=products.filter(p=>p.active!==false&&p.status!=="hidden"&&(filter==="all"||p.group===filter)).sort((a,b)=>Number((b.badges||[]).includes("featured"))-Number((a.badges||[]).includes("featured"))).map(card).join("");
-grid.querySelectorAll(".product-card").forEach(card => card.addEventListener("click", event => { const target = event.target instanceof Element ? event.target : event.target.parentElement; if (target && target.closest("button, a, input, select, textarea, [data-add], [data-wishlist], [data-color]")) return; openProductViewer(card.dataset.product); }));
+// One delegated handler survives every product-grid refresh and opens details from the photo, title, or card background.
+grid.onclick = event => { const target = event.target instanceof Element ? event.target : event.target?.parentElement; const productCard = target?.closest(".product-card"); if (!productCard || target?.closest("button, a, input, select, textarea")) return; openProductViewer(productCard.dataset.product); };
 grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>openProductViewer(b.dataset.add));grid.querySelectorAll("[data-wishlist]").forEach(b=>{
   const id = Number(b.dataset.wishlist);
   b.textContent = wishlist.includes(id) ? "♥︎" : "♡";
@@ -1464,7 +1465,7 @@ document.querySelectorAll("#choiceSizeOptions .size-option").forEach(button => {
 function openProductViewer(id) {
   selectedProduct = products.find(p => Number(p.id) === Number(id));
   if (!selectedProduct) { console.error("7ECLIPSES: product not found for viewer", id); return; }
-  if (["coming-soon", "sold-out", "hidden"].includes(selectedProduct.status)) return;
+  if (selectedProduct.status === "hidden") return;
 
   document.getElementById("choiceName").textContent = selectedProduct.name;
   const activePrice = (selectedProduct.badges || []).includes("sale") && Number(selectedProduct.salePrice) > 0 ? Number(selectedProduct.salePrice) : Number(selectedProduct.price || 599);
