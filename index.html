@@ -1296,7 +1296,7 @@ function card(p){
 
   return `<article class="product-card" data-product="${p.id}">
     <div class="product-image">
-      <img class="product-photo" src="${image}" alt="${p.name} - ${firstColor}" loading="lazy" onerror="this.parentElement.classList.add('photo-error')">
+      <img class="product-photo" src="${image}" alt="${p.name} - ${firstColor}" loading="lazy" onerror="if(!this.dataset.pathRetry&&this.getAttribute('src')?.startsWith('/images/')){this.dataset.pathRetry='1';this.src='/public'+this.getAttribute('src')}else{this.parentElement.classList.add('photo-error')}">
       <span class="product-tag">${p.status === "coming-soon" ? "COMING SOON" : p.status === "pre-order" ? "PRE-ORDER" : p.status === "sold-out" ? "SOLD OUT" : (p.badges || []).includes("limited-edition") ? "LIMITED EDITION" : (p.badges || []).includes("new-launch") ? "NEW LAUNCH" : (p.badges || []).includes("featured") ? "FEATURED" : p.isCustom ? (p.category || "NEW ARRIVAL").toUpperCase() : "200 GSM · UNISEX"}</span>
       <button type="button" class="wishlist-btn" data-wishlist="${p.id}" aria-label="Add ${p.name} to wishlist">♡</button>
     </div>
