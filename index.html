@@ -2368,6 +2368,22 @@ renderProducts();updateCart();
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Public product catalogue: owner-created products and launch settings sync to every visitor.
+  onSnapshot(collection(db, "products"), snapshot => {
+    snapshot.forEach(item => {
+      const data = item.data();
+      const productId = Number(data.id || item.id);
+      if (!Number.isSafeInteger(productId) || !data.name || !data.images) return;
+      const existing = products.findIndex(p => Number(p.id) === productId);
+      const product = { ...data, id: productId, colors: Array.isArray(data.colors) && data.colors.length ? data.colors : Object.keys(data.images), sizes: Array.isArray(data.sizes) && data.sizes.length ? data.sizes : ["One size"] };
+      if (existing >= 0) products[existing] = { ...products[existing], ...product };
+      else products.push(product);
+    });
+    renderProducts();
+    if (typeof updateCart === "function") updateCart();
+    if (stockTab && isStockOwner() && document.getElementById("stockPanel")?.classList.contains("active")) renderStockManager();
+  }, error => console.error("Product catalogue listener failed:", error));
+
   let currentUser = null;
   let shoppingUnsubscribe = null;
   let applyingCloudData = false;
@@ -2789,7 +2805,7 @@ renderProducts();updateCart();
     const item = liveInventory[stockDocumentId(productId, color, size)];
     return item && Number.isInteger(item.quantity) ? item.quantity : null;
   };
-  function stockToken(value) { return String(value || "default").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "default"; }
+  function stockToken(value) { return String(value || "default").toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || "default"; }
   function stockDocumentId(productId, color, size) { return "p" + Number(productId) + "_" + stockToken(color) + "_" + stockToken(size); }
   function isStockOwner() { return !!currentUser && String(currentUser.email || "").toLowerCase() === STOCK_OWNER_EMAIL; }
   function renderStockManager() {
@@ -2797,7 +2813,7 @@ renderProducts();updateCart();
     if (!inventoryReady) { stockMessage.textContent = "Connecting to live inventory…"; return; }
     stockMessage.textContent = "Set a quantity for every option. 0 means sold out. Product status and badges control how it appears in the shop.";
     stockRows.innerHTML = products.map(product => {
-      const colors = product.colors || ["Default"], sizes = product.sizes || ["One size"];
+      const colors = product.colors || ["Default"], sizes = product.sizes || (product.isCustom ? ["One size"] : ["S","M","L","XL"]);
       const variants = colors.flatMap(color => sizes.map(size => {
         const id = stockDocumentId(product.id, color, size), item = liveInventory[id];
         const value = item && Number.isInteger(item.quantity) ? String(item.quantity) : "";
