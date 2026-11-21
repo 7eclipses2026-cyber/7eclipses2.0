@@ -11,7 +11,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
 :root{--ink:#071b29;--deep:#03111d;--blue:#8ecfff;--ice:#d8efff;--muted:#8ca6b7;--paper:#f3f6f7;--line:rgba(142,207,255,.2);--white:#fff;--gold:#d6bd91}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--deep);color:var(--ice);font-family:'DM Sans',sans-serif}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}.announcement{background:#0d2b40;text-align:center;padding:10px 16px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#c7e9ff}.nav{position:sticky;top:0;z-index:20;background:rgba(3,17,29,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}.nav-inner{max-width:1240px;margin:auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-family:'Playfair Display',serif;font-size:24px;letter-spacing:.08em;color:#e9f7ff}.brand small{display:block;font:9px 'DM Sans';letter-spacing:.3em;color:var(--muted);margin-top:2px}.navlinks{display:flex;gap:28px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#c2d6e2}.navlinks a:hover{color:var(--blue)}.nav-actions{display:flex;align-items:center;gap:12px}.iconbtn{background:none;border:1px solid var(--line);color:var(--ice);border-radius:99px;padding:10px 15px;font-size:12px}.cart-count{display:inline-grid;place-items:center;background:var(--blue);color:#03111d;border-radius:50%;width:19px;height:19px;font-size:10px;margin-left:5px;font-weight:700}.menu-toggle{display:none}.hero{min-height:690px;position:relative;display:flex;align-items:flex-end;overflow:hidden;background:#061b2a}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(2,13,23,.98),rgba(2,13,23,.18) 60%,rgba(2,13,23,.08)),url('/public/images/whale%2052Hz.jpg') center 42%/cover no-repeat;transform:scale(1.01)}.hero-content{position:relative;z-index:1;max-width:1240px;width:100%;margin:0 auto;padding:90px 24px 76px}.eyebrow{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--blue)}h1,h2,h3,p{margin-top:0}h1{font:clamp(54px,10vw,126px)/.92 'Playfair Display',serif;letter-spacing:-.045em;margin:20px 0;color:#e5f5ff;text-shadow:0 0 36px rgba(90,185,255,.25)}.hero-sub{max-width:560px;color:#c2d7e5;line-height:1.8;font-size:15px}.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.btn{border:1px solid var(--blue);background:var(--blue);color:#03111d;padding:14px 22px;border-radius:2px;font-weight:700;font-size:11px;letter-spacing:.13em;text-transform:uppercase;transition:.2s}.btn:hover{background:#c6eaff;transform:translateY(-2px)}.btn.outline{background:transparent;color:var(--ice);border-color:rgba(216,239,255,.5)}.hero-note{position:absolute;right:26px;top:32px;writing-mode:vertical-rl;font-size:9px;letter-spacing:.28em;color:#d4eafa}.ticker{border-block:1px solid var(--line);padding:17px 0;overflow:hidden;white-space:nowrap;color:#9fc8e5;font-size:10px;letter-spacing:.25em;text-transform:uppercase}.ticker span{padding:0 32px}.section{max-width:1240px;margin:auto;padding:100px 24px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:38px}.kicker{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--blue)}h2{font:clamp(34px,5vw,58px)/1.05 'Playfair Display',serif;letter-spacing:-.025em;margin:12px 0 0;color:#eef8ff}.section-head p{max-width:390px;color:var(--muted);font-size:13px;line-height:1.8;margin:0}.products{background:#061725}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}.filter{background:transparent;color:#9eb6c5;border:1px solid var(--line);padding:9px 14px;font-size:10px;letter-spacing:.1em;text-transform:uppercase}.filter.active,.filter:hover{background:var(--ice);color:var(--deep);border-color:var(--ice)}.product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.product-card{background:#0b2232;border:1px solid rgba(142,207,255,.12);transition:.25s;min-width:0}.product-card{cursor:pointer}.product-card button{cursor:pointer}.product-card:hover{transform:translateY(-5px);border-color:rgba(142,207,255,.5)}.product-image{height:280px;position:relative;background:#f1f1f1;display:grid;place-items:center;overflow:hidden}.product-photo{width:100%;height:100%;object-fit:contain;display:block;padding:8px}.product-image.photo-error{background:radial-gradient(circle at 50% 35%,#24445a,#0c2232 68%)}.product-image.photo-error .product-photo{display:none}.product-image:after{content:"7E";font:100px 'Playfair Display';color:rgba(199,232,255,.08);position:absolute;display:none}.product-image.photo-error:after{display:block}.tee-placeholder{width:62%;height:72%;background:linear-gradient(135deg,#e8e8e4,#c9d1d4);clip-path:polygon(26% 0,40% 0,44% 7%,56% 7%,60% 0,74% 0,100% 19%,83% 40%,73% 32%,73% 100%,27% 100%,27% 32%,17% 40%,0 19%);filter:drop-shadow(0 12px 15px #0008);position:relative;z-index:1}.tee-placeholder.dark{background:linear-gradient(135deg,#303b45,#090e13)}.tee-placeholder.lav{background:linear-gradient(135deg,#d9c9e8,#a996bd)}.tee-placeholder.brown{background:linear-gradient(135deg,#a98770,#5d4036)}.tee-mark{position:absolute;z-index:2;top:47%;left:50%;transform:translate(-50%,-50%);font:9px 'DM Sans';letter-spacing:.12em;color:#263b49;text-align:center}.tee-placeholder.dark+.tee-mark{color:#dcecf5}.product-tag{position:absolute;top:12px;left:12px;background:#c9eaff;color:#071b29;font-size:9px;letter-spacing:.1em;padding:6px 8px;text-transform:uppercase;z-index:3}.product-info{padding:18px}.product-info h3{font:20px 'Playfair Display';margin:0 0 8px;color:#e9f6ff;min-height:48px}.product-meta{font-size:10px;color:#91a9b9;letter-spacing:.08em;text-transform:uppercase}.price{font-size:15px;font-weight:700;margin:13px 0;color:#d8efff}.price del{font-size:11px;color:#7891a1;font-weight:400;margin-left:7px}.product-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}.add-btn{background:transparent;border:1px solid var(--blue);color:var(--blue);padding:9px 12px;font-size:9px;letter-spacing:.12em;text-transform:uppercase}.add-btn:hover{background:var(--blue);color:var(--deep)}.swatches{display:flex;gap:5px}.swatch{width:11px;height:11px;border-radius:50%;border:1px solid #ffffff60}.story{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}.story-visual{min-height:440px;background:linear-gradient(0deg,#03111d55,#03111d55),url('/public/images/whale%2052Hz.jpg') center/cover;border:1px solid var(--line);position:relative}.story-visual:after{content:"52 HZ";position:absolute;bottom:24px;left:24px;font:clamp(40px,6vw,76px) 'Playfair Display';color:#d9f0ff;text-shadow:0 0 20px #49aaff}.story-copy p{font-size:14px;line-height:2;color:#a9bfcd}.story-quote{font:italic 24px/1.5 'Playfair Display';color:#d9efff;border-left:2px solid var(--blue);padding-left:22px;margin:28px 0}.specs{background:#eaf2f5;color:#071b29}.specs h2{color:#071b29}.specs .section-head p{color:#526b7a}.spec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.spec-card{padding:27px 22px;border:1px solid #c7d6de;min-height:160px}.spec-card .num{font:30px 'Playfair Display';color:#4b91bd}.spec-card h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:12px 0 8px}.spec-card p{font-size:12px;color:#5c7180;line-height:1.7;margin:0}.swatch-row{display:flex;gap:9px;margin-top:14px}.color-dot{width:19px;height:19px;border-radius:50%;border:1px solid #9aabb4}.size-wrap{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}.size-table{width:100%;border-collapse:collapse;font-size:12px}.size-table th,.size-table td{padding:15px 12px;border-bottom:1px solid var(--line);text-align:left}.size-table th{color:var(--blue);font-size:10px;letter-spacing:.12em;text-transform:uppercase}.size-note{color:var(--muted);font-size:12px;line-height:1.8}.order-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.step{border-top:1px solid var(--blue);padding:24px 18px 12px;background:#0a2030}.step b{font:34px 'Playfair Display';color:var(--blue)}.step h3{font-size:14px;margin:15px 0 8px}.step p{font-size:12px;color:var(--muted);line-height:1.8}.footer{border-top:1px solid var(--line);padding:45px 24px 28px}.footer-inner{max-width:1240px;margin:auto;display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}.footer p,.footer a{font-size:11px;color:#8da5b5;line-height:2}.footer-brand{font:27px 'Playfair Display';color:#e5f5ff}.copyright{max-width:1240px;margin:30px auto 0;border-top:1px solid var(--line);padding-top:18px;font-size:10px;color:#607b8d;letter-spacing:.08em}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--deep);color:var(--ice);font-family:'DM Sans',sans-serif}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}.announcement{background:#0d2b40;text-align:center;padding:10px 16px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#c7e9ff}.nav{position:sticky;top:0;z-index:20;background:rgba(3,17,29,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}.nav-inner{max-width:1240px;margin:auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-family:'Playfair Display',serif;font-size:24px;letter-spacing:.08em;color:#e9f7ff}.brand small{display:block;font:9px 'DM Sans';letter-spacing:.3em;color:var(--muted);margin-top:2px}.navlinks{display:flex;gap:28px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#c2d6e2}.navlinks a:hover{color:var(--blue)}.nav-actions{display:flex;align-items:center;gap:12px}.iconbtn{background:none;border:1px solid var(--line);color:var(--ice);border-radius:99px;padding:10px 15px;font-size:12px}.cart-count{display:inline-grid;place-items:center;background:var(--blue);color:#03111d;border-radius:50%;width:19px;height:19px;font-size:10px;margin-left:5px;font-weight:700}.menu-toggle{display:none}.hero{min-height:690px;position:relative;display:flex;align-items:flex-end;overflow:hidden;background:#061b2a}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(2,13,23,.98),rgba(2,13,23,.18) 60%,rgba(2,13,23,.08)),url('/images/whale%2052Hz.jpg') center 42%/cover no-repeat;transform:scale(1.01)}.hero-content{position:relative;z-index:1;max-width:1240px;width:100%;margin:0 auto;padding:90px 24px 76px}.eyebrow{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--blue)}h1,h2,h3,p{margin-top:0}h1{font:clamp(54px,10vw,126px)/.92 'Playfair Display',serif;letter-spacing:-.045em;margin:20px 0;color:#e5f5ff;text-shadow:0 0 36px rgba(90,185,255,.25)}.hero-sub{max-width:560px;color:#c2d7e5;line-height:1.8;font-size:15px}.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.btn{border:1px solid var(--blue);background:var(--blue);color:#03111d;padding:14px 22px;border-radius:2px;font-weight:700;font-size:11px;letter-spacing:.13em;text-transform:uppercase;transition:.2s}.btn:hover{background:#c6eaff;transform:translateY(-2px)}.btn.outline{background:transparent;color:var(--ice);border-color:rgba(216,239,255,.5)}.hero-note{position:absolute;right:26px;top:32px;writing-mode:vertical-rl;font-size:9px;letter-spacing:.28em;color:#d4eafa}.ticker{border-block:1px solid var(--line);padding:17px 0;overflow:hidden;white-space:nowrap;color:#9fc8e5;font-size:10px;letter-spacing:.25em;text-transform:uppercase}.ticker span{padding:0 32px}.section{max-width:1240px;margin:auto;padding:100px 24px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:38px}.kicker{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--blue)}h2{font:clamp(34px,5vw,58px)/1.05 'Playfair Display',serif;letter-spacing:-.025em;margin:12px 0 0;color:#eef8ff}.section-head p{max-width:390px;color:var(--muted);font-size:13px;line-height:1.8;margin:0}.products{background:#061725}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}.filter{background:transparent;color:#9eb6c5;border:1px solid var(--line);padding:9px 14px;font-size:10px;letter-spacing:.1em;text-transform:uppercase}.filter.active,.filter:hover{background:var(--ice);color:var(--deep);border-color:var(--ice)}.product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.product-card{background:#0b2232;border:1px solid rgba(142,207,255,.12);transition:.25s;min-width:0}.product-card{cursor:pointer}.product-card button{cursor:pointer}.product-card:hover{transform:translateY(-5px);border-color:rgba(142,207,255,.5)}.product-image{height:280px;position:relative;background:#f1f1f1;display:grid;place-items:center;overflow:hidden}.product-photo{width:100%;height:100%;object-fit:contain;display:block;padding:8px}.product-image.photo-error{background:radial-gradient(circle at 50% 35%,#24445a,#0c2232 68%)}.product-image.photo-error .product-photo{display:none}.product-image:after{content:"7E";font:100px 'Playfair Display';color:rgba(199,232,255,.08);position:absolute;display:none}.product-image.photo-error:after{display:block}.tee-placeholder{width:62%;height:72%;background:linear-gradient(135deg,#e8e8e4,#c9d1d4);clip-path:polygon(26% 0,40% 0,44% 7%,56% 7%,60% 0,74% 0,100% 19%,83% 40%,73% 32%,73% 100%,27% 100%,27% 32%,17% 40%,0 19%);filter:drop-shadow(0 12px 15px #0008);position:relative;z-index:1}.tee-placeholder.dark{background:linear-gradient(135deg,#303b45,#090e13)}.tee-placeholder.lav{background:linear-gradient(135deg,#d9c9e8,#a996bd)}.tee-placeholder.brown{background:linear-gradient(135deg,#a98770,#5d4036)}.tee-mark{position:absolute;z-index:2;top:47%;left:50%;transform:translate(-50%,-50%);font:9px 'DM Sans';letter-spacing:.12em;color:#263b49;text-align:center}.tee-placeholder.dark+.tee-mark{color:#dcecf5}.product-tag{position:absolute;top:12px;left:12px;background:#c9eaff;color:#071b29;font-size:9px;letter-spacing:.1em;padding:6px 8px;text-transform:uppercase;z-index:3}.product-info{padding:18px}.product-info h3{font:20px 'Playfair Display';margin:0 0 8px;color:#e9f6ff;min-height:48px}.product-meta{font-size:10px;color:#91a9b9;letter-spacing:.08em;text-transform:uppercase}.price{font-size:15px;font-weight:700;margin:13px 0;color:#d8efff}.price del{font-size:11px;color:#7891a1;font-weight:400;margin-left:7px}.product-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}.add-btn{background:transparent;border:1px solid var(--blue);color:var(--blue);padding:9px 12px;font-size:9px;letter-spacing:.12em;text-transform:uppercase}.add-btn:hover{background:var(--blue);color:var(--deep)}.swatches{display:flex;gap:5px}.swatch{width:11px;height:11px;border-radius:50%;border:1px solid #ffffff60}.story{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}.story-visual{min-height:440px;background:linear-gradient(0deg,#03111d55,#03111d55),url('/images/whale%2052Hz.jpg') center/cover;border:1px solid var(--line);position:relative}.story-visual:after{content:"52 HZ";position:absolute;bottom:24px;left:24px;font:clamp(40px,6vw,76px) 'Playfair Display';color:#d9f0ff;text-shadow:0 0 20px #49aaff}.story-copy p{font-size:14px;line-height:2;color:#a9bfcd}.story-quote{font:italic 24px/1.5 'Playfair Display';color:#d9efff;border-left:2px solid var(--blue);padding-left:22px;margin:28px 0}.specs{background:#eaf2f5;color:#071b29}.specs h2{color:#071b29}.specs .section-head p{color:#526b7a}.spec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.spec-card{padding:27px 22px;border:1px solid #c7d6de;min-height:160px}.spec-card .num{font:30px 'Playfair Display';color:#4b91bd}.spec-card h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:12px 0 8px}.spec-card p{font-size:12px;color:#5c7180;line-height:1.7;margin:0}.swatch-row{display:flex;gap:9px;margin-top:14px}.color-dot{width:19px;height:19px;border-radius:50%;border:1px solid #9aabb4}.size-wrap{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}.size-table{width:100%;border-collapse:collapse;font-size:12px}.size-table th,.size-table td{padding:15px 12px;border-bottom:1px solid var(--line);text-align:left}.size-table th{color:var(--blue);font-size:10px;letter-spacing:.12em;text-transform:uppercase}.size-note{color:var(--muted);font-size:12px;line-height:1.8}.order-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.step{border-top:1px solid var(--blue);padding:24px 18px 12px;background:#0a2030}.step b{font:34px 'Playfair Display';color:var(--blue)}.step h3{font-size:14px;margin:15px 0 8px}.step p{font-size:12px;color:var(--muted);line-height:1.8}.footer{border-top:1px solid var(--line);padding:45px 24px 28px}.footer-inner{max-width:1240px;margin:auto;display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}.footer p,.footer a{font-size:11px;color:#8da5b5;line-height:2}.footer-brand{font:27px 'Playfair Display';color:#e5f5ff}.copyright{max-width:1240px;margin:30px auto 0;border-top:1px solid var(--line);padding-top:18px;font-size:10px;color:#607b8d;letter-spacing:.08em}
 .overlay{position:fixed;inset:0;background:#0009;z-index:40;opacity:0;pointer-events:none;transition:.25s}.overlay.show{opacity:1;pointer-events:auto}.cart-drawer{position:fixed;z-index:41;right:0;top:0;height:100%;width:min(470px,100%);background:#071b29;border-left:1px solid var(--line);transform:translateX(102%);transition:.3s;display:flex;flex-direction:column}.cart-drawer.show{transform:translateX(0)}.drawer-head{padding:24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.drawer-head h3{font:28px 'Playfair Display';margin:0}.close{background:none;border:0;color:#d9efff;font-size:25px}.cart-items{padding:12px 24px;overflow:auto;flex:1}
 .gift-note{margin:0 0 14px;padding:13px 14px;border:1px solid rgba(142,207,255,.38);border-radius:10px;background:linear-gradient(135deg,rgba(31,89,119,.35),rgba(7,27,41,.7));color:#d8efff;font-size:12px;line-height:1.65}
 .gift-note strong{display:block;color:#a9ddff;font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
@@ -991,8 +991,8 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 
 </head>
 <body>
-<div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
-<div id="sevenEclipsesSwimmingWhaleTwo" class="second-52hz-whale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
+<div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
+<div id="sevenEclipsesSwimmingWhaleTwo" class="second-52hz-whale" aria-hidden="true"><img class="whale-body" src="/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
 <div class="announcement">A DEEP REMINDER: BE YOURSELF. ALWAYS.</div>
 <header class="nav"><div class="nav-inner">
 <button class="iconbtn account-profile-button" id="accountOpen" aria-label="My Account"><span class="account-profile-avatar" id="accountProfileAvatar">👤</span><span class="account-profile-name" id="accountProfileName"></span></button>
@@ -1153,8 +1153,8 @@ const products = [
     name: "BORA",
     group: "lavender",
     images: {
-      Lavender: "/public/images/BORA Leavender.jpg",
-      White: "/public/images/BORA white.jpg"
+      Lavender: "/images/BORA Leavender.jpg",
+      White: "/images/BORA white.jpg"
     }
   },
   {
@@ -1162,7 +1162,7 @@ const products = [
     name: "FLY WITH 52",
     group: "lavender",
     images: {
-      White: "/public/images/Fly with 52Hz.jpg"
+      White: "/images/Fly with 52Hz.jpg"
     }
   },
   {
@@ -1170,8 +1170,8 @@ const products = [
     name: "BE STRONG",
     group: "lavender",
     images: {
-      Lavender: "/public/images/Be strong leavender .jpg",
-      White: "/public/images/Be strong white .jpg"
+      Lavender: "/images/Be strong leavender .jpg",
+      White: "/images/Be strong white .jpg"
     }
   },
   {
@@ -1179,8 +1179,8 @@ const products = [
     name: "A HUGE WE ALL WAITED FOR",
     group: "lavender",
     images: {
-      Lavender: "/public/images/A HUG Leavender.jpg",
-      White: "/public/images/A HUG white.jpg"
+      Lavender: "/images/A HUG Leavender.jpg",
+      White: "/images/A HUG white.jpg"
     }
   },
   {
@@ -1188,8 +1188,8 @@ const products = [
     name: "RAINY DAYS",
     group: "black",
     images: {
-      Black: "/public/images/RAINY DAYS-Black.jpg",
-      White: "/public/images/RAINY DAYS-White.jpg"
+      Black: "/images/RAINY DAYS-Black.jpg",
+      White: "/images/RAINY DAYS-White.jpg"
     }
   },
   {
@@ -1197,8 +1197,8 @@ const products = [
     name: "MY EGO IS MY PROTECTION -2.18-",
     group: "black",
     images: {
-      Black: "/public/images/MY EGO IS MY PROTECTION -2.18-black.jpg",
-      White: "/public/images/MY EGO IS MY PROTECTION -2.18-white.jpg"
+      Black: "/images/MY EGO IS MY PROTECTION -2.18-black.jpg",
+      White: "/images/MY EGO IS MY PROTECTION -2.18-white.jpg"
     }
   },
   {
@@ -1206,8 +1206,8 @@ const products = [
     name: "APNA HAQ MANGA H AAPKI JAYDAD NAHI",
     group: "black",
     images: {
-      Black: "/public/images/APNA HAQ-black.jpg",
-      White: "/public/images/APNA HAQ-white.jpg"
+      Black: "/images/APNA HAQ-black.jpg",
+      White: "/images/APNA HAQ-white.jpg"
     }
   },
   {
@@ -1215,8 +1215,8 @@ const products = [
     name: "JUST BE YOURSELF",
     group: "black",
     images: {
-      Black: "/public/images/JUST BE YOURSELF.jpg",
-      White: "/public/images/JUST BE YOURSELF-white.jpg"
+      Black: "/images/JUST BE YOURSELF.jpg",
+      White: "/images/JUST BE YOURSELF-white.jpg"
     }
   },
   {
@@ -1224,8 +1224,8 @@ const products = [
     name: "DONE PLEASING PEOPLE",
     group: "black",
     images: {
-      Black: "/public/images/Done_pleasing_people_black[1].jpg",
-      Brown: "/public/images/Done_pleasing_people_brown[1].jpg"
+      Black: "/images/Done_pleasing_people_black[1].jpg",
+      Brown: "/images/Done_pleasing_people_brown[1].jpg"
     }
   },
   {
@@ -1233,8 +1233,8 @@ const products = [
     name: "SMALL WHALE",
     group: "black",
     images: {
-      Black: "/public/images/Whale_52hz_black[1].jpg",
-      White: "/public/images/Whale_52Hz_white[1].jpg"
+      Black: "/images/Whale_52hz_black[1].jpg",
+      White: "/images/Whale_52Hz_white[1].jpg"
     }
   },
   {
@@ -1242,8 +1242,8 @@ const products = [
   name: "Gentle Man",
   group: "black",
   images: {
-    Black: "/public/images/Gentle Man-black.jpg",
-    White: "/public/images/Gentle Man-white.jpg"
+    Black: "/images/Gentle Man-black.jpg",
+    White: "/images/Gentle Man-white.jpg"
   }
 }
 ].map(p => ({
@@ -1389,11 +1389,11 @@ function updateChoiceImage() {
   gallerySlides = [
     { src: selectedProduct.images[color], label: "FRONT VIEW" },
     {
-      src: "/public/images/" + encodeURIComponent(backImageFiles[color]),
+      src: "/images/" + encodeURIComponent(backImageFiles[color]),
       label: "BACK VIEW"
     },
     {
-      src: "/public/images/" + encodeURIComponent(fabricImageFiles[color]),
+      src: "/images/" + encodeURIComponent(fabricImageFiles[color]),
       label: "FABRIC DETAILS"
     }
   ];
@@ -3197,9 +3197,9 @@ renderProducts();updateCart();
     }
   });
 </script>
-<button id="bora-chat-launcher" type="button" aria-label="Chat with BORA" aria-expanded="false"><span class="bora-orb"><img src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></span><span class="bora-launcher-copy"><strong>Meet BORA</strong><small>Your 7ECLIPSES ocean guide</small></span><span class="bora-launcher-spark" aria-hidden="true">✦</span></button>
+<button id="bora-chat-launcher" type="button" aria-label="Chat with BORA" aria-expanded="false"><span class="bora-orb"><img src="/images/52hz-real-whale-cutout.png" alt="" draggable="false"></span><span class="bora-launcher-copy"><strong>Meet BORA</strong><small>Your 7ECLIPSES ocean guide</small></span><span class="bora-launcher-spark" aria-hidden="true">✦</span></button>
 <section id="bora-chat-panel" role="dialog" aria-label="Agent BORA product help" aria-modal="false">
-  <header class="bora-chat-head"><div class="bora-chat-avatar"><img src="/public/images/52hz-real-whale-cutout.png" alt="BORA the whale" draggable="false"></div><div class="bora-chat-head-copy"><span class="bora-kicker">YOUR OCEAN FRIEND</span><strong>BORA <span class="bora-wave">✦</span></strong><small><i class="bora-online-dot"></i> Here to help you find your flow</small></div><button id="bora-chat-close" type="button" aria-label="Close chat">×</button></header>
+  <header class="bora-chat-head"><div class="bora-chat-avatar"><img src="/images/52hz-real-whale-cutout.png" alt="BORA the whale" draggable="false"></div><div class="bora-chat-head-copy"><span class="bora-kicker">YOUR OCEAN FRIEND</span><strong>BORA <span class="bora-wave">✦</span></strong><small><i class="bora-online-dot"></i> Here to help you find your flow</small></div><button id="bora-chat-close" type="button" aria-label="Close chat">×</button></header>
   <div id="bora-chat-messages" aria-live="polite"><div class="bora-welcome"><span class="bora-welcome-eyebrow">A LITTLE HELP FROM THE DEEP</span><h3>Hey there, ocean soul. <span>🌊</span></h3><p>I’m BORA — your friendly 7ECLIPSES guide. Looking for your next favourite tee, a size recommendation, or a hand with an order? Let’s dive in.</p><span class="bora-welcome-whisper">No question is too small. 💜</span></div></div>
   <div class="bora-quick-label">QUICK DIPS</div><div class="bora-chat-quick"><button type="button" data-bora-quick="Tell me about the tees"><span>✦</span> Explore tees</button><button type="button" data-bora-quick="What sizes are available?"><span>↗</span> Find my size</button><button type="button" data-bora-quick="What colours are available?"><span>◉</span> Colours</button><button type="button" data-bora-quick="I want to talk to your team"><span>♡</span> Human help</button></div>
   <form class="bora-chat-compose" id="bora-chat-form"><input id="bora-chat-input" type="text" maxlength="400" placeholder="Ask Agent BORA anything…" autocomplete="off" aria-label="Message Agent BORA"><button id="bora-chat-send" type="submit" aria-label="Send message">➤</button></form>
