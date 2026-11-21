@@ -2377,10 +2377,13 @@ renderProducts();updateCart();
     snapshot.forEach(item => {
       const data = item.data();
       const productId = Number(data.id || item.id);
-      if (!Number.isSafeInteger(productId) || !data.name || !data.images) return;
+      if (!Number.isSafeInteger(productId)) return;
       const existing = products.findIndex(p => Number(p.id) === productId);
-      const product = { ...data, id: productId, colors: Array.isArray(data.colors) && data.colors.length ? data.colors : Object.keys(data.images), sizes: Array.isArray(data.sizes) && data.sizes.length ? data.sizes : ["One size"] };
-      if (existing >= 0) products[existing] = { ...products[existing], ...product };
+      const base = existing >= 0 ? products[existing] : {};
+      const merged = { ...base, ...data, id: productId };
+      if (!merged.name || !merged.images) return;
+      const product = { ...merged, colors: Array.isArray(merged.colors) && merged.colors.length ? merged.colors : (base.colors || Object.keys(merged.images)), sizes: Array.isArray(merged.sizes) && merged.sizes.length ? merged.sizes : (base.sizes || (merged.isCustom ? ["One size"] : ["S","M","L","XL"])) };
+      if (existing >= 0) products[existing] = product;
       else products.push(product);
     });
     renderProducts();
