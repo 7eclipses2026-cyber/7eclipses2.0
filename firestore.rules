@@ -48,7 +48,7 @@ service cloud.firestore {
 
     // ARMY community wall: public submissions and public read of pending/published messages.
     match /armyMessages/{messageId} {
-      allow read: if resource.data.status in ['pending','published'];
+      allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(['nickname','message','approveCount','rejectCount','status','createdAt'])
         && request.resource.data.nickname is string
         && request.resource.data.nickname.size() >= 1
