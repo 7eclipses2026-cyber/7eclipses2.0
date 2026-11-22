@@ -1143,26 +1143,21 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
     </div>
 
     <div class="product-gallery">
-  <div class="gallery-main">
-    <button type="button" id="galleryPrev" class="gallery-arrow">‹</button>
-    <img id="choiceImage" src="" alt="Product image">
-    <button type="button" id="galleryNext" class="gallery-arrow">›</button>
-  </div>
-
-</div>
+      <div class="gallery-main">
+        <button type="button" id="galleryPrev" class="gallery-arrow" aria-label="Previous product image">‹</button>
+        <img id="choiceImage" src="" alt="Product image">
+        <button type="button" id="galleryNext" class="gallery-arrow" aria-label="Next product image">›</button>
+      </div>
+      <div class="gallery-label" id="galleryLabel" aria-live="polite">FRONT VIEW</div>
+      <div id="galleryThumbnails" class="gallery-thumbnails" aria-label="Product image thumbnails"></div>
+    </div>
 
     <div class="form-grid">
       <div class="field">
         <label>Choose colour</label>
-        <div class="choice-color-gallery-row">
-          <div class="choice-color-panel">
-            <div class="color-options" id="choiceColorOptions" role="group" aria-label="Choose T-shirt colour"></div>
-            <p class="selected-color-name" id="selectedColorName" aria-live="polite"></p>
-          </div>
-          <div class="choice-thumbnails-panel">
-            <div id="galleryLabel" class="gallery-label">FRONT VIEW</div>
-            <div id="galleryThumbnails" class="gallery-thumbnails"></div>
-          </div>
+        <div class="choice-color-panel">
+          <div class="color-options" id="choiceColorOptions" role="group" aria-label="Choose T-shirt colour"></div>
+          <p class="selected-color-name" id="selectedColorName" aria-live="polite"></p>
         </div>
       </div>
       <div class="field">
@@ -3829,4 +3824,95 @@ a:focus-visible,
 .nav-actions{gap:14px}
 .nav-actions .iconbtn{font-size:14px;padding:13px 19px;letter-spacing:.04em}
 @media(max-width:650px){.brand{font-size:27px}.brand small{font-size:8px;letter-spacing:.28em;margin-top:5px}.nav-actions{gap:7px}.nav-actions .iconbtn{font-size:12px;padding:10px 11px}}
+</style>
+
+<style id="7ecl-product-gallery-style-5-carousel">
+/* Gallery style 5: large carousel image with a thumbnail rail below.
+   Existing gallery IDs and JavaScript handlers are intentionally preserved. */
+#productModal .product-gallery{
+  grid-column:1;
+  grid-row:2 / span 3;
+  display:flex;
+  flex-direction:column;
+  align-self:stretch;
+  height:auto;
+  min-width:0;
+  margin:0;
+}
+#productModal .gallery-main{
+  width:100%;
+  height:clamp(430px,68vh,740px);
+  min-height:430px;
+  max-height:740px;
+  flex:1 1 auto;
+  background:#f2f0ed;
+  border-radius:12px;
+  overflow:hidden;
+}
+#productModal #choiceImage{
+  width:100%;
+  height:100%;
+  max-width:100%;
+  object-fit:contain;
+  padding:0;
+  transform:scale(1.1);
+  transform-origin:center;
+  cursor:zoom-in;
+  touch-action:pan-y;
+}
+#productModal .gallery-label{
+  margin:13px 0 8px;
+  color:#b9dff8;
+  text-align:left;
+  font-size:10px;
+  letter-spacing:.16em;
+}
+#productModal .gallery-thumbnails{
+  display:flex;
+  justify-content:flex-start;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  margin:0;
+  padding:2px 2px 9px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:thin;
+}
+#productModal .gallery-thumb{
+  flex:0 0 82px;
+  width:82px;
+  height:88px;
+  object-fit:contain;
+  background:#f2f0ed;
+  border:1px solid #ffffff30;
+  border-radius:8px;
+  padding:4px;
+  cursor:pointer;
+  scroll-snap-align:start;
+}
+#productModal .gallery-thumb.active{border:2px solid #8ecfff}
+#productModal .form-grid{
+  grid-column:2;
+  grid-row:2 / span 3;
+  align-self:start;
+  min-width:0;
+}
+#productModal .choice-color-panel{width:100%;min-width:0}
+#productModal .choice-color-gallery-row{display:block}
+#productModal .choice-thumbnails-panel{display:none}
+@media(max-width:700px){
+  #productModal .product-gallery,
+  #productModal .form-grid{grid-column:1;grid-row:auto}
+  #productModal .product-gallery{height:auto}
+  #productModal .gallery-main{
+    height:min(64vh,560px);
+    min-height:320px;
+    max-height:560px;
+    flex:none;
+  }
+  #productModal .gallery-thumbnails{gap:9px}
+  #productModal .gallery-thumb{flex-basis:70px;width:70px;height:76px}
+}
 </style>
