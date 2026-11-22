@@ -1,12 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
     function isStockOwner() {
-      return request.auth != null
-        && request.auth.token.email == '7eclipses2026@gmail.com';
+      return request.auth != null && request.auth.token.email == '7eclipses2026@gmail.com';
     }
-
     function isStockManager() {
       return isStockOwner()
         || (request.auth != null
@@ -14,32 +11,19 @@ service cloud.firestore {
           && exists(/databases/$(database)/documents/stockManagers/$(request.auth.token.email))
           && get(/databases/$(database)/documents/stockManagers/$(request.auth.token.email)).data.email == request.auth.token.email);
     }
-
     match /products/{productId} {
       allow read: if true;
-
       allow create, update: if isStockManager()
-        && request.resource.data.keys().hasOnly([
-          'id', 'name', 'category', 'group', 'price', 'description', 'image',
-          'images', 'galleryImages', 'colors', 'sizes', 'status', 'badges', 'salePrice',
-          'isCustom', 'active', 'createdAt', 'updatedAt', 'updatedBy'
-        ])
+        && request.resource.data.keys().hasOnly(['id','name','category','group','price','description','image','images','galleryImages','colors','sizes','status','badges','salePrice','isCustom','active','createdAt','updatedAt','updatedBy'])
         && request.resource.data.name is string
-        && (request.resource.data.price is int
-            || request.resource.data.price is float)
+        && (request.resource.data.price is int || request.resource.data.price is float)
         && request.resource.data.updatedBy == request.auth.token.email;
-
       allow delete: if isStockManager();
     }
-
     match /inventory/{variantId} {
       allow read: if true;
-
       allow create, update: if isStockManager()
-        && request.resource.data.keys().hasOnly([
-          'productId', 'productName', 'color', 'size', 'quantity',
-          'updatedAt', 'updatedBy'
-        ])
+        && request.resource.data.keys().hasOnly(['productId','productName','color','size','quantity','updatedAt','updatedBy'])
         && request.resource.data.productId is int
         && request.resource.data.productName is string
         && request.resource.data.color is string
@@ -48,23 +32,57 @@ service cloud.firestore {
         && request.resource.data.quantity >= 0
         && request.resource.data.quantity <= 9999
         && request.resource.data.updatedBy == request.auth.token.email;
-
       allow delete: if isStockOwner();
     }
-
     match /stockManagers/{managerEmail} {
-      allow get: if isStockOwner()
-        || (request.auth != null && request.auth.token.email == managerEmail);
+      allow get: if isStockOwner() || (request.auth != null && request.auth.token.email == managerEmail);
       allow list: if isStockOwner();
       allow create, update: if isStockOwner()
         && request.resource.data.email is string
         && request.resource.data.email == managerEmail;
       allow delete: if isStockOwner();
     }
-
     match /users/{userId} {
-      allow read, create, update, delete: if request.auth != null
-        && request.auth.uid == userId;
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ARMY community wall: public submissions and public read of pending/published messages.
+    match /armyMessages/{messageId} {
+      allow read: if resource.data.status in ['pending','published'];
+      allow create: if request.resource.data.keys().hasOnly(['nickname','message','approveCount','rejectCount','status','createdAt'])
+        && request.resource.data.nickname is string
+        && request.resource.data.nickname.size() >= 1
+        && request.resource.data.nickname.size() <= 24
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 1
+        && request.resource.data.message.size() <= 500
+        && request.resource.data.approveCount == 0
+        && request.resource.data.rejectCount == 0
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+      allow update: if request.auth != null
+        && existsAfter(/databases/$(database)/documents/armyMessages/$(messageId)/votes/$(request.auth.uid))
+        && getAfter(/databases/$(database)/documents/armyMessages/$(messageId)/votes/$(request.auth.uid)).data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approveCount','rejectCount','status','updatedAt'])
+        && request.resource.data.approveCount == resource.data.approveCount
+          + (getAfter(/databases/$(database)/documents/armyMessages/$(messageId)/votes/$(request.auth.uid)).data.choice == 'approve' ? 1 : 0)
+        && request.resource.data.rejectCount == resource.data.rejectCount
+          + (getAfter(/databases/$(database)/documents/armyMessages/$(messageId)/votes/$(request.auth.uid)).data.choice == 'reject' ? 1 : 0)
+        && request.resource.data.status == (request.resource.data.approveCount >= 5 && request.resource.data.approveCount > request.resource.data.rejectCount ? 'published' : 'pending');
+      allow delete: if isStockOwner();
+      match /votes/{voterUid} {
+        allow read: if request.auth != null && request.auth.uid == voterUid;
+        allow create: if request.auth != null
+          && request.auth.uid == voterUid
+          && request.resource.data.keys().hasOnly(['uid','choice','createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.choice in ['approve','reject']
+          && request.resource.data.createdAt == request.time
+          && get(/databases/$(database)/documents/armyMessages/$(messageId)).data.status == 'pending'
+          && existsAfter(/databases/$(database)/documents/armyMessages/$(messageId))
+          && getAfter(/databases/$(database)/documents/armyMessages/$(messageId)).data.updatedAt == request.time;
+        allow update, delete: if false;
+      }
     }
   }
 }
