@@ -1087,7 +1087,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 <header class="nav"><div class="nav-inner">
 <div class="account-menu-stack"><button class="iconbtn account-profile-button" id="accountOpen" aria-label="My Account"><span class="account-profile-avatar" id="accountProfileAvatar">👤</span><span class="account-profile-name" id="accountProfileName"></span></button><button type="button" class="profile-menu-toggle" id="menuBtn" aria-label="Open navigation menu" aria-expanded="false"><span></span><span></span><span></span></button></div>
 
-<a class="brand" href="#home"><img class="brand-whale-mark" src="/public/images/7eclipses%20logo.png?v=20261122" alt="" aria-hidden="true"><span>7ECLIPSES<small>BE YOUR OWN FREQUENCY</small></span></a>
+<a class="brand" href="#home"><span>7ECLIPSES<small>BE YOUR OWN FREQUENCY</small></span></a>
 <nav class="navlinks" id="navlinks"><a href="#shop">Shop</a><a href="/52hz.html">The 52Hz story</a><a href="#beliefs">What we believe</a><a href="#fabric">Fabric & fit</a><a href="#size">Size chart</a><a href="#order">How to order</a><button type="button" class="stock-manager-nav-button" id="stockManagerNavButton" hidden>▦ &nbsp; Stock Manager</button></nav>
 <div class="nav-actions">       <button class="iconbtn" id="wishlistOpen" aria-label="Wishlist">     ♡ Wishlist   </button>    <button class="iconbtn" id="cartOpen">     Ocean <span class="cart-count" id="cartCount">0</span>   </button> </div>
 </div></header>
@@ -3821,3 +3821,12 @@ a:focus-visible,
 .nav-inner>.navlinks .stock-manager-nav-button:hover{background:rgba(142,207,255,.16)}
 </style>
 </body></html>
+
+<style id="7ecl-header-wordmark-and-actions">
+/* Wordmark-only header with larger brand and shopping actions. */
+.brand{font-size:34px;letter-spacing:.1em;gap:0;line-height:1}
+.brand small{font-size:10px;letter-spacing:.34em;margin-top:6px}
+.nav-actions{gap:14px}
+.nav-actions .iconbtn{font-size:14px;padding:13px 19px;letter-spacing:.04em}
+@media(max-width:650px){.brand{font-size:27px}.brand small{font-size:8px;letter-spacing:.28em;margin-top:5px}.nav-actions{gap:7px}.nav-actions .iconbtn{font-size:12px;padding:10px 11px}}
+</style>
