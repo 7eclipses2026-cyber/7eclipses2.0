@@ -3050,6 +3050,11 @@ renderProducts();updateCart();
     const entries=Array.from(grouped.values()).sort((a,b)=>b.count-a.count || a.name.localeCompare(b.name));
     stockRequestsList.innerHTML=entries.length ? entries.map(item=>'<article class="stock-request-item"><div class="stock-request-item-head"><strong>'+escapeOrderHtml(item.name)+'</strong><span>'+item.count+' request'+(item.count===1?"":"s")+'</span></div><p>'+Array.from(item.variants.entries()).sort((a,b)=>b[1]-a[1]).map(([variant,count])=>escapeOrderHtml(variant)+' <b>× '+count+'</b>').join(' &nbsp; · &nbsp; ')+'</p><small>'+(item.latest ? "Last requested "+item.latest.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}) : "Recently requested")+'</small></article>').join("") : '<p class="stock-form-hint">No restock requests yet. Customer requests will appear here.</p>';
   }
+  function resetStockManagerView() {
+    if(stockRequestsPanel) stockRequestsPanel.hidden=true;
+    if(stockManagersAdminPanel) stockManagersAdminPanel.hidden=!isStockOwner();
+    document.querySelectorAll("#stockPanel > .stock-add-product, #stockPanel > #stockManagerMessage, #stockPanel > #stockManagerRows").forEach(el=>el.hidden=false);
+  }
   function startStockRequestsListener() {
     if (!canManageStock() || stockRequestsUnsubscribe) return;
     if (stockRequestsList) stockRequestsList.innerHTML='<p class="stock-form-hint">Loading customer requests…</p>';
@@ -3244,6 +3249,7 @@ renderProducts();updateCart();
 
   if (stockManagerNavButton) stockManagerNavButton.addEventListener("click", () => {
     if (!canManageStock()) return;
+    resetStockManagerView();
     document.getElementById("navlinks").classList.remove("open");
     document.getElementById("menuBtn").setAttribute("aria-expanded", "false");
     accountBox.classList.add("stock-only-mode");
@@ -3265,7 +3271,7 @@ renderProducts();updateCart();
     });
     document.querySelectorAll(".account-panel").forEach(panel => panel.classList.toggle("active", panel.id === (name === "profile" ? "profilePanel" : name === "orders" ? "ordersPanel" : "stockPanel")));
     if (name === "orders" && currentUser && !currentMyOrders.length) loadMyOrders();
-    if (name === "stock" && currentUser && currentUser.email?.toLowerCase() === "7eclipses2026@gmail.com") renderStockManager();
+    if (name === "stock" && canManageStock()) { resetStockManagerView(); renderStockManager(); }
   });
 
   myOrdersList.addEventListener("click", event => {
@@ -3311,6 +3317,7 @@ renderProducts();updateCart();
     if (!user) {
       hasStockAccess = false;
       if (stockManagersUnsubscribe) { stockManagersUnsubscribe(); stockManagersUnsubscribe = null; }
+      if (stockRequestsUnsubscribe) { stockRequestsUnsubscribe(); stockRequestsUnsubscribe = null; }
       if (stockManagerNavButton) stockManagerNavButton.hidden = true;
       if (stockTab) stockTab.hidden = true;
       if (stockManagersAdminPanel) stockManagersAdminPanel.hidden = true;
