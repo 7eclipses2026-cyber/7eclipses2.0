@@ -3852,7 +3852,7 @@ a:focus-visible,
   position:relative!important;isolation:isolate!important;
   display:grid!important;
   grid-template-columns:minmax(0,1.06fr) minmax(320px,.94fr)!important;
-  grid-template-rows:auto auto auto!important;
+  grid-template-rows:auto auto auto auto auto auto!important;
   grid-auto-flow:row!important;align-items:start!important;
   gap:18px clamp(20px,3vw,36px)!important;
   width:min(1160px,100%)!important;max-width:1160px!important;
@@ -3879,10 +3879,10 @@ a:focus-visible,
 #productModal .modal-head .kicker:after{content:"  ·  52HZ / FIND YOUR FREQUENCY";color:#779db9!important}
 #productModal #choiceName{margin:6px 0 0!important;color:#f2f8ff!important;font-size:clamp(25px,3vw,36px)!important;line-height:1.12!important;letter-spacing:-.025em!important}
 #productModal .product-gallery{
-  grid-column:1!important;grid-row:2!important;display:flex!important;flex-direction:column!important;
-  gap:0!important;align-self:start!important;height:auto!important;min-width:0!important;margin:0!important;
+  grid-column:1!important;grid-row:2!important;display:contents!important;
 }
-#productModal .gallery-main{
+/* Desktop: keep the main photo on the left and place its thumbnail strip above colour selection on the right. */
+#productModal .gallery-main{grid-column:1!important;grid-row:2!important;
   position:relative!important;display:grid!important;place-items:center!important;
   width:100%!important;height:auto!important;aspect-ratio:9/16!important;min-height:0!important;max-height:none!important;
   padding:0!important;overflow:hidden!important;
@@ -3905,6 +3905,8 @@ a:focus-visible,
 }
 #productModal #galleryPrev{left:12px!important}#productModal #galleryNext{right:12px!important}
 #productModal .gallery-arrow:hover{background:#143b55!important;border-color:#9bd7f6!important}
+ #productModal .gallery-label{grid-column:2!important;grid-row:2!important;align-self:end!important;margin:0 0 -12px!important;}
+#productModal .gallery-thumbnails{grid-column:2!important;grid-row:3!important;align-self:start!important;display:flex!important;flex-wrap:wrap!important;justify-content:flex-start!important;}
 #productModal .gallery-label{
   margin:14px 0 8px!important;color:#8ebbd7!important;text-align:left!important;
   font-size:9px!important;letter-spacing:.22em!important;
@@ -3924,7 +3926,7 @@ a:focus-visible,
 #productModal .gallery-thumb:hover{transform:translateY(-2px)!important;border-color:#9bd8f7!important}
 #productModal .gallery-thumb.active{border:2px solid #8ecfff!important;box-shadow:0 0 0 2px rgba(142,207,255,.14)!important}
 #productModal .form-grid{
-  grid-column:2!important;grid-row:2!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  grid-column:2!important;grid-row:4!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;
   align-self:start!important;gap:17px!important;min-width:0!important;padding:5px 1px 0!important;
 }
 #productModal .form-grid .field{
@@ -3940,7 +3942,7 @@ a:focus-visible,
 #productModal .size-option{border-radius:9px!important}
 #productModal .choice-price{grid-column:1!important;margin:0!important;color:#f4f9ff!important;font-size:clamp(25px,3vw,32px)!important;font-weight:700!important}
 #productModal .product-details-info{
-  grid-column:2!important;grid-row:3!important;min-width:0!important;margin:0!important;padding:17px 17px 12px!important;
+  grid-column:2!important;grid-row:5!important;min-width:0!important;margin:0!important;padding:17px 17px 12px!important;
   border:1px solid rgba(151,198,226,.15)!important;border-radius:15px!important;background:rgba(5,19,31,.42)!important;
 }
 #productModal .product-details-kicker{color:#8dbbd7!important;font-size:9px!important;letter-spacing:.18em!important}
@@ -3949,7 +3951,7 @@ a:focus-visible,
 #productModal .product-detail-accordion summary{padding:13px 0!important;color:#e7f3fb!important;cursor:pointer!important}
 #productModal .product-detail-copy{color:#b5cad9!important;font-size:13px!important;line-height:1.65!important}
 #productModal #choiceAdd{
-  grid-column:1/-1!important;grid-row:4!important;position:static!important;min-height:54px!important;
+  grid-column:1/-1!important;grid-row:6!important;position:static!important;min-height:54px!important;
   margin:0!important;border:1px solid rgba(197,232,250,.34)!important;border-radius:13px!important;
   background:linear-gradient(105deg,#bfe8fb,#82c4e7 58%,#a5d9f1)!important;color:#061827!important;
   font-weight:800!important;letter-spacing:.08em!important;box-shadow:0 10px 28px rgba(82,164,211,.20)!important;
@@ -3967,7 +3969,8 @@ a:focus-visible,
   padding:14px!important;border-radius:19px!important;
  }
  #productModal .modal-head{grid-column:1!important;grid-row:1!important;padding-bottom:10px!important}
- #productModal .product-gallery{grid-column:1!important;grid-row:2!important;position:relative!important}
+ #productModal .product-gallery{display:flex!important;grid-column:1!important;grid-row:2!important;position:relative!important;flex-direction:column!important;gap:0!important}
+ #productModal .gallery-label,#productModal .gallery-thumbnails{grid-column:auto!important;grid-row:auto!important;}
  #productModal .gallery-main{height:auto!important;aspect-ratio:9/16!important;min-height:0!important;max-height:none!important;padding:0!important;border-radius:14px!important}
  #productModal .gallery-arrow{width:36px!important;height:36px!important}
  #productModal .gallery-thumbnails{gap:8px!important}
