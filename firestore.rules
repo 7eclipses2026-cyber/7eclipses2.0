@@ -83,6 +83,20 @@ service cloud.firestore {
           && getAfter(/databases/$(database)/documents/armyMessages/$(messageId)).data.updatedAt == request.time;
         allow update, delete: if false;
       }
+      match /replies/{replyId} {
+        allow read: if true;
+        allow create: if request.auth != null
+          && get(/databases/$(database)/documents/armyMessages/$(messageId)).data.status == 'published'
+          && request.resource.data.keys().hasOnly(['author','message','createdAt'])
+          && request.resource.data.author is string
+          && request.resource.data.author.size() >= 1
+          && request.resource.data.author.size() <= 24
+          && request.resource.data.message is string
+          && request.resource.data.message.size() >= 1
+          && request.resource.data.message.size() <= 300
+          && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
     }
   }
 }
