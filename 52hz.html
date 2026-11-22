@@ -88,6 +88,9 @@
 
 
 /* ARMY community message wall */
+/* ARMY replies */
+.army-replies{margin-top:17px;padding-top:14px;border-top:1px solid rgba(190,160,255,.18)}.army-replies-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#cbb6ff;margin-bottom:10px}.army-reply{padding:10px 12px;margin:8px 0;background:rgba(12,9,27,.55);border-left:1px solid rgba(190,160,255,.38)}.army-reply strong{display:block;color:#e5d8ff;font-size:11px;margin-bottom:4px}.army-reply p{font-size:12px;margin:0;color:#cfc3df;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}.army-reply-form{display:flex;gap:8px;margin-top:10px}.army-reply-form input{min-width:0;flex:1;padding:10px;border:1px solid rgba(190,160,255,.25);background:#0d091d;color:#fff;font:12px 'DM Sans',sans-serif}.army-reply-form button{padding:10px 12px}.army-reply-note{font-size:10px;color:#a99cbd;margin-top:8px}
+
 .army-wall{padding:84px 24px;background:radial-gradient(ellipse at 50% 0,rgba(102,67,163,.25),transparent 60%),#0c091b;border-bottom:1px solid var(--line)}
 .army-wall-inner{max-width:1000px;margin:auto}.army-wall-head{text-align:center;max-width:700px;margin:0 auto 34px}.army-wall-head h2{font:clamp(34px,5vw,54px)/1.08 'Playfair Display',serif;margin:12px 0}.army-wall-head p{color:#c7b9dd;font-size:13px;line-height:1.9}
 .army-form{max-width:720px;margin:0 auto 34px;padding:24px;border:1px solid rgba(190,160,255,.3);background:linear-gradient(145deg,#211638,#120d25)}
@@ -327,13 +330,47 @@ const armyDb = getFirestore(firebaseApp);
         const published = item.status === 'published';
         const state = published ? 'Approved · on the wall' : 'Waiting for ARMY votes';
         const canVote = !!armyUser && !!armyVoterCheck?.checked && !published;
-        return '<article class="army-message"><div class="army-message-top"><h3>'+escapeArmy(item.nickname)+'</h3><span class="army-state">'+state+'</span></div><p>'+escapeArmy(item.message)+'</p><div class="army-votes"><span>💜 '+Number(item.approveCount||0)+' approvals</span><span>♡ '+Number(item.rejectCount||0)+' rejections</span>'+(canVote?'<button class="army-vote" data-message="'+item.id+'" data-choice="approve" type="button">Approve 💜</button><button class="army-vote reject" data-message="'+item.id+'" data-choice="reject" type="button">Reject</button>':(!published?(!armyUser?'<a class="army-signin" href="/">Sign in at 7ECLIPSES to vote</a>':(!armyVoterCheck?.checked?'<span>Confirm “I’m an ARMY” above to unlock voting.</span>':'')):''))+'</div></article>';
+        return '<article class="army-message"><div class="army-message-top"><h3>'+escapeArmy(item.nickname)+'</h3><span class="army-state">'+state+'</span></div><p>'+escapeArmy(item.message)+'</p><div class="army-votes"><span>💜 '+Number(item.approveCount||0)+' approvals</span><span>♡ '+Number(item.rejectCount||0)+' rejections</span>'+(canVote?'<button class="army-vote" data-message="'+item.id+'" data-choice="approve" type="button">Approve 💜</button><button class="army-vote reject" data-message="'+item.id+'" data-choice="reject" type="button">Reject</button>':(!published?(!armyUser?'<a class="army-signin" href="/">Sign in at 7ECLIPSES to vote</a>':(!armyVoterCheck?.checked?'<span>Confirm “I’m an ARMY” above to unlock voting.</span>':'')):''))+'</div>'+(published?'<section class="army-replies" data-replies="'+item.id+'"><div class="army-replies-title">💜 ARMY replies</div><div class="army-replies-list">Loading replies…</div>'+(armyUser&&armyVoterCheck?.checked?'<form class="army-reply-form" data-reply-form="'+item.id+'"><input name="reply" maxlength="300" placeholder="Write a kind reply…" required><button class="army-submit" type="submit">Reply</button></form>':(!armyUser?'<p class="army-reply-note"><a class="army-signin" href="/">Sign in to reply.</a></p>':'<p class="army-reply-note">Confirm “I’m an ARMY” above to reply.</p>'))+'</section>':'')+'</article>';
       }).join('');
       wallList.querySelectorAll('button[data-message]').forEach(button => button.addEventListener('click', () => castArmyVote(button.dataset.message,button.dataset.choice,button)));
+      messages.filter(item=>item.status==='published').forEach(item=>loadArmyReplies(item.id));
+      wallList.querySelectorAll('form[data-reply-form]').forEach(form=>form.addEventListener('submit',event=>sendArmyReply(event,form.dataset.replyForm,form)));
     } catch (error) {
       console.error('ARMY wall could not load:',error);
       wallList.innerHTML='<div class="army-empty">The message wall could not connect just now. Please try again shortly.</div>';
     }
+  }
+  async function loadArmyReplies(messageId) {
+    const section=wallList?.querySelector('[data-replies="'+messageId+'"]');
+    if(!section) return;
+    const list=section.querySelector('.army-replies-list');
+    try {
+      const result=await getDocs(query(collection(armyDb,'armyMessages',messageId,'replies'),orderBy('createdAt','asc'),limit(10)));
+      if(!result.docs.length){list.innerHTML='<p class="army-reply-note">No replies yet. Leave the first kind word. 💜</p>';return;}
+      list.innerHTML=result.docs.map(item=>{const reply=item.data();return '<div class="army-reply"><strong>'+escapeArmy(reply.author||'ARMY member')+'</strong><p>'+escapeArmy(reply.message)+'</p></div>';}).join('');
+    } catch(error) {
+      console.error('ARMY replies could not load:',error);
+      list.textContent='Replies are unavailable right now.';
+    }
+  }
+  async function sendArmyReply(event,messageId,form) {
+    event.preventDefault();
+    if(!armyUser || !armyVoterCheck?.checked) { formStatus.textContent='Sign in and confirm that you are ARMY before replying.'; return; }
+    const input=form.elements.reply;
+    const message=input.value.trim();
+    if(!message) return;
+    const button=form.querySelector('button');
+    button.disabled=true;
+    try {
+      const author=(armyUser.displayName||'').trim().slice(0,24)||'ARMY member';
+      await addDoc(collection(armyDb,'armyMessages',messageId,'replies'),{author,message,createdAt:serverTimestamp()});
+      input.value='';
+      formStatus.textContent='Your reply has joined the conversation. Borahae! 💜';
+      await loadArmyReplies(messageId);
+    } catch(error) {
+      console.error('ARMY reply failed:',error);
+      formStatus.textContent='Your reply could not be sent. Please try again.';
+    } finally { button.disabled=false; }
   }
   async function castArmyVote(messageId, choice, button) {
     if (!armyUser) { formStatus.textContent='Please sign in to your 7ECLIPSES account before voting.'; return; }
