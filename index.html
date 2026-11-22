@@ -1542,7 +1542,7 @@ function refreshSizeAvailability() {
   });
   const status = document.getElementById("choiceStockStatus");
   const qty = selectedSize ? getVariantStock(selectedProduct.id, selectedColor, selectedSize) : null;
-  const soldOutSizes = ["S","M","L","XL"].filter(size => getVariantStock(selectedProduct.id, selectedColor, size) === 0);
+  const soldOutSizes = (selectedProduct.sizes || ["S","M","L","XL"]).filter(size => getVariantStock(selectedProduct.id, selectedColor, size) === 0);
   if (status) {
     status.textContent = selectedSize && qty !== null
       ? (qty > 0 ? (qty <= 3 ? "Only " + qty + " left in " + selectedSize : qty + " available in " + selectedSize) : "Sold out in " + selectedSize)
@@ -2994,14 +2994,25 @@ renderProducts();updateCart();
   async function saveStockRequest(productName, color="", size="", source="catalogue") {
     const cleanName = String(productName || "").trim().replace(/\\s+/g," ").slice(0,80);
     if (!cleanName) throw new Error("Please enter a T-shirt name.");
-    const id = "request_" + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "_" + Math.random().toString(36).slice(2));
-    await setDoc(doc(db,"stockRequests",id),{
+    const request = {
       productName:cleanName,
       color:String(color || "").trim().slice(0,30),
       size:String(size || "").trim().slice(0,30),
-      source:source === "product-viewer" ? "product-viewer" : "catalogue",
-      createdAt:serverTimestamp()
+      source:source === "product-viewer" ? "product-viewer" : "catalogue"
+    };
+    const id = "request_" + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "_" + Math.random().toString(36).slice(2));
+    await setDoc(doc(db,"stockRequests",id),{...request,createdAt:serverTimestamp()});
+    return request;
+  }
+  async function sendStockRequestEmail(request) {
+    const response = await fetch("/api/send-restock-notification",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(request)
     });
+    const result = await response.json().catch(()=>({}));
+    if (!response.ok || !result.sent) throw new Error(result.error || "Email notification could not be sent.");
+    return true;
   }
   if (stockRequestForm) stockRequestForm.addEventListener("submit", async event => {
     event.preventDefault();
@@ -3012,12 +3023,18 @@ renderProducts();updateCart();
     if (!name) { if(stockRequestMessage) stockRequestMessage.textContent="Please enter the T-shirt name."; return; }
     if (stockRequestSubmit) { stockRequestSubmit.disabled=true; stockRequestSubmit.textContent="SENDING…"; }
     try {
-      await saveStockRequest(name,"","","catalogue");
+      const request = await saveStockRequest(name,"","","catalogue");
       stockRequestForm.reset();
-      if (stockRequestMessage) stockRequestMessage.textContent="Your request has reached 7ECLIPSES. Thank you for helping us choose what comes back! ✦";
+      try {
+        await sendStockRequestEmail(request);
+        if (stockRequestMessage) stockRequestMessage.textContent="Your request has been saved and 7ECLIPSES has been notified by email. Thank you! ✦";
+      } catch(emailError) {
+        console.error("Restock email notification failed:",emailError);
+        if (stockRequestMessage) stockRequestMessage.textContent="Your request was saved, but the email alert is not set up yet. Thank you! ✦";
+      }
     } catch(error) {
       console.error("Stock request submission failed:",error);
-      if (stockRequestMessage) stockRequestMessage.textContent="We couldn't send your request just now. Please try again in a moment.";
+      if (stockRequestMessage) stockRequestMessage.textContent="We couldn't save your request just now. Please try again in a moment.";
     } finally { if(stockRequestSubmit){stockRequestSubmit.disabled=false;stockRequestSubmit.textContent="SUBMIT REQUEST";} }
   });
   document.addEventListener("click", async event => {
@@ -3028,7 +3045,13 @@ renderProducts();updateCart();
     button.disabled=true; button.textContent="SENDING…";
     try {
       await Promise.all(sizes.map(size=>saveStockRequest(button.dataset.productName,button.dataset.color,size,"product-viewer")));
-      button.textContent="REQUEST SENT ✓";
+      try {
+        await sendStockRequestEmail({productName:button.dataset.productName,color:button.dataset.color,sizes,source:"product-viewer"});
+        button.textContent="REQUEST SENT ✓";
+      } catch(emailError) {
+        console.error("Restock email notification failed:",emailError);
+        button.textContent="SAVED · EMAIL ALERT PENDING";
+      }
     } catch(error) {
       console.error("Variant restock request failed:",error);
       button.disabled=false; button.textContent="TRY REQUEST AGAIN";
