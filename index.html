@@ -3988,6 +3988,30 @@ a:focus-visible,
 @media(prefers-reduced-motion:reduce){
  #productModal #choiceAdd,#productModal .gallery-thumb{transition:none!important}
 }
+
+/* Balanced desktop viewer: product information sits beside the image and fills its height. */
+@media(min-width:761px){
+ #productModal .modal-box{
+  grid-template-columns:minmax(0,1fr) minmax(0,.94fr)!important;
+  grid-template-rows:auto auto auto auto minmax(150px,1fr) auto!important;
+  align-items:stretch!important;
+ }
+ #productModal .gallery-main{
+  grid-column:1!important;grid-row:2 / 7!important;
+  height:clamp(560px,calc(92vh - 190px),760px)!important;
+  min-height:0!important;aspect-ratio:auto!important;
+  align-self:stretch!important;
+ }
+ #productModal .gallery-label{grid-column:2!important;grid-row:2!important;align-self:end!important;margin:0 0 -12px!important}
+ #productModal .gallery-thumbnails{grid-column:2!important;grid-row:3!important}
+ #productModal .form-grid{grid-column:2!important;grid-row:4!important}
+ #productModal .product-details-info{
+  grid-column:2!important;grid-row:5!important;
+  min-height:0!important;max-height:100%!important;overflow-y:auto!important;
+  scrollbar-width:thin!important;scrollbar-color:rgba(135,193,226,.55) transparent!important;
+ }
+ #productModal #choiceAdd{grid-column:2!important;grid-row:6!important;min-height:52px!important}
+}
 </style>
 
 <style id="7ecl-premium-cosmic-product-listing">
