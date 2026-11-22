@@ -1115,6 +1115,20 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 <section class="section products" id="shop"><div class="section-head"><div><div class="kicker">The first transmission · 2026</div><h2>Wear your frequency.</h2></div><p>Every piece carries its own mood. Find the design that feels like you, and wear it your way.</p></div>
 <div class="filters" id="filters"><button class="filter active" data-filter="all">All pieces</button><button class="filter" data-filter="lavender">Lavender / White</button><button class="filter" data-filter="black">Black / White</button></div>
 <div class="product-grid" id="productGrid"></div></section>
+<section class="section restock-request-section" id="stock-request">
+  <div class="restock-request-card">
+    <div class="kicker">A SIGNAL FROM THE OCEAN</div>
+    <h2>Waiting for a tee to return?</h2>
+    <p>Tell us the 7ECLIPSES design you would love to see back. Your request helps us decide what to restock next.</p>
+    <form id="stockRequestForm" class="restock-request-form">
+      <label class="sr-only" for="stockRequestName">T-shirt name</label>
+      <input id="stockRequestName" name="productName" type="text" maxlength="80" required placeholder="Enter the T-shirt name..." autocomplete="off">
+      <input class="stock-request-trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" id="stockRequestSubmit">SUBMIT REQUEST</button>
+    </form>
+    <p id="stockRequestMessage" class="restock-request-message" aria-live="polite">No account needed. Just tell us which tee you miss.</p>
+  </div>
+</section>
 <section class="section" id="story"><div class="story"><div class="story-visual" role="img" aria-label="The 52Hz whale underwater"></div><div class="story-copy"><div class="kicker">A story from the deep</div><h2>A frequency of its own.</h2>
 <p>The 52Hz whale became known because its recorded call was at a frequency different from the calls usually heard from other whales. Its story has inspired people to think about individuality and the beauty of being different.</p>
 <p>For 7ECLIPSES, 52Hz is a reminder that you do not have to change who you are just to fit a pattern. Your voice, your pace and your way of becoming deserve space.</p>
@@ -1538,12 +1552,14 @@ function refreshSizeAvailability() {
   if (restockPrompt) {
     if (soldOutSizes.length) {
       const message = "Hi 7ECLIPSES! Please let me know when " + selectedProduct.name + " in " + selectedColor + " (" + soldOutSizes.join(", ") + ") is restocked.";
-      const link = document.createElement("a");
-      link.href = "https://wa.me/919220657676?text=" + encodeURIComponent(message);
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.textContent = "Ask us about a restock";
-      restockPrompt.replaceChildren(document.createTextNode("A size is sold out? "), link);
+      const requestButton = document.createElement("button");
+      requestButton.type = "button";
+      requestButton.className = "variant-restock-request";
+      requestButton.dataset.productName = selectedProduct.name;
+      requestButton.dataset.color = selectedColor;
+      requestButton.dataset.sizes = soldOutSizes.join(",");
+      requestButton.textContent = "Request sold-out size restock";
+      restockPrompt.replaceChildren(document.createTextNode("Want this colour back? "), requestButton);
       restockPrompt.hidden = false;
     } else {
       restockPrompt.replaceChildren();
@@ -2415,7 +2431,11 @@ renderProducts();updateCart();
           <div id="myOrderDetails" aria-live="polite"><p class="my-orders-empty">Choose an order ID to see its details.</p></div>
         </section>
         <section id="stockPanel" class="account-panel">
-          <div class="stock-manager-heading"><div><h3>Stock & Product Manager</h3><p>Add products, create future categories, set prices and manage stock. Published products appear in the shop automatically.</p></div><span class="stock-owner-label">OWNER ACCESS</span></div>
+          <div class="stock-manager-heading"><div><h3>Stock & Product Manager</h3><p>Add products, create future categories, set prices and manage stock. Published products appear in the shop automatically.</p></div><div class="stock-heading-actions"><button type="button" id="openStockRequestsBtn" class="stock-requests-toggle">Stock Requests</button><span class="stock-owner-label">OWNER ACCESS</span></div></div>
+        <section id="stockRequestsPanel" class="stock-requests-panel" hidden>
+          <div class="stock-requests-title"><div><h4>Customer restock requests</h4><p>Popular designs appear first. Variant requests show the colour and size customers asked for.</p></div><button type="button" id="backToStockManagerBtn" class="stock-requests-back">← Back to stock</button></div>
+          <div id="stockRequestsList" class="stock-requests-list" aria-live="polite"><p class="stock-form-hint">Loading customer requests…</p></div>
+        </section>
           <section class="stock-add-product" id="stockManagersAdminPanel" hidden>
             <h4>Manage Stock Manager access</h4>
             <p class="stock-form-hint">Add a person's sign-in email to let them manage products and inventory. You can remove access at any time.</p>
@@ -2958,11 +2978,98 @@ renderProducts();updateCart();
   const stockManagerNavButton = document.getElementById("stockManagerNavButton");
   const stockMessage = document.getElementById("stockManagerMessage");
   const stockRows = document.getElementById("stockManagerRows");
+  const stockRequestForm = document.getElementById("stockRequestForm");
+  const stockRequestMessage = document.getElementById("stockRequestMessage");
+  const stockRequestSubmit = document.getElementById("stockRequestSubmit");
+  const stockRequestsPanel = document.getElementById("stockRequestsPanel");
+  const stockRequestsList = document.getElementById("stockRequestsList");
+  const openStockRequestsBtn = document.getElementById("openStockRequestsBtn");
+  const backToStockManagerBtn = document.getElementById("backToStockManagerBtn");
+  let stockRequestsUnsubscribe = null;
   window.getStockAvailability = (productId, color, size) => {
     if (!inventoryReady) return null;
     const item = liveInventory[stockDocumentId(productId, color, size)];
     return item && Number.isInteger(item.quantity) ? item.quantity : null;
   };
+  async function saveStockRequest(productName, color="", size="", source="catalogue") {
+    const cleanName = String(productName || "").trim().replace(/\\s+/g," ").slice(0,80);
+    if (!cleanName) throw new Error("Please enter a T-shirt name.");
+    const id = "request_" + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "_" + Math.random().toString(36).slice(2));
+    await setDoc(doc(db,"stockRequests",id),{
+      productName:cleanName,
+      color:String(color || "").trim().slice(0,30),
+      size:String(size || "").trim().slice(0,30),
+      source:source === "product-viewer" ? "product-viewer" : "catalogue",
+      createdAt:serverTimestamp()
+    });
+  }
+  if (stockRequestForm) stockRequestForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const trap = stockRequestForm.querySelector('[name="website"]');
+    if (trap && trap.value) return;
+    const input = document.getElementById("stockRequestName");
+    const name = input?.value.trim() || "";
+    if (!name) { if(stockRequestMessage) stockRequestMessage.textContent="Please enter the T-shirt name."; return; }
+    if (stockRequestSubmit) { stockRequestSubmit.disabled=true; stockRequestSubmit.textContent="SENDING…"; }
+    try {
+      await saveStockRequest(name,"","","catalogue");
+      stockRequestForm.reset();
+      if (stockRequestMessage) stockRequestMessage.textContent="Your request has reached 7ECLIPSES. Thank you for helping us choose what comes back! ✦";
+    } catch(error) {
+      console.error("Stock request submission failed:",error);
+      if (stockRequestMessage) stockRequestMessage.textContent="We couldn't send your request just now. Please try again in a moment.";
+    } finally { if(stockRequestSubmit){stockRequestSubmit.disabled=false;stockRequestSubmit.textContent="SUBMIT REQUEST";} }
+  });
+  document.addEventListener("click", async event => {
+    const button = event.target.closest(".variant-restock-request");
+    if (!button) return;
+    const sizes = String(button.dataset.sizes || "").split(",").filter(Boolean);
+    if (!sizes.length) return;
+    button.disabled=true; button.textContent="SENDING…";
+    try {
+      await Promise.all(sizes.map(size=>saveStockRequest(button.dataset.productName,button.dataset.color,size,"product-viewer")));
+      button.textContent="REQUEST SENT ✓";
+    } catch(error) {
+      console.error("Variant restock request failed:",error);
+      button.disabled=false; button.textContent="TRY REQUEST AGAIN";
+    }
+  });
+  function renderStockRequests(snapshot) {
+    if (!stockRequestsList || !canManageStock()) return;
+    const grouped = new Map();
+    snapshot.forEach(item => {
+      const data=item.data(), name=String(data.productName||"Unnamed tee");
+      const key=name.toLowerCase();
+      if(!grouped.has(key)) grouped.set(key,{name,count:0,variants:new Map(),latest:null});
+      const group=grouped.get(key); group.count++;
+      const variant=data.color && data.size ? data.color+" · "+data.size : "General restock interest";
+      group.variants.set(variant,(group.variants.get(variant)||0)+1);
+      const date=data.createdAt?.toDate ? data.createdAt.toDate() : null;
+      if(date && (!group.latest || date>group.latest)) group.latest=date;
+    });
+    const entries=Array.from(grouped.values()).sort((a,b)=>b.count-a.count || a.name.localeCompare(b.name));
+    stockRequestsList.innerHTML=entries.length ? entries.map(item=>'<article class="stock-request-item"><div class="stock-request-item-head"><strong>'+escapeOrderHtml(item.name)+'</strong><span>'+item.count+' request'+(item.count===1?"":"s")+'</span></div><p>'+Array.from(item.variants.entries()).sort((a,b)=>b[1]-a[1]).map(([variant,count])=>escapeOrderHtml(variant)+' <b>× '+count+'</b>').join(' &nbsp; · &nbsp; ')+'</p><small>'+(item.latest ? "Last requested "+item.latest.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}) : "Recently requested")+'</small></article>').join("") : '<p class="stock-form-hint">No restock requests yet. Customer requests will appear here.</p>';
+  }
+  function startStockRequestsListener() {
+    if (!canManageStock() || stockRequestsUnsubscribe) return;
+    if (stockRequestsList) stockRequestsList.innerHTML='<p class="stock-form-hint">Loading customer requests…</p>';
+    stockRequestsUnsubscribe=onSnapshot(collection(db,"stockRequests"),renderStockRequests,error=>{
+      console.error("Stock requests listener failed:",error);
+      if(stockRequestsList) stockRequestsList.textContent="Could not load requests. Check the stockRequests permissions in firestore.rules.";
+    });
+  }
+  if(openStockRequestsBtn) openStockRequestsBtn.addEventListener("click",()=>{
+    if(!canManageStock()) return;
+    stockRequestsPanel.hidden=false;
+    document.getElementById("stockManagersAdminPanel").hidden=true;
+    document.querySelectorAll("#stockPanel > .stock-add-product, #stockPanel > #stockManagerMessage, #stockPanel > #stockManagerRows").forEach(el=>el.hidden=true);
+    startStockRequestsListener();
+  });
+  if(backToStockManagerBtn) backToStockManagerBtn.addEventListener("click",()=>{
+    stockRequestsPanel.hidden=true;
+    document.getElementById("stockManagersAdminPanel").hidden=!isStockOwner();
+    document.querySelectorAll("#stockPanel > .stock-add-product, #stockPanel > #stockManagerMessage, #stockPanel > #stockManagerRows").forEach(el=>el.hidden=false);
+  });
   function stockToken(value) { return String(value || "default").toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || "default"; }
   function stockDocumentId(productId, color, size) { return "p" + Number(productId) + "_" + stockToken(color) + "_" + stockToken(size); }
   function isStockOwner() { return !!currentUser && String(currentUser.email || "").toLowerCase() === STOCK_OWNER_EMAIL; }
@@ -4197,6 +4304,35 @@ a:focus-visible,
 @media(prefers-reduced-motion:reduce){
  #shop .product-card,#shop .product-photo,#shop .wishlist-btn,#shop .add-btn{transition:none!important}
 }
+</style>
+
+<style id="7ecl-stock-requests">
+.restock-request-section{padding-top:10px;padding-bottom:72px}
+.restock-request-card{max-width:820px;margin:0 auto;padding:clamp(24px,5vw,48px);text-align:center;border:1px solid rgba(142,207,255,.2);border-radius:22px;background:radial-gradient(ellipse at 50% 0%,rgba(71,139,185,.16),transparent 65%),linear-gradient(145deg,rgba(11,29,46,.96),rgba(5,13,24,.98));box-shadow:0 18px 60px rgba(0,0,0,.2)}
+.restock-request-card h2{margin:10px 0;font:clamp(27px,4vw,38px) 'Playfair Display',serif;color:#e9f6ff}
+.restock-request-card>p{max-width:560px;margin:0 auto 22px;color:#a9c1d2;font-size:13px;line-height:1.7}
+.restock-request-form{display:flex;gap:10px;max-width:580px;margin:0 auto}
+.restock-request-form input{flex:1;min-width:0;min-height:48px;padding:0 16px;border:1px solid rgba(142,207,255,.3);border-radius:10px;background:#071624;color:#eef8ff;font:inherit}
+.restock-request-form button,.variant-restock-request{min-height:46px;padding:0 18px;border:1px solid #9bd7f5;border-radius:10px;background:linear-gradient(110deg,#c7ecff,#85c9ec);color:#061a29;font-size:10px;font-weight:800;letter-spacing:.1em;cursor:pointer}
+.restock-request-form button:disabled,.variant-restock-request:disabled{opacity:.6;cursor:wait}
+.restock-request-message{margin:13px 0 0!important;font-size:11px!important;color:#8eaabd!important}
+.stock-request-trap{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;opacity:0!important}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.restock-prompt .variant-restock-request{min-height:32px;padding:6px 11px;font-size:9px;letter-spacing:.04em}
+.stock-heading-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stock-requests-toggle,.stock-requests-back{padding:9px 13px;border:1px solid rgba(142,207,255,.35);border-radius:999px;background:rgba(11,39,58,.8);color:#c9eaff;font:inherit;font-size:11px;cursor:pointer}
+.stock-requests-panel[hidden]{display:none!important}
+.stock-requests-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:18px 0}
+.stock-requests-title h4{margin:0;color:#e8f6ff;font-size:18px}
+.stock-requests-title p{margin:6px 0 0;color:#9bb4c5;font-size:11px;line-height:1.6}
+.stock-requests-list{display:grid;gap:10px}
+.stock-request-item{padding:16px;border:1px solid rgba(142,207,255,.18);border-radius:13px;background:rgba(9,25,39,.75)}
+.stock-request-item-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.stock-request-item-head strong{color:#e7f4ff;font-size:14px}
+.stock-request-item-head span{color:#8ecfff;font-size:11px;font-weight:700;white-space:nowrap}
+.stock-request-item p{margin:9px 0;color:#b7ccda;font-size:11px;line-height:1.8}
+.stock-request-item small{color:#7893a6;font-size:10px}
+@media(max-width:600px){.restock-request-form{flex-direction:column}.restock-request-form button{width:100%}.stock-requests-title{align-items:flex-start;flex-direction:column}.stock-heading-actions{justify-content:flex-end}}
 </style>
 
 <style id="7ecl-account-orders-menu-refresh">
