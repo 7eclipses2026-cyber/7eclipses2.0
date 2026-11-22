@@ -4029,16 +4029,17 @@ a:focus-visible,
 }
 #shop .product-image{
   position:relative!important;isolation:isolate!important;width:100%!important;height:auto!important;min-height:0!important;
-  aspect-ratio:4/5!important;padding:clamp(7px,1vw,12px)!important;overflow:hidden!important;
-  display:grid!important;place-items:center!important;
-  background:radial-gradient(ellipse at 50% 35%,#fff 0%,#f4f5f3 72%,#e8edf0 100%)!important;
+  aspect-ratio:3/4!important;padding:0!important;overflow:hidden!important;
+  display:block!important;background:radial-gradient(ellipse at 50% 35%,#fff 0%,#f4f5f3 72%,#e8edf0 100%)!important;
 }
 #shop .product-photo{
-  display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
-  object-fit:contain!important;object-position:center!important;padding:2px!important;
-  image-rendering:auto!important;transition:transform .4s cubic-bezier(.2,.7,.2,1)!important;
+  position:absolute!important;inset:0!important;display:block!important;
+  width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+  box-sizing:border-box!important;object-fit:contain!important;object-position:center center!important;
+  padding:10px!important;margin:0!important;border:0!important;
+  image-rendering:auto!important;transform:none!important;transition:filter .25s ease!important;
 }
-#shop .product-card:hover .product-photo{transform:scale(1.035)!important}
+#shop .product-card:hover .product-photo{transform:none!important;filter:brightness(1.015)!important}
 #shop .product-tag{
   position:absolute!important;top:11px!important;left:11px!important;z-index:3!important;
   max-width:calc(100% - 62px)!important;padding:7px 9px!important;border:1px solid rgba(7,27,41,.08)!important;border-radius:999px!important;
@@ -4103,6 +4104,7 @@ a:focus-visible,
  #shop .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
  #shop .product-card{border-radius:13px!important}
  #shop .product-info{padding:11px!important}
+ #shop .product-photo{padding:7px!important}
  #shop .product-info h3{font-size:16px!important;line-height:1.18!important}
  #shop .product-meta{font-size:9px!important;min-height:2.7em!important}
  #shop .price{font-size:14px!important;margin:10px 0 11px!important}
