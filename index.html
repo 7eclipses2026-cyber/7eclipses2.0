@@ -3884,15 +3884,15 @@ a:focus-visible,
 }
 #productModal .gallery-main{
   position:relative!important;display:grid!important;place-items:center!important;
-  width:100%!important;height:clamp(350px,55vh,590px)!important;min-height:350px!important;max-height:590px!important;
-  padding:clamp(12px,2vw,22px)!important;overflow:hidden!important;
+  width:100%!important;height:auto!important;aspect-ratio:9/16!important;min-height:0!important;max-height:none!important;
+  padding:0!important;overflow:hidden!important;
   background:radial-gradient(ellipse at 50% 35%,#fff 0%,#f5f5f2 64%,#e8edf0 100%)!important;
   border:1px solid rgba(214,235,249,.62)!important;border-radius:19px!important;
   box-shadow:0 18px 48px rgba(0,0,0,.30),0 0 0 1px rgba(144,203,235,.12)!important;
 }
 #productModal #choiceImage{
   display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
-  object-fit:contain!important;object-position:center!important;padding:4px!important;
+  object-fit:cover!important;object-position:center center!important;padding:0!important;
   transform:none!important;transform-origin:center!important;cursor:zoom-in!important;
   image-rendering:auto!important;-webkit-user-drag:none!important;
 }
@@ -3968,7 +3968,7 @@ a:focus-visible,
  }
  #productModal .modal-head{grid-column:1!important;grid-row:1!important;padding-bottom:10px!important}
  #productModal .product-gallery{grid-column:1!important;grid-row:2!important;position:relative!important}
- #productModal .gallery-main{height:clamp(250px,42vh,430px)!important;min-height:250px!important;max-height:430px!important;padding:10px!important;border-radius:14px!important}
+ #productModal .gallery-main{height:auto!important;aspect-ratio:9/16!important;min-height:0!important;max-height:none!important;padding:0!important;border-radius:14px!important}
  #productModal .gallery-arrow{width:36px!important;height:36px!important}
  #productModal .gallery-thumbnails{gap:8px!important}
  #productModal .gallery-thumb{flex-basis:64px!important;width:64px!important;height:70px!important}
@@ -3979,7 +3979,7 @@ a:focus-visible,
 }
 @media(max-width:380px){
  #productModal .modal-box{padding:10px!important;gap:10px!important}
- #productModal .gallery-main{height:36vh!important;min-height:220px!important}
+ #productModal .gallery-main{height:auto!important;aspect-ratio:9/16!important;min-height:0!important}
  #productModal .gallery-thumb{flex-basis:56px!important;width:56px!important;height:62px!important}
 }
 @media(prefers-reduced-motion:reduce){
