@@ -1042,6 +1042,43 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 @media(max-width:650px){.brand{gap:7px}.brand-whale-mark{width:31px;height:31px}}
 </style>
 
+<style id="7e-profile-avatar-refresh">
+/* Soft ocean-blue profile icon instead of the default black silhouette. */
+.account-profile-avatar:not(:has(img)){
+  position:relative;
+  flex:0 0 30px;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  overflow:hidden;
+  font-size:0!important;
+  background:linear-gradient(145deg,#e4f5ff,#b8e2f8)!important;
+  border:1px solid rgba(142,207,255,.75);
+  box-shadow:0 2px 10px rgba(95,174,220,.2);
+}
+.account-profile-avatar:not(:has(img))::before{
+  content:"";
+  position:absolute;
+  width:8px;height:8px;
+  border-radius:50%;
+  background:#286b91;
+  top:5px;left:50%;
+  transform:translateX(-50%);
+}
+.account-profile-avatar:not(:has(img))::after{
+  content:"";
+  position:absolute;
+  width:16px;height:9px;
+  border-radius:10px 10px 7px 7px;
+  background:#286b91;
+  bottom:4px;left:50%;
+  transform:translateX(-50%);
+}
+.account-profile-avatar img{
+  width:100%;height:100%;object-fit:cover;border-radius:50%;
+}
+</style>
+
 </head>
 <body>
 <div id="sevenEclipsesSwimmingWhale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
