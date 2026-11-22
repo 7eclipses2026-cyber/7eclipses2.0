@@ -42,6 +42,21 @@ service cloud.firestore {
         && request.resource.data.email == managerEmail;
       allow delete: if isStockOwner();
     }
+    match /stockRequests/{requestId} {
+      allow create: if request.resource.data.keys().hasOnly(['productName','color','size','source','createdAt'])
+        && request.resource.data.keys().hasAll(['productName','color','size','source','createdAt'])
+        && request.resource.data.productName is string
+        && request.resource.data.productName.size() >= 1
+        && request.resource.data.productName.size() <= 80
+        && request.resource.data.color is string
+        && request.resource.data.color.size() <= 30
+        && request.resource.data.size is string
+        && request.resource.data.size.size() <= 30
+        && request.resource.data.source in ['catalogue','product-viewer']
+        && request.resource.data.createdAt == request.time;
+      allow read, delete: if isStockManager();
+      allow update: if false;
+    }
     match /users/{userId} {
       allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
     }
