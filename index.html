@@ -1102,7 +1102,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 <div class="account-menu-stack"><button class="iconbtn account-profile-button" id="accountOpen" aria-label="My Account"><span class="account-profile-avatar" id="accountProfileAvatar">👤</span><span class="account-profile-name" id="accountProfileName"></span></button><button type="button" class="profile-menu-toggle" id="menuBtn" aria-label="Open navigation menu" aria-expanded="false"><span></span><span></span><span></span></button></div>
 
 <a class="brand" href="#home"><span>7ECLIPSES<small>BE YOUR OWN FREQUENCY</small></span></a>
-<nav class="navlinks" id="navlinks"><a href="#shop">Shop</a><a href="/52hz.html">The 52Hz story</a><a href="#beliefs">What we believe</a><a href="#fabric">Fabric & fit</a><a href="#size">Size chart</a><a href="#order">How to order</a><button type="button" class="stock-manager-nav-button" id="stockManagerNavButton" hidden>▦ &nbsp; Stock Manager</button></nav>
+<nav class="navlinks" id="navlinks"><button type="button" class="customer-menu-button" id="menuMyAccount">♙ &nbsp; My Account</button><button type="button" class="customer-menu-button" id="menuMyOrders">▤ &nbsp; My Orders</button><a href="#shop">Shop</a><a href="/52hz.html">The 52Hz story</a><a href="#beliefs">What we believe</a><a href="#fabric">Fabric & fit</a><a href="#size">Size chart</a><a href="#order">How to order</a><button type="button" class="stock-manager-nav-button" id="stockManagerNavButton" hidden>▦ &nbsp; Stock Manager</button></nav>
 <div class="nav-actions">       <button class="iconbtn" id="wishlistOpen" aria-label="Wishlist">     ♡ Wishlist   </button>    <button class="iconbtn" id="cartOpen">     Ocean <span class="cart-count" id="cartCount">0</span>   </button> </div>
 </div></header>
 <main>
@@ -2358,7 +2358,7 @@ renderProducts();updateCart();
   <div class="account-box">
     <button type="button" class="account-close" id="accountClose">×</button>
 
-    <h2>My Account</h2>
+    <h2 id="accountModalTitle">My Account</h2>
     <p id="accountStatus">Sign in or create your 7ECLIPSES account.</p>
 
     <div id="accountForm">
@@ -2624,13 +2624,41 @@ renderProducts();updateCart();
     };
   }
 
-  document.getElementById("accountOpen").onclick = () => {
+  const accountBox = accountModal.querySelector(".account-box");
+  const accountModalTitle = document.getElementById("accountModalTitle");
+  function openCustomerAccountPanel(name) {
+    accountBox.classList.remove("stock-only-mode");
+    accountModalTitle.textContent = "My Account";
+    document.querySelector(".account-tabs").style.display = "";
+    document.querySelectorAll(".account-tab").forEach(tab => {
+      const active = tab.dataset.accountTab === name;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", String(active));
+    });
+    document.querySelectorAll(".account-panel").forEach(panel => {
+      panel.classList.toggle("active", panel.id === (name === "orders" ? "ordersPanel" : "profilePanel"));
+    });
     accountModal.classList.add("show");
     showMessage("");
-  };
+    if (name === "orders" && currentUser && !currentMyOrders.length) loadMyOrders();
+  }
+  document.getElementById("accountOpen").onclick = () => openCustomerAccountPanel("profile");
+  document.getElementById("menuMyAccount").addEventListener("click", () => {
+    document.getElementById("navlinks").classList.remove("open");
+    document.getElementById("menuBtn").setAttribute("aria-expanded", "false");
+    openCustomerAccountPanel("profile");
+  });
+  document.getElementById("menuMyOrders").addEventListener("click", () => {
+    document.getElementById("navlinks").classList.remove("open");
+    document.getElementById("menuBtn").setAttribute("aria-expanded", "false");
+    openCustomerAccountPanel("orders");
+  });
 
   document.getElementById("accountClose").onclick = () => {
     accountModal.classList.remove("show");
+    accountBox.classList.remove("stock-only-mode");
+    document.querySelector(".account-tabs").style.display = "";
+    accountModalTitle.textContent = "My Account";
   };
 
   accountModal.onclick = event => {
@@ -3109,13 +3137,13 @@ renderProducts();updateCart();
 
   if (stockManagerNavButton) stockManagerNavButton.addEventListener("click", () => {
     if (!canManageStock()) return;
-    accountModal.classList.add("show");
-    document.querySelectorAll(".account-tab").forEach(tab => {
-      const active = tab.dataset.accountTab === "stock";
-      tab.classList.toggle("active", active);
-      tab.setAttribute("aria-selected", String(active));
-    });
+    document.getElementById("navlinks").classList.remove("open");
+    document.getElementById("menuBtn").setAttribute("aria-expanded", "false");
+    accountBox.classList.add("stock-only-mode");
+    accountModalTitle.textContent = "Stock Manager";
+    document.querySelector(".account-tabs").style.display = "none";
     document.querySelectorAll(".account-panel").forEach(panel => panel.classList.toggle("active", panel.id === "stockPanel"));
+    accountModal.classList.add("show");
     renderStockManager();
   });
 
@@ -4170,4 +4198,19 @@ a:focus-visible,
  #shop .product-card,#shop .product-photo,#shop .wishlist-btn,#shop .add-btn{transition:none!important}
 }
 </style>
+
+<style id="7ecl-account-orders-menu-refresh">
+/* Customer destinations live in the three-line menu; stock tools open in their own focused view. */
+.nav-inner>.navlinks .customer-menu-button{
+  width:100%;min-height:43px;display:flex;align-items:center;padding:9px 5px;
+  border:0;border-bottom:1px solid var(--line);background:transparent;color:#d8efff;
+  text-align:left;font:inherit;font-size:12px;letter-spacing:.04em;cursor:pointer;
+}
+.nav-inner>.navlinks .customer-menu-button:hover{color:#8ecfff;background:rgba(142,207,255,.07)}
+#accountModal .account-box.stock-only-mode .account-panel:not(#stockPanel){display:none!important}
+#accountModal .account-box.stock-only-mode #stockPanel{display:block!important}
+#accountModal .account-box.stock-only-mode #loggedInArea{display:block!important}
+#accountModal .account-box.stock-only-mode .account-logout-tab{margin-top:18px}
+</style>
+
 </body></html>
