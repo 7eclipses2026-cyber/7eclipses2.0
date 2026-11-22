@@ -1085,11 +1085,11 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 <div id="sevenEclipsesSwimmingWhaleTwo" class="second-52hz-whale" aria-hidden="true"><img class="whale-body" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"><img class="whale-tail" src="/public/images/52hz-real-whale-cutout.png" alt="" draggable="false"></div>
 <div class="announcement">A DEEP REMINDER: BE YOURSELF. ALWAYS.</div>
 <header class="nav"><div class="nav-inner">
-<button class="iconbtn account-profile-button" id="accountOpen" aria-label="My Account"><span class="account-profile-avatar" id="accountProfileAvatar">👤</span><span class="account-profile-name" id="accountProfileName"></span></button>
+<div class="account-menu-stack"><button class="iconbtn account-profile-button" id="accountOpen" aria-label="My Account"><span class="account-profile-avatar" id="accountProfileAvatar">👤</span><span class="account-profile-name" id="accountProfileName"></span></button><button type="button" class="profile-menu-toggle" id="menuBtn" aria-label="Open navigation menu" aria-expanded="false"><span></span><span></span><span></span></button></div>
 <button type="button" class="iconbtn stock-manager-nav-button" id="stockManagerNavButton" hidden>Stock Manager</button>
 <a class="brand" href="#home"><img class="brand-whale-mark" src="/public/images/7eclipses%20logo.png?v=20261122" alt="" aria-hidden="true"><span>7ECLIPSES<small>BE YOUR OWN FREQUENCY</small></span></a>
 <nav class="navlinks" id="navlinks"><a href="#shop">Shop</a><a href="/52hz.html">The 52Hz story</a><a href="#beliefs">What we believe</a><a href="#fabric">Fabric & fit</a><a href="#size">Size chart</a><a href="#order">How to order</a></nav>
-<div class="nav-actions">   <button class="iconbtn menu-toggle" id="menuBtn" aria-label="Open menu">☰</button>    <button class="iconbtn" id="wishlistOpen" aria-label="Wishlist">     ♡ Wishlist   </button>    <button class="iconbtn" id="cartOpen">     Ocean <span class="cart-count" id="cartCount">0</span>   </button> </div>
+<div class="nav-actions">       <button class="iconbtn" id="wishlistOpen" aria-label="Wishlist">     ♡ Wishlist   </button>    <button class="iconbtn" id="cartOpen">     Ocean <span class="cart-count" id="cartCount">0</span>   </button> </div>
 </div></header>
 <main>
 <section class="hero" id="home"><div class="hero-note">EST. 2026 · MADE TO BE DIFFERENT</div><div class="hero-content">
@@ -2049,7 +2049,7 @@ addressForm.onsubmit = async e => {
 };
 document.getElementById("continueShopping").onclick = () => thankYouModal.classList.remove("show");
 thankYouModal.onclick = e => { if (e.target === thankYouModal) thankYouModal.classList.remove("show"); };
-document.getElementById("menuBtn").onclick=()=>document.getElementById("navlinks").classList.toggle("open");document.querySelectorAll(".navlinks a").forEach(a=>a.onclick=()=>document.getElementById("navlinks").classList.remove("open"));
+document.getElementById("menuBtn").onclick=()=>{const nav=document.getElementById("navlinks");const opened=nav.classList.toggle("open");document.getElementById("menuBtn").setAttribute("aria-expanded",opened?"true":"false");document.getElementById("menuBtn").setAttribute("aria-label",opened?"Close navigation menu":"Open navigation menu");};document.querySelectorAll(".navlinks a").forEach(a=>a.onclick=()=>{document.getElementById("navlinks").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");});
 renderProducts();updateCart();
 </script>
 
@@ -3797,4 +3797,22 @@ a:focus-visible,
 })();
 </script>
 
+
+<style id="7e-profile-under-menu">
+/* Compact three-line navigation control directly beneath the account avatar. */
+.account-menu-stack{position:relative;z-index:32;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex:0 0 auto}
+.account-menu-stack .account-profile-button{min-width:42px;margin:0}
+.profile-menu-toggle{width:34px;height:27px;padding:5px 7px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;background:transparent;border:0;border-radius:7px;color:#d8efff;cursor:pointer}
+.profile-menu-toggle span{display:block;width:19px;height:2px;border-radius:2px;background:#8ecfff;transition:transform .2s,opacity .2s}
+.profile-menu-toggle:hover{background:rgba(142,207,255,.1)}
+.profile-menu-toggle[aria-expanded="true"] span:first-child{transform:translateY(6px) rotate(45deg)}
+.profile-menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
+.profile-menu-toggle[aria-expanded="true"] span:last-child{transform:translateY(-6px) rotate(-45deg)}
+.nav-inner{position:relative}
+.nav-inner>.navlinks{display:none!important;position:absolute!important;top:calc(100% + 7px)!important;left:10px!important;right:auto!important;width:min(270px,calc(100vw - 20px));padding:9px 15px 13px!important;flex-direction:column!important;gap:0!important;background:#061725!important;border:1px solid rgba(142,207,255,.24);border-radius:12px;box-shadow:0 16px 32px #0008;z-index:35}
+.nav-inner>.navlinks.open{display:flex!important}
+.nav-inner>.navlinks a{min-height:43px;display:flex;align-items:center;padding:9px 5px;border-bottom:1px solid var(--line)}
+.nav-inner>.navlinks a:last-child{border-bottom:0}
+@media(max-width:650px){.account-menu-stack{gap:0}.profile-menu-toggle{height:25px}.nav-inner>.navlinks{top:calc(100% + 5px)!important;left:8px!important}}
+</style>
 </body></html>
