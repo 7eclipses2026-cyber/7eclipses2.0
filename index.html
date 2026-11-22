@@ -3947,7 +3947,7 @@ a:focus-visible,
 @media(prefers-reduced-motion:reduce){#productModal #choiceAdd{transition:none!important}}
 </style>
 
-</body></html>
+
 
 <style id="7ecl-header-wordmark-and-actions">
 /* Wordmark-only header with larger brand and shopping actions. */
@@ -4189,3 +4189,65 @@ a:focus-visible,
   #productModal .modal-box{padding:12px!important}
 }
 </style>
+
+<style id="7ecl-premium-cosmic-final-layout">
+/* Final authoritative rules: keep these last so earlier gallery experiments cannot override them. */
+#productModal{padding:18px!important;align-items:center!important;background:rgba(2,10,19,.86)!important;backdrop-filter:blur(14px)!important}
+#productModal .modal-box{
+ display:grid!important;grid-template-columns:minmax(0,1.05fr) minmax(310px,.95fr)!important;
+ grid-template-rows:auto auto auto!important;grid-auto-flow:row!important;align-items:start!important;
+ gap:18px 30px!important;width:min(1120px,100%)!important;max-width:1120px!important;
+ max-height:92vh!important;overflow-y:auto!important;padding:clamp(18px,2.8vw,32px)!important;
+ margin:auto!important;border:1px solid rgba(147,205,235,.2)!important;border-radius:22px!important;
+ background:radial-gradient(ellipse at 12% 8%,rgba(55,135,180,.18),transparent 38%),radial-gradient(ellipse at 88% 78%,rgba(60,104,160,.14),transparent 42%),linear-gradient(145deg,#0b1c29,#06111d)!important;
+ box-shadow:0 28px 90px rgba(0,0,0,.58)!important
+}
+#productModal .modal-head{grid-column:1/-1!important;grid-row:1!important;margin:0!important;padding:0 0 14px!important;border-bottom:1px solid rgba(185,220,245,.15)!important}
+#productModal .modal-head .kicker{color:#8ecfff!important;letter-spacing:.22em!important;font-size:9px!important}
+#productModal #choiceName{color:#f1f8fc!important;font-size:clamp(25px,3vw,35px)!important;line-height:1.12!important}
+#productModal .product-gallery{grid-column:1!important;grid-row:2!important;display:flex!important;flex-direction:column!important;gap:0!important;min-width:0!important;height:auto!important;margin:0!important}
+#productModal .gallery-main{width:100%!important;height:clamp(340px,54vh,570px)!important;min-height:340px!important;max-height:570px!important;flex:none!important;padding:18px!important;background:#f4f3f0!important;border:1px solid rgba(255,255,255,.3)!important;border-radius:16px!important;overflow:hidden!important;box-shadow:0 14px 38px #0004!important}
+#productModal #choiceImage{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center!important;padding:8px!important;transform:none!important}
+#productModal .gallery-label{margin:12px 0 7px!important;color:#91bad4!important;text-align:left!important;font-size:9px!important;letter-spacing:.2em!important}
+#productModal .gallery-thumbnails{display:flex!important;justify-content:flex-start!important;align-items:center!important;flex-wrap:nowrap!important;gap:9px!important;width:100%!important;margin:0!important;padding:2px 2px 8px!important;overflow-x:auto!important;overflow-y:hidden!important}
+#productModal .gallery-thumb{flex:0 0 68px!important;width:68px!important;height:74px!important;object-fit:contain!important;padding:4px!important;background:#f4f3f0!important;border:1px solid #ffffff40!important;border-radius:9px!important}
+#productModal .gallery-thumb.active{border:2px solid #8ecfff!important;box-shadow:0 0 0 2px #8ecff026!important}
+#productModal .form-grid{grid-column:2!important;grid-row:2!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:15px!important;min-width:0!important;margin:0!important;padding:3px 0 0!important}
+#productModal .form-grid .field{min-width:0!important;margin:0!important;padding:13px 14px!important;border:1px solid #a4cfe826!important;border-radius:12px!important;background:#122b3c80!important}
+#productModal .field label{display:block!important;margin:0 0 9px!important;color:#a9c3d4!important;font-size:10px!important;letter-spacing:.15em!important}
+#productModal .color-options{display:flex!important;flex-wrap:wrap!important;gap:12px!important;margin:0!important}
+#productModal .color-option{min-width:44px!important;color:#c2d5e1!important}
+#productModal .color-option .color-swatch{width:29px!important;height:29px!important}
+#productModal .size-options{display:flex!important;flex-wrap:wrap!important;gap:8px!important;margin:0!important}
+#productModal .size-option{min-width:48px!important;height:42px!important;border-radius:8px!important;background:#10293a!important}
+#productModal #choicePrice{margin:0!important;color:#f3f8fb!important;font-size:27px!important;font-weight:700!important}
+#productModal .stock-availability{margin:8px 0 0!important;color:#91a9b9!important;font-size:11px!important;line-height:1.5!important}
+#productModal .product-details-info{grid-column:2!important;grid-row:3!important;min-width:0!important;margin:0!important;padding:14px 2px 0!important;border-top:1px solid #b9dcf526!important}
+#productModal .product-details-kicker{color:#8ecfff!important;font-size:9px!important;letter-spacing:.18em!important}
+#productModal .product-details-intro p{margin:8px 0 12px!important;color:#c5d4de!important;font-size:12px!important;line-height:1.65!important}
+#productModal .product-detail-accordion{border-top:1px solid #b9dcf51f!important}
+#productModal .product-detail-accordion:last-child{border-bottom:1px solid #b9dcf51f!important}
+#productModal .product-detail-accordion summary{padding:11px 2px!important;color:#e0edf5!important;font-size:10px!important;letter-spacing:.1em!important}
+#productModal .product-detail-copy{color:#aebfcb!important;font-size:11px!important;line-height:1.65!important}
+#productModal #choiceAdd{grid-column:2!important;grid-row:4!important;width:100%!important;min-height:54px!important;margin:0!important;border-radius:9px!important;background:linear-gradient(100deg,#b8e3f5,#83c5e8)!important;color:#061827!important;font-weight:700!important;letter-spacing:.12em!important;box-shadow:0 8px 24px #52a4d32e!important}
+#productModal .gallery-arrow{width:40px!important;height:40px!important;background:#051622d1!important;border:1px solid #ffffff80!important}
+@media(max-width:760px){
+ #productModal{padding:7px!important;align-items:flex-start!important}
+ #productModal .modal-box{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto auto auto auto!important;gap:13px!important;width:100%!important;max-width:540px!important;max-height:calc(100dvh - 14px)!important;padding:13px!important;border-radius:16px!important}
+ #productModal .modal-head{grid-column:1!important;grid-row:1!important;padding-bottom:10px!important}
+ #productModal .product-gallery{grid-column:1!important;grid-row:2!important}
+ #productModal .gallery-main{height:clamp(220px,39vh,340px)!important;min-height:220px!important;max-height:340px!important;padding:10px!important}
+ #productModal .gallery-thumb{flex-basis:60px!important;width:60px!important;height:66px!important}
+ #productModal .form-grid{grid-column:1!important;grid-row:3!important;gap:11px!important;padding:0!important}
+ #productModal .form-grid .field{padding:11px 12px!important}
+ #productModal .product-details-info{grid-column:1!important;grid-row:4!important;padding-top:11px!important}
+ #productModal #choiceAdd{grid-column:1!important;grid-row:5!important;position:sticky!important;bottom:0!important;z-index:5!important;min-height:50px!important}
+}
+@media(max-width:380px){
+ #productModal .modal-box{padding:10px!important;gap:11px!important}
+ #productModal .gallery-main{height:34vh!important;min-height:205px!important}
+ #productModal .gallery-thumb{flex-basis:54px!important;width:54px!important;height:60px!important}
+}
+</style>
+
+</body></html>
