@@ -101,6 +101,14 @@
 .army-submit,.army-vote{border:0;border-radius:2px;padding:12px 17px;background:#b99cff;color:#160d2c;font:700 10px 'DM Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}.army-submit:disabled,.army-vote:disabled{opacity:.5;cursor:wait}.army-form-note{color:#a99cbd;font-size:11px;line-height:1.7;margin:13px 0 0}.army-wall-status{min-height:22px;color:#d8c6ff;font-size:12px;text-align:center;margin:12px 0 0}.army-wall-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.army-message{padding:21px;border:1px solid rgba(190,160,255,.24);background:linear-gradient(145deg,rgba(41,28,66,.88),rgba(16,11,34,.96));min-width:0}.army-message-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.army-message h3{font:19px 'Playfair Display',serif;color:#f0e7ff;margin:0}.army-message p{font-size:13px;line-height:1.85;color:#d0c4e3;white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 16px}.army-state{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#cbb6ff;border:1px solid rgba(190,160,255,.3);padding:5px 8px}.army-votes{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:#a99cbd;font-size:10px}.army-vote.reject{background:#342342;color:#e3d5f2;border:1px solid rgba(210,180,255,.2)}.army-empty{grid-column:1/-1;text-align:center;color:#a99cbd;padding:28px;border:1px dashed rgba(190,160,255,.25);font-size:12px}.army-signin{color:#d7c5ff;text-decoration:underline}.army-pledge{display:flex;align-items:center;gap:13px;max-width:720px;margin:-12px auto 22px;padding:16px 18px;border:1px solid rgba(190,160,255,.38);background:rgba(48,31,75,.58);cursor:pointer}.army-pledge input{appearance:auto!important;display:block!important;flex:0 0 20px!important;width:20px!important;height:20px!important;margin:0!important;padding:0!important;accent-color:#b99cff;cursor:pointer}.army-pledge span{display:grid;gap:4px}.army-pledge strong{color:#f0e7ff;font-size:12px;letter-spacing:.04em}.army-pledge small{color:#b9accd;font-size:11px;line-height:1.6}.army-newcomer{max-width:720px;margin:0 auto 28px;padding:16px 18px;border-left:2px solid #b99cff;background:rgba(35,25,54,.55);color:#c7b9dd;font-size:12px;line-height:1.8}.army-newcomer strong{display:block;color:#e7d9ff;margin-bottom:4px}.army-wall-foot{text-align:center;color:#9285a8;font-size:10px;line-height:1.7;margin:22px auto 0;max-width:720px}
 @media(max-width:650px){.army-wall{padding:66px 18px}.army-form{padding:19px}.army-wall-list{grid-template-columns:1fr}.navlinks{gap:10px}}
 
+
+/* BTS group portrait in the ARMY datebook */
+.army-group-photo{max-width:900px;margin:0 auto 30px;text-align:center}
+.army-group-photo img{display:block;width:100%;max-height:510px;object-fit:cover;object-position:center 42%;border:1px solid rgba(205,178,255,.62);border-radius:18px;box-shadow:0 18px 65px rgba(112,76,180,.28),0 0 0 7px rgba(190,160,255,.055)}
+.army-group-photo figcaption{margin-top:12px;color:#cbb6ff;font-size:9px;letter-spacing:.2em;text-transform:uppercase}
+.army-group-photo figcaption a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:600px){.army-group-photo img{max-height:330px;border-radius:12px}}
+
 </style>
 </head>
 <body>
@@ -165,6 +173,10 @@
 <section class="army-datebook" id="army-dates">
  <div class="army-date-inner">
   <div class="army-date-head"><div class="kicker">Save the dates · Celebrate together</div><h2>The ARMY & BTS Datebook 💜</h2><p>A little corner for the days that bring our purple family together — from BTS milestones to ARMY's birthday and the seven members’ special days.</p></div>
+  <figure class="army-group-photo">
+   <img src="https://aphrodite.gmanetwork.com/entertainment/gallery/900_675_13_-20230920182542.jpg" alt="BTS group portrait featuring all seven members RM, Jin, SUGA, j-hope, Jimin, V and Jung Kook" loading="lazy" decoding="async">
+   <figcaption>Seven lights · One purple ocean · <a href="https://www.gmanetwork.com/entertainment/photos/bts-renews-contract-with-bighit-music/18641/" target="_blank" rel="noopener">Photo source</a></figcaption>
+  </figure>
   <div class="army-next" aria-live="polite"><small>Our next purple celebration</small><strong id="armyNextTitle">Finding our next date…</strong><span id="armyNextCountdown">One moment, ARMY 💜</span></div>
   <div class="army-date-grid">
    <article class="army-date-card"><time>June 13 · 2013</time><h3>BTS Debut Day</h3><p>The day BTS officially debuted with “2 Cool 4 Skool” and began their journey as seven.</p></article>
