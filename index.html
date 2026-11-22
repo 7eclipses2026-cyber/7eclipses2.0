@@ -3989,28 +3989,44 @@ a:focus-visible,
  #productModal #choiceAdd,#productModal .gallery-thumb{transition:none!important}
 }
 
-/* Balanced desktop viewer: product information sits beside the image and fills its height. */
+/* Correct desktop composition: preserve the full 9:16 image; stack every control in order beside it. */
 @media(min-width:761px){
  #productModal .modal-box{
   grid-template-columns:minmax(0,1fr) minmax(0,.94fr)!important;
-  grid-template-rows:auto auto auto auto minmax(150px,1fr) auto!important;
-  align-items:stretch!important;
+  grid-template-rows:auto auto auto auto auto auto!important;
+  align-items:start!important;
+  gap:14px clamp(18px,2.4vw,30px)!important;
  }
+ /* Keep the photo genuinely portrait; never squash it to fit the information column. */
  #productModal .gallery-main{
   grid-column:1!important;grid-row:2 / 7!important;
-  height:clamp(560px,calc(92vh - 190px),760px)!important;
-  min-height:0!important;aspect-ratio:auto!important;
-  align-self:stretch!important;
+  width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+  aspect-ratio:9 / 16!important;align-self:start!important;
  }
- #productModal .gallery-label{grid-column:2!important;grid-row:2!important;align-self:end!important;margin:0 0 -12px!important}
+ #productModal #choiceImage{
+  width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
+  object-fit:cover!important;padding:0!important;
+ }
+ /* Right column sequence: view thumbnails, colour/size/price, full details, action. */
+ #productModal .gallery-label{grid-column:2!important;grid-row:2!important;align-self:end!important;margin:0 0 -10px!important}
  #productModal .gallery-thumbnails{grid-column:2!important;grid-row:3!important}
- #productModal .form-grid{grid-column:2!important;grid-row:4!important}
+ #productModal .form-grid{
+  grid-column:2!important;grid-row:4!important;
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  align-self:start!important;gap:13px!important;min-width:0!important;padding:0 1px!important;
+ }
+ #productModal .form-grid .field{min-width:0!important}
+ #productModal .choice-price{grid-column:1!important;grid-row:auto!important}
  #productModal .product-details-info{
   grid-column:2!important;grid-row:5!important;
-  min-height:0!important;max-height:100%!important;overflow-y:auto!important;
+  min-width:0!important;min-height:0!important;margin:0!important;
+  max-height:420px!important;overflow-y:auto!important;
   scrollbar-width:thin!important;scrollbar-color:rgba(135,193,226,.55) transparent!important;
  }
- #productModal #choiceAdd{grid-column:2!important;grid-row:6!important;min-height:52px!important}
+ #productModal #choiceAdd{
+  grid-column:2!important;grid-row:6!important;
+  width:100%!important;min-height:54px!important;margin:0!important;
+ }
 }
 </style>
 
