@@ -1193,7 +1193,7 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
         <span class="product-details-kicker">THE MEANING BEHIND THE DESIGN</span>
         <p id="choiceDescription">A statement can mean something different to everyone. Here's the thought behind this design.</p>
       </div>
-      <details class="product-detail-accordion" open>
+      <details class="product-detail-accordion">
         <summary>Fabric &amp; feel <span aria-hidden="true">＋</span></summary>
         <div class="product-detail-copy">
           <p><strong>200 GSM pure cotton single jersey.</strong> A soft, substantial feel designed for everyday comfort.</p>
@@ -3829,6 +3829,77 @@ a:focus-visible,
 .nav-inner>.navlinks .stock-manager-nav-button{width:100%;min-height:43px;margin:8px 0 0;padding:10px 5px;text-align:left;border:1px solid rgba(142,207,255,.28);border-radius:8px;background:rgba(142,207,255,.08);color:#c9eaff;font:inherit;font-size:12px;letter-spacing:.04em;cursor:pointer}
 .nav-inner>.navlinks .stock-manager-nav-button:hover{background:rgba(142,207,255,.16)}
 </style>
+
+<style id="7ecl-clean-product-viewer-v1">
+/* Clean editorial product viewer: gallery on the left, clear purchase flow on the right. */
+#productModal{padding:20px!important;align-items:center!important;background:rgba(1,9,16,.82)!important;backdrop-filter:blur(14px)!important}
+#productModal .modal-box{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.08fr) minmax(320px,.92fr)!important;
+  grid-template-rows:auto auto auto auto!important;
+  grid-auto-flow:row!important;
+  align-items:start!important;
+  gap:20px 34px!important;
+  width:min(1160px,100%)!important;
+  max-width:1160px!important;
+  max-height:92vh!important;
+  overflow-y:auto!important;
+  padding:clamp(20px,3vw,36px)!important;
+  margin:auto!important;
+  background:linear-gradient(145deg,#0b1c29,#071521 72%)!important;
+  border:1px solid rgba(185,220,245,.18)!important;
+  border-radius:22px!important;
+  box-shadow:0 28px 90px rgba(0,0,0,.55)!important;
+}
+#productModal .modal-head{grid-column:1/-1!important;grid-row:1!important;margin:0!important;padding:0 0 15px!important;border-bottom:1px solid rgba(185,220,245,.14)!important}
+#productModal .modal-head .kicker{font-size:9px!important;letter-spacing:.24em!important;color:#8ecfff!important}
+#productModal #choiceName{margin:5px 0 0!important;font-size:clamp(25px,3vw,36px)!important;line-height:1.12!important;letter-spacing:-.025em!important;color:#f1f8fc!important}
+#productModal .product-gallery{grid-column:1!important;grid-row:2 / span 3!important;display:flex!important;flex-direction:column!important;gap:0!important;align-self:start!important;height:auto!important;min-width:0!important;margin:0!important}
+#productModal .gallery-main{width:100%!important;height:clamp(360px,55vh,590px)!important;min-height:360px!important;max-height:590px!important;flex:none!important;padding:20px!important;background:#f4f3f0!important;border:1px solid rgba(255,255,255,.35)!important;border-radius:16px!important;overflow:hidden!important}
+#productModal #choiceImage{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center!important;padding:8px!important;transform:none!important}
+#productModal .gallery-arrow{width:40px!important;height:40px!important;background:rgba(5,22,34,.82)!important;border:1px solid rgba(255,255,255,.55)!important;box-shadow:0 3px 12px #0003!important}
+#productModal .gallery-label{margin:14px 0 8px!important;text-align:left!important;color:#91bad4!important;font-size:9px!important;letter-spacing:.2em!important}
+#productModal .gallery-thumbnails{display:flex!important;justify-content:flex-start!important;align-items:center!important;flex-wrap:nowrap!important;gap:10px!important;width:100%!important;margin:0!important;padding:2px 2px 8px!important;overflow-x:auto!important;overflow-y:hidden!important}
+#productModal .gallery-thumb{flex:0 0 72px!important;width:72px!important;height:78px!important;object-fit:contain!important;padding:4px!important;background:#f4f3f0!important;border:1px solid rgba(255,255,255,.22)!important;border-radius:10px!important}
+#productModal .gallery-thumb.active{border:2px solid #8ecfff!important;box-shadow:0 0 0 2px rgba(142,207,255,.16)!important}
+#productModal .form-grid{grid-column:2!important;grid-row:2!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:18px!important;align-self:start!important;min-width:0!important;margin:0!important;padding:2px 0 0!important}
+#productModal .field{min-width:0!important;margin:0!important}
+#productModal .field label{display:block!important;margin-bottom:9px!important;color:#a9c3d4!important;font-size:10px!important;letter-spacing:.16em!important}
+#productModal .color-options{display:flex!important;flex-wrap:wrap!important;gap:14px!important;margin-top:0!important}
+#productModal .color-option{min-width:48px!important;gap:7px!important;color:#b8cbd7!important}
+#productModal .color-option .color-swatch{width:30px!important;height:30px!important}
+#productModal .size-options{display:flex!important;gap:9px!important;margin-top:0!important}
+#productModal .size-option{min-width:52px!important;height:44px!important;border-radius:8px!important;background:#10293a!important}
+#productModal #choicePrice{margin:0!important;color:#f3f8fb!important;font-size:27px!important;font-weight:700!important}
+#productModal .stock-availability{margin:8px 0 0!important;color:#91a9b9!important;font-size:11px!important;line-height:1.5!important}
+#productModal .product-details-info{grid-column:2!important;grid-row:3!important;align-self:start!important;min-width:0!important;margin:0!important;padding:17px 0 0!important;border-top:1px solid rgba(185,220,245,.14)!important}
+#productModal .product-details-kicker{color:#8ecfff!important;font-size:9px!important;letter-spacing:.18em!important}
+#productModal .product-details-intro p{margin:8px 0 14px!important;color:#c5d4de!important;font-size:12px!important;line-height:1.7!important}
+#productModal .product-detail-accordion{border-top:1px solid rgba(185,220,245,.12)!important}
+#productModal .product-detail-accordion:last-child{border-bottom:1px solid rgba(185,220,245,.12)!important}
+#productModal .product-detail-accordion summary{padding:12px 2px!important;color:#e0edf5!important;font-size:10px!important;letter-spacing:.1em!important}
+#productModal .product-detail-copy{color:#aebfcb!important;font-size:11px!important;line-height:1.7!important}
+#productModal #choiceAdd{grid-column:2!important;grid-row:4!important;align-self:end!important;width:100%!important;min-height:56px!important;margin:0!important;border-radius:9px!important;box-shadow:none!important;letter-spacing:.12em!important}
+@media(max-width:760px){
+  #productModal{padding:8px!important;align-items:flex-start!important;overflow-y:auto!important}
+  #productModal .modal-box{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto auto auto auto!important;gap:15px!important;width:100%!important;max-width:560px!important;max-height:calc(100dvh - 16px)!important;padding:15px!important;border-radius:16px!important}
+  #productModal .modal-head{grid-column:1!important;grid-row:1!important;padding-bottom:10px!important}
+  #productModal .product-gallery{grid-column:1!important;grid-row:2!important;grid-row-end:auto!important}
+  #productModal .gallery-main{height:min(43vh,360px)!important;min-height:230px!important;max-height:360px!important;padding:12px!important}
+  #productModal #choiceImage{padding:5px!important}
+  #productModal .gallery-label{margin:9px 0 6px!important}
+  #productModal .gallery-thumb{flex-basis:62px!important;width:62px!important;height:68px!important}
+  #productModal .form-grid{grid-column:1!important;grid-row:3!important;gap:13px!important;padding:0!important}
+  #productModal .product-details-info{grid-column:1!important;grid-row:4!important;padding-top:12px!important}
+  #productModal #choiceAdd{grid-column:1!important;grid-row:5!important;position:sticky!important;bottom:0!important;z-index:5!important;min-height:52px!important}
+}
+@media(max-width:380px){
+  #productModal .modal-box{padding:11px!important;gap:12px!important}
+  #productModal .gallery-main{height:38vh!important;min-height:210px!important}
+  #productModal .size-option{min-width:0!important;flex:1!important}
+}
+</style>
+
 </body></html>
 
 <style id="7ecl-header-wordmark-and-actions">
