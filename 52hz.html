@@ -236,20 +236,32 @@
     const dt = Math.min((now - lastTime) / 1000, .04);
     lastTime = now;
     const w = window.innerWidth, h = window.innerHeight;
-    // Slow, flowing figure-eight movement with a softer ocean-like rise and fall.
-    phase += dt * .145 * reversing;
-    const targetX = w * .5 + Math.sin(phase) * Math.max(90, w * .44);
-    const targetY = h * .50 + Math.sin(phase * 1.55) * Math.min(68, h * .085);
+    // A wide, slow 2D swimming route: long climbs, gentle dives and looping turns.
+    // The two overlapping waves keep the path from looking like a simple straight line.
+    phase += dt * .19 * reversing;
+    const whaleW = whale.offsetWidth || 220;
+    const whaleH = whale.offsetHeight || 120;
+    const horizontalRoom = Math.max(35, (w - whaleW - 28) * .43);
+    const verticalRoom = Math.max(35, (h - whaleH - 36) * .40);
+    const targetX = w * .5
+      + Math.sin(phase * .78) * horizontalRoom
+      + Math.sin(phase * 1.37 + .8) * horizontalRoom * .13;
+    const targetY = h * .5
+      + Math.sin(phase * 1.04 - 1.15) * verticalRoom
+      + Math.sin(phase * .48 + .5) * verticalRoom * .18;
 
-    x += (targetX - x) * Math.min(1, dt * 1.65);
-    y += (targetY - y) * Math.min(1, dt * 1.65);
-    const velocity = x - lastX;
-    if (Math.abs(velocity) > .035) facing = velocity > 0 ? 1 : -1;
+    // Ease toward each point so every turn feels like a gradual change of course.
+    x += (targetX - x) * Math.min(1, dt * 1.15);
+    y += (targetY - y) * Math.min(1, dt * 1.15);
+    const velocityX = x - lastX;
+    if (Math.abs(velocityX) > .035) facing = velocityX > 0 ? 1 : -1;
     lastX = x;
-    const bob = Math.sin(now * .00135) * 5;
-    const tilt = Math.max(-5, Math.min(5, Math.cos(phase) * 2.8 + Math.sin(now * .0009) * 1.1));
-    whale.style.transform = 'translate3d(' + (x - whale.offsetWidth / 2) + 'px,' +
-      (y - whale.offsetHeight / 2 + bob) + 'px,0) scaleX(' + facing + ') rotate(' + tilt + 'deg)';
+    const bob = Math.sin(now * .0011) * 3;
+    const verticalLean = Math.max(-10, Math.min(10, (targetY - y) * .12));
+    const flowingTilt = Math.sin(phase * .78 + .6) * 2.2;
+    const tilt = verticalLean + flowingTilt;
+    whale.style.transform = 'translate3d(' + (x - whaleW / 2) + 'px,' +
+      (y - whaleH / 2 + bob) + 'px,0) scaleX(' + facing + ') rotate(' + tilt + 'deg)';
     requestAnimationFrame(swim);
   }
   requestAnimationFrame(swim);
