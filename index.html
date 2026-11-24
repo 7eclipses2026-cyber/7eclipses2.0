@@ -1129,6 +1129,29 @@ body{background-color:#03111d;background-image:radial-gradient(ellipse at 18% 42
 #stockPanel .stock-variant-label{font-weight:600!important;color:#284967!important}
 #stockPanel .stock-variant-status{grid-column:1/-1!important;margin:0!important}
 @media(max-width:520px){#stockPanel .stock-color-group{padding:10px!important}#stockPanel .stock-size-list{padding-left:8px!important}#stockPanel .stock-variant-row{grid-template-columns:48px minmax(65px,1fr) auto!important;gap:6px!important}#stockPanel .stock-variant-row button{padding:8px 10px!important}}
+/* Product > colour > size accordion: keep the stock list compact and easy to scan. */
+#stockPanel .stock-product-group{padding:0!important;overflow:hidden!important}
+#stockPanel .stock-product-summary{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;min-height:58px!important;padding:16px 18px!important;cursor:pointer!important;list-style:none!important}
+#stockPanel .stock-product-summary::-webkit-details-marker,#stockPanel .stock-color-summary::-webkit-details-marker{display:none!important}
+#stockPanel .stock-product-summary:after,#stockPanel .stock-color-summary:after{content:"＋";font-size:18px;font-weight:500;color:#315d8c!important;margin-left:8px;flex:0 0 auto}
+#stockPanel .stock-product-group[open]>.stock-product-summary:after,#stockPanel .stock-color-group[open]>.stock-color-summary:after{content:"−"}
+#stockPanel .stock-product-name{font-size:16px!important;font-weight:700!important;line-height:1.4!important}
+#stockPanel .stock-product-price{margin-left:auto;font-size:12px!important;color:#617b96!important;white-space:nowrap}
+#stockPanel .stock-product-content{padding:0 16px 16px!important}
+#stockPanel .stock-product-content>.stock-product-actions{padding:12px 0!important;border-top:1px solid #e2eaf2!important}
+#stockPanel .stock-colour-list{display:grid!important;gap:8px!important}
+#stockPanel .stock-color-group{margin:0!important;padding:0!important;background:#f7f9fc!important;border:1px solid #e1e8f0!important;border-radius:9px!important;overflow:hidden!important}
+#stockPanel .stock-color-summary{display:flex!important;align-items:center!important;gap:10px!important;padding:12px 14px!important;cursor:pointer!important;list-style:none!important;font-size:13px!important;font-weight:700!important}
+#stockPanel .stock-colour-count{margin-left:auto!important;color:#71869b!important;font-size:10px!important;font-weight:500!important}
+#stockPanel .stock-color-group[open]>.stock-color-summary{border-bottom:1px solid #e1e8f0!important}
+#stockPanel .stock-color-group .stock-size-list{margin:0 12px 10px!important;padding:0 0 0 10px!important}
+@media(max-width:520px){
+ #stockPanel .stock-product-summary{min-height:54px!important;padding:14px!important}
+ #stockPanel .stock-product-name{font-size:14px!important}
+ #stockPanel .stock-product-content{padding:0 10px 12px!important}
+ #stockPanel .stock-color-summary{padding:11px!important}
+ #stockPanel .stock-color-group .stock-size-list{margin:0 8px 8px!important}
+}
 </style>
 </head>
 <body>
@@ -3185,7 +3208,7 @@ renderProducts();updateCart();
   function renderStockManager() {
     if (!canManageStock()) return;
     if (!inventoryReady) { stockMessage.textContent = "Connecting to live inventory…"; return; }
-    stockMessage.textContent = "Set a quantity for every option. 0 means sold out. Product status and badges control how it appears in the shop.";
+    stockMessage.textContent = "Choose a product, then a colour, to view and update sizes and quantities.";
     stockRows.innerHTML = products.map(product => {
       const colors = product.colors || ["Default"], sizes = product.sizes || (product.isCustom ? ["One size"] : ["S","M","L","XL"]);
       const variants = colors.map(color => {
@@ -3195,16 +3218,15 @@ renderProducts();updateCart();
           const state = item ? (item.quantity > 0 ? item.quantity + " available" : "Sold out") : "Not configured";
           return '<div class="stock-variant-row"><span class="stock-variant-label">' + escapeOrderHtml(size) + '</span><input type="number" min="0" max="9999" step="1" inputmode="numeric" placeholder="Qty" aria-label="' + escapeOrderHtml(product.name + " " + color + " " + size + " quantity") + '" data-stock-qty="' + id + '" value="' + value + '"><button type="button" data-stock-save="' + id + '" data-product-id="' + product.id + '" data-color="' + escapeOrderHtml(color) + '" data-size="' + escapeOrderHtml(size) + '">Save</button><span class="stock-variant-status">' + state + '</span></div>';
         }).join("");
-        return '<section class="stock-color-group"><h5 class="stock-color-heading">Colour: ' + escapeOrderHtml(color) + '</h5><div class="stock-size-list">' + sizeRows + '</div></section>';
+        return '<details class="stock-color-group"><summary class="stock-color-summary"><span>' + escapeOrderHtml(color) + '</span><span class="stock-colour-count">' + sizes.length + ' sizes</span></summary><div class="stock-size-list">' + sizeRows + '</div></details>';
       }).join("");
       const statusOptions = [["available","Available now"],["coming-soon","Coming Soon"],["pre-order","Pre-order"],["sold-out","Sold Out"],["hidden","Hidden / Draft"]];
-      return '<section class="stock-product-group"><h4>' + escapeOrderHtml(product.name) + ' · ' + rupee(Number(product.price || 599)) + '</h4>' +
+      return '<details class="stock-product-group"><summary class="stock-product-summary"><span class="stock-product-name">' + escapeOrderHtml(product.name) + '</span><span class="stock-product-price">' + rupee(Number(product.price || 599)) + '</span></summary><div class="stock-product-content">' +
         '<div class="stock-product-actions"><label>Status <select data-product-status="' + product.id + '">' + statusOptions.map(([v,label]) => '<option value="' + v + '"' + ((product.status || "available")===v ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
         '<label>Badges <select multiple size="4" data-product-badges="' + product.id + '">' + [["new-launch","New Launch"],["featured","Featured"],["limited-edition","Limited Edition"],["sale","Sale"]].map(([v,label]) => '<option value="' + v + '"' + ((product.badges||[]).includes(v) ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
-        '<button type="button" class="stock-hide" data-stock-toggle="' + product.id + '">' + (product.active===false ? "Show in shop" : "Hide from shop") + '</button></div>' + variants + '</section>';
+        '<button type="button" class="stock-hide" data-stock-toggle="' + product.id + '">' + (product.active===false ? "Show in shop" : "Hide from shop") + '</button></div><div class="stock-colour-list">' + variants + '</div></div></details>';
     }).join("");
-  }
-  stockRows.addEventListener("change", async event => {
+  }  stockRows.addEventListener("change", async event => {
     const statusSelect = event.target.closest("[data-product-status]");
     const badgesSelect = event.target.closest("[data-product-badges]");
     if (!statusSelect && !badgesSelect) return;
