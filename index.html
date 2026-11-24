@@ -3223,7 +3223,7 @@ renderProducts();updateCart();
       }).join("");
       const statusOptions = [["available","Available now"],["coming-soon","Coming Soon"],["pre-order","Pre-order"],["sold-out","Sold Out"],["hidden","Hidden / Draft"]];
       const productPhotos = Array.from(new Set((Array.isArray(product.galleryImages) && product.galleryImages.length ? product.galleryImages : Object.values(product.images || {})).filter(url => typeof url === "string" && /^https?:\/\//i.test(url))));
-      const photoManager = '<section class="stock-photo-manager" data-photo-manager="' + product.id + '" hidden><div class="stock-photo-manager-head"><strong>Product gallery</strong><span>' + productPhotos.length + ' / 20 photos</span></div><div class="stock-photo-grid">' + productPhotos.map((url,index) => '<figure><img src="' + escapeOrderHtml(url) + '" alt="' + escapeOrderHtml(product.name) + ' photo ' + (index+1) + '" loading="lazy"><button type="button" data-gallery-remove="' + product.id + '" data-photo-index="' + index + '" aria-label="Remove photo ' + (index+1) + '">×</button></figure>').join("") + '</div><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple data-product-photo-input="' + product.id + '" hidden><button type="button" class="stock-upload-button" data-gallery-upload="' + product.id + '">＋ Add photos from computer</button><p class="stock-upload-hint">Add up to 20 photos per product. JPG, PNG, WebP or AVIF; max 10 MB each. The first gallery photo becomes the main product photo.</p><p class="stock-photo-status" data-photo-status="' + product.id + '" aria-live="polite"></p></section>';
+      const photoManager = '<section class="stock-photo-manager" data-photo-manager="' + product.id + '" hidden><div class="stock-photo-manager-head"><strong>Product gallery</strong><span>' + productPhotos.length + ' / 20 photos</span></div><div class="stock-photo-grid">' + productPhotos.map((url,index) => '<figure><img src="' + escapeOrderHtml(url) + '" alt="' + escapeOrderHtml(product.name) + ' photo ' + (index+1) + '" loading="lazy"><div class="stock-photo-actions"><button type="button" data-gallery-replace="' + product.id + '" data-photo-index="' + index + '">Replace</button><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" data-gallery-replace-input="' + product.id + '" data-photo-index="' + index + '" hidden><button type="button" data-gallery-remove="' + product.id + '" data-photo-index="' + index + '" aria-label="Remove photo ' + (index+1) + '">×</button></div></figure>').join("") + '</div><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple data-product-photo-input="' + product.id + '" hidden><button type="button" class="stock-upload-button" data-gallery-upload="' + product.id + '">＋ Add photos from computer</button><p class="stock-upload-hint">Add up to 20 photos per product. JPG, PNG, WebP or AVIF; max 10 MB each. The first gallery photo becomes the main product photo.</p><p class="stock-photo-status" data-photo-status="' + product.id + '" aria-live="polite"></p></section>';
       return '<details class="stock-product-group"><summary class="stock-product-summary"><span class="stock-product-name">' + escapeOrderHtml(product.name) + '</span><span class="stock-product-price">' + rupee(Number(product.price || 599)) + '</span></summary><div class="stock-product-content">' +
         '<div class="stock-product-actions"><label>Status <select data-product-status="' + product.id + '">' + statusOptions.map(([v,label]) => '<option value="' + v + '"' + ((product.status || "available")===v ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
         '<label>Badges <select multiple size="4" data-product-badges="' + product.id + '">' + [["new-launch","New Launch"],["featured","Featured"],["limited-edition","Limited Edition"],["sale","Sale"]].map(([v,label]) => '<option value="' + v + '"' + ((product.badges||[]).includes(v) ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
@@ -3244,6 +3244,43 @@ renderProducts();updateCart();
     } catch(error) { stockMessage.textContent = "Could not update product: " + (error.message || "Please try again."); }
   });
   stockRows.addEventListener("change", async event => {
+    const replaceInput = event.target.closest("[data-gallery-replace-input]");
+    if (replaceInput) {
+      const productId = Number(replaceInput.dataset.galleryReplaceInput);
+      const product = products.find(p => p.id === productId);
+      const file = replaceInput.files?.[0];
+      const photoIndex = Number(replaceInput.dataset.photoIndex);
+      replaceInput.value = "";
+      if (!product || !file || !canManageStock()) return;
+      const status = stockRows.querySelector('[data-photo-status="' + productId + '"]');
+      const allowed = ["image/jpeg","image/png","image/webp","image/avif"];
+      if (!allowed.includes(file.type) || file.size > 10*1024*1024) {
+        if (status) status.textContent = !allowed.includes(file.type) ? "Use JPG, PNG, WebP or AVIF images only." : "Each image must be 10 MB or smaller.";
+        return;
+      }
+      const replaceButton = stockRows.querySelector('[data-gallery-replace="' + productId + '"][data-photo-index="' + photoIndex + '"]');
+      if (replaceButton) { replaceButton.disabled = true; replaceButton.textContent = "Uploading…"; }
+      if (status) status.textContent = "Replacing photo…";
+      try {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,"-").slice(-90) || "product-photo";
+        const path = "products/" + currentUser.uid + "/" + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "-" + safeName;
+        const target = storageRef(storage,path);
+        await uploadBytes(target,file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || "",productId:String(productId)}});
+        const url = await getDownloadURL(target);
+        const photos = Array.from(new Set((Array.isArray(product.galleryImages) && product.galleryImages.length ? product.galleryImages : Object.values(product.images || {})).filter(value => typeof value === "string" && /^https?:\/\//i.test(value))));
+        if (photoIndex < 0 || photoIndex >= photos.length) throw new Error("The photo list changed. Please reopen Manage photos and try again.");
+        photos[photoIndex] = url;
+        await setDoc(doc(db,"products",String(productId)),{galleryImages:photos,image:photos[0],updatedAt:serverTimestamp(),updatedBy:currentUser.email},{merge:true});
+        if (status) status.textContent = "Photo " + (photoIndex+1) + " replaced successfully.";
+        stockMessage.textContent = "Updated photo for " + product.name + ".";
+      } catch(error) {
+        console.error("Product gallery photo replacement failed:",error);
+        if (status) status.textContent = error.code==="storage/unauthorized" ? "Upload blocked. Publish the Firebase Storage rules and check that Storage is enabled." : "Replacement failed: " + (error.message || "Please try again.");
+      } finally {
+        if (replaceButton) { replaceButton.disabled = false; replaceButton.textContent = "Replace"; }
+      }
+      return;
+    }
     const input = event.target.closest("[data-product-photo-input]");
     if (!input) return;
     const productId = Number(input.dataset.productPhotoInput), product = products.find(p => p.id === productId);
@@ -3284,6 +3321,12 @@ renderProducts();updateCart();
     if (galleryToggle) {
       const panel = stockRows.querySelector('[data-photo-manager="' + galleryToggle.dataset.galleryToggle + '"]');
       if (panel) panel.hidden = !panel.hidden;
+      return;
+    }
+    const galleryReplace = event.target.closest("[data-gallery-replace]");
+    if (galleryReplace) {
+      if (!canManageStock()) return;
+      stockRows.querySelector('[data-gallery-replace-input="' + galleryReplace.dataset.galleryReplace + '"][data-photo-index="' + galleryReplace.dataset.photoIndex + '"]')?.click();
       return;
     }
     const galleryUpload = event.target.closest("[data-gallery-upload]");
