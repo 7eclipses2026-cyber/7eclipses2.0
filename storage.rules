@@ -1,0 +1,24 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isStockOwner() {
+      return request.auth != null
+        && request.auth.token.email == '7eclipses2026@gmail.com';
+    }
+    function isStockManager() {
+      return isStockOwner()
+        || (request.auth != null
+          && request.auth.token.email is string
+          && firestore.exists(/databases/(default)/documents/stockManagers/$(request.auth.token.email))
+          && firestore.get(/databases/(default)/documents/stockManagers/$(request.auth.token.email)).data.email == request.auth.token.email);
+    }
+    match /products/{userId}/{fileName} {
+      allow read: if true;
+      allow create, update: if isStockManager()
+        && request.auth.uid == userId
+        && request.resource.size <= 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp|avif)');
+      allow delete: if isStockManager() && request.auth.uid == userId;
+    }
+  }
+}
