@@ -2533,7 +2533,7 @@ renderProducts();updateCart();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+  import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
   import {
     getAuth,
@@ -3041,6 +3041,42 @@ renderProducts();updateCart();
   const stockManagerNavButton = document.getElementById("stockManagerNavButton");
   const stockMessage = document.getElementById("stockManagerMessage");
   const stockRows = document.getElementById("stockManagerRows");
+
+  // Resumable uploads show real progress and cannot leave the UI stuck forever.
+  function uploadStockPhoto(file, metadata, onProgress) {
+    return new Promise((resolve, reject) => {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,"-").slice(-90) || "product-photo";
+      const path = "products/" + currentUser.uid + "/" + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "-" + safeName;
+      const task = uploadBytesResumable(storageRef(storage,path),file,metadata);
+      let settled = false, idleTimer, maxTimer;
+      const finish = (error, snapshot) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(idleTimer); clearTimeout(maxTimer);
+        if (error) reject(error); else resolve(snapshot.ref);
+      };
+      const resetIdleTimer = () => {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+          task.cancel();
+          const error = new Error("Upload stopped because no progress was received for 45 seconds. Check your connection and try again.");
+          error.code = "storage/retry-limit-exceeded";
+          finish(error);
+        },45000);
+      };
+      maxTimer = setTimeout(() => {
+        task.cancel();
+        const error = new Error("Upload timed out after 3 minutes. Please try again with a smaller image or a stronger connection.");
+        error.code = "storage/retry-limit-exceeded";
+        finish(error);
+      },180000);
+      resetIdleTimer();
+      task.on("state_changed", snapshot => {
+        resetIdleTimer();
+        if (onProgress) onProgress(snapshot.bytesTransferred,snapshot.totalBytes);
+      }, error => finish(error), () => finish(null,task.snapshot));
+    });
+  }
   const stockRequestForm = document.getElementById("stockRequestForm");
   const stockRequestMessage = document.getElementById("stockRequestMessage");
   const stockRequestSubmit = document.getElementById("stockRequestSubmit");
@@ -3262,10 +3298,10 @@ renderProducts();updateCart();
       if (replaceButton) { replaceButton.disabled = true; replaceButton.textContent = "Uploading…"; }
       if (status) status.textContent = "Replacing photo…";
       try {
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,"-").slice(-90) || "product-photo";
-        const path = "products/" + currentUser.uid + "/" + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "-" + safeName;
-        const target = storageRef(storage,path);
-        await uploadBytes(target,file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || "",productId:String(productId)}});
+        const target = await uploadStockPhoto(file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || "",productId:String(productId)}},(done,total)=>{
+          if(status) status.textContent = "Uploading replacement… " + Math.round(done/total*100) + "%";
+          if(replaceButton) replaceButton.textContent = "Uploading " + Math.round(done/total*100) + "%";
+        });
         const url = await getDownloadURL(target);
         const photos = Array.from(new Set((Array.isArray(product.galleryImages) && product.galleryImages.length ? product.galleryImages : Object.values(product.images || {})).filter(value => typeof value === "string" && /^https?:\/\//i.test(value))));
         if (photoIndex < 0 || photoIndex >= photos.length) throw new Error("The photo list changed. Please reopen Manage photos and try again.");
@@ -3299,10 +3335,9 @@ renderProducts();updateCart();
     try {
       const added = [];
       for (const file of files) {
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,"-").slice(-90) || "product-photo";
-        const path = "products/" + currentUser.uid + "/" + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "-" + safeName;
-        const target = storageRef(storage,path);
-        await uploadBytes(target,file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || "",productId:String(productId)}});
+        const target = await uploadStockPhoto(file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || "",productId:String(productId)}},(done,total)=>{
+          if(status) status.textContent = "Uploading " + (added.length+1) + "/" + files.length + "… " + Math.round(done/total*100) + "%";
+        });
         added.push(await getDownloadURL(target));
       }
       const photos = [...existingPhotos,...added];
@@ -3408,10 +3443,9 @@ renderProducts();updateCart();
     productUploadStatus.classList.remove("error");
     try {
       for (const file of files) {
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,"-").slice(-90) || "product-photo";
-        const path = "products/" + currentUser.uid + "/" + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "-" + safeName;
-        const target = storageRef(storage, path);
-        await uploadBytes(target, file, { contentType: file.type, customMetadata: { uploadedBy: currentUser.email || "" } });
+        const target = await uploadStockPhoto(file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || ""}},(done,total)=>{
+          productUploadStatus.textContent = "Uploading " + (uploadedProductImageUrls.length+1) + "/" + files.length + "… " + Math.round(done/total*100) + "%";
+        });
         const url = await getDownloadURL(target);
         uploadedProductImageUrls.push(url);
         const urlLabel = document.createElement("label");
