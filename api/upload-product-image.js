@@ -81,7 +81,7 @@ module.exports = async function handler(req, res) {
     const baseName = originalName.replace(/\\.[^.]*$/, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 55) || "product-photo";
     const fileName = Date.now() + "-" + crypto.randomUUID() + "-" + baseName + "." + extensions[contentType];
     const path = "public/images/" + fileName;
-    const githubUrl = "https://api.github.com/repos/" + REPOSITORY + "/contents/" + path.split("/").map(encodeURIComponent).join("");
+    const githubUrl = "https://api.github.com/repos/" + REPOSITORY + "/contents/" + path.split("/").map(encodeURIComponent).join("/");
 
     const githubResponse = await fetch(githubUrl, {
       method: "PUT",
