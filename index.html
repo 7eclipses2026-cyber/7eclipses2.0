@@ -2448,7 +2448,7 @@ renderProducts();updateCart();
               <label>Product name<input id="newProductName" maxlength="80" placeholder="e.g. 52Hz Whale Tote Bag" required></label>
               <label>Category<input id="newProductCategory" maxlength="40" placeholder="e.g. Accessories" required></label>
               <label>Price (₹)<input id="newProductPrice" type="number" min="1" max="1000000" step="1" placeholder="e.g. 499" required></label>
-              <div class="stock-form-wide stock-image-inputs" id="newProductImagesList"><label>Product image URL<input id="newProductImage" class="new-product-image-url" type="url" placeholder="https://.../product-image.jpg" required></label></div><button type="button" id="addProductImageBtn" class="stock-add-button stock-add-image-button">＋ Add another image</button>
+              <div class="stock-form-wide stock-image-inputs" id="newProductImagesList"><label>Product image URL<input id="newProductImage" class="new-product-image-url" type="url" placeholder="https://.../product-image.jpg" required></label></div><div class="stock-upload-tools"><input id="newProductFiles" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden><button type="button" id="uploadProductPhotosBtn" class="stock-upload-button">＋ Upload from computer</button><p class="stock-upload-hint">Choose up to 20 photos (JPG, PNG, WebP or AVIF), maximum 10 MB each. Uploaded photos are added to your product gallery.</p></div><p id="productUploadStatus" class="stock-upload-status" aria-live="polite"></p><div id="productUploadPreview" class="stock-upload-preview" aria-label="Uploaded product photo previews"></div><button type="button" id="addProductImageBtn" class="stock-add-button stock-add-image-button">＋ Add another image URL</button>
               <label class="stock-form-wide">Description<textarea id="newProductDescription" maxlength="500" rows="2" placeholder="A short description for customers"></textarea></label>
               <label>Colours / options<input id="newProductColors" maxlength="180" placeholder="Black, White (or Default)"></label>
               <label>Sizes / variants<input id="newProductSizes" maxlength="180" placeholder="S, M, L, XL (or One size)"></label>
@@ -2472,6 +2472,7 @@ renderProducts();updateCart();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
   import {
     getAuth,
@@ -2507,6 +2508,7 @@ renderProducts();updateCart();
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  const storage = getStorage(app);
 
   // Public product catalogue: owner-created products and launch settings sync to every visitor.
   onSnapshot(collection(db, "products"), snapshot => {
@@ -3209,6 +3211,54 @@ renderProducts();updateCart();
   });
   const imageList = document.getElementById("newProductImagesList");
   const addProductImageBtn = document.getElementById("addProductImageBtn");
+  const productFilesInput = document.getElementById("newProductFiles");
+  const uploadProductPhotosBtn = document.getElementById("uploadProductPhotosBtn");
+  const productUploadStatus = document.getElementById("productUploadStatus");
+  const productUploadPreview = document.getElementById("productUploadPreview");
+  let uploadedProductImageUrls = [];
+  if (uploadProductPhotosBtn && productFilesInput) uploadProductPhotosBtn.addEventListener("click", () => {
+    if (!canManageStock()) { stockMessage.textContent = "Only an approved Stock Manager can upload product photos."; return; }
+    productFilesInput.click();
+  });
+  if (productFilesInput) productFilesInput.addEventListener("change", async () => {
+    const files = Array.from(productFilesInput.files || []);
+    productFilesInput.value = "";
+    if (!files.length) return;
+    const remaining = 20 - uploadedProductImageUrls.length - Array.from(document.querySelectorAll("#newProductImagesList .new-product-image-url")).filter(input => input.value.trim()).length;
+    if (files.length > remaining) { productUploadStatus.textContent = "You can add only " + Math.max(0, remaining) + " more image(s) to this product (20 maximum)."; productUploadStatus.classList.add("error"); return; }
+    const allowed = ["image/jpeg","image/png","image/webp","image/avif"];
+    const invalid = files.find(file => !allowed.includes(file.type) || file.size > 10 * 1024 * 1024);
+    if (invalid) { productUploadStatus.textContent = !allowed.includes(invalid.type) ? "Use JPG, PNG, WebP or AVIF image files only." : "Each image must be 10 MB or smaller."; productUploadStatus.classList.add("error"); return; }
+    if (!currentUser || !canManageStock()) { productUploadStatus.textContent = "Please sign in with Stock Manager access before uploading."; productUploadStatus.classList.add("error"); return; }
+    uploadProductPhotosBtn.disabled = true;
+    uploadProductPhotosBtn.textContent = "Uploading…";
+    productUploadStatus.classList.remove("error");
+    try {
+      for (const file of files) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,"-").slice(-90) || "product-photo";
+        const path = "products/" + currentUser.uid + "/" + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "-" + safeName;
+        const target = storageRef(storage, path);
+        await uploadBytes(target, file, { contentType: file.type, customMetadata: { uploadedBy: currentUser.email || "" } });
+        const url = await getDownloadURL(target);
+        uploadedProductImageUrls.push(url);
+        const urlLabel = document.createElement("label");
+        urlLabel.textContent = "Uploaded product image";
+        const urlInput = document.createElement("input");
+        urlInput.type = "url"; urlInput.className = "new-product-image-url"; urlInput.value = url; urlInput.readOnly = true; urlInput.required = true;
+        urlLabel.appendChild(urlInput);
+        const row = document.createElement("div"); row.className = "stock-image-row"; row.append(urlLabel);
+        const remove = document.createElement("button"); remove.type = "button"; remove.className = "stock-image-remove"; remove.textContent = "Remove";
+        remove.addEventListener("click", () => { row.remove(); uploadedProductImageUrls = uploadedProductImageUrls.filter(item => item !== url); const preview = productUploadPreview.querySelector('[data-image-url="' + CSS.escape(url) + '"]'); if (preview) preview.remove(); });
+        row.appendChild(remove); imageList.appendChild(row);
+        const preview = document.createElement("img"); preview.src = url; preview.alt = "Uploaded product photo"; preview.dataset.imageUrl = url; productUploadPreview.appendChild(preview);
+      }
+      productUploadStatus.textContent = files.length + " photo(s) uploaded successfully. They are ready to add to this product.";
+    } catch (error) {
+      console.error("Product photo upload failed:", error);
+      productUploadStatus.textContent = error.code === "storage/unauthorized" ? "Firebase Storage denied the upload. Publish the storage.rules permissions before trying again." : "Upload failed: " + (error.message || "Please try again.");
+      productUploadStatus.classList.add("error");
+    } finally { uploadProductPhotosBtn.disabled = false; uploadProductPhotosBtn.textContent = "＋ Upload from computer"; }
+  });
   if (addProductImageBtn && imageList) addProductImageBtn.addEventListener("click", () => {
     const row = document.createElement("div");
     row.className = "stock-image-row";
@@ -3250,6 +3300,7 @@ renderProducts();updateCart();
       stockMessage.textContent=name+" has been added with "+imageUrls.length+" image"+(imageUrls.length===1?"":"s")+". It will appear in the shop according to its status.";
       ["newProductName","newProductCategory","newProductPrice","newProductDescription","newProductColors","newProductSizes","newProductSalePrice"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
       imageList.innerHTML='<label>Product image URL<input id="newProductImage" class="new-product-image-url" type="url" placeholder="https://.../product-image.jpg" required></label>';
+      uploadedProductImageUrls = []; if (productUploadStatus) { productUploadStatus.textContent = ""; productUploadStatus.classList.remove("error"); } if (productUploadPreview) productUploadPreview.innerHTML = "";
       document.getElementById("newProductStatus").value="available";
       Array.from(document.getElementById("newProductBadges").options).forEach(o=>o.selected=false);
     } catch(error) {
@@ -4193,6 +4244,16 @@ a:focus-visible,
   width:100%!important;min-height:54px!important;margin:0!important;
  }
 }
+/* Product Manager: direct computer photo uploads */
+.stock-upload-tools{grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px;border:1px dashed rgba(142,207,255,.38);border-radius:12px;background:rgba(8,31,48,.55)}
+.stock-upload-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 16px;border:1px solid #8ecfff;border-radius:999px;background:linear-gradient(110deg,#c5eaff,#86c9ed);color:#061a29;font-size:10px;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.stock-upload-button:hover{filter:brightness(1.06)}
+.stock-upload-hint{flex:1 1 220px;margin:0;color:#9db8ca;font-size:11px;line-height:1.6}
+.stock-upload-status{grid-column:1/-1;margin:0;color:#9ed8f7;font-size:11px;line-height:1.6}
+.stock-upload-status.error{color:#ffb4b4}
+.stock-upload-preview{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}
+.stock-upload-preview img{width:58px;height:70px;object-fit:cover;border:1px solid rgba(142,207,255,.4);border-radius:7px;background:#f2f2f2}
+@media(max-width:600px){.stock-upload-tools{align-items:stretch;flex-direction:column}.stock-upload-button{width:100%}}
 </style>
 
 <style id="7ecl-premium-cosmic-product-listing">
