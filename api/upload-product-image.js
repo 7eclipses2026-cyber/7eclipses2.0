@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
   try {
     const identityResponse = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + FIREBASE_API_KEY, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Referer": "https://www.7eclipses.com/" },
       body: JSON.stringify({ idToken })
     });
     const identity = await identityResponse.json().catch(() => ({}));

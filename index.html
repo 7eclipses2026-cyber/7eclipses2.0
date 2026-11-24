@@ -3426,7 +3426,7 @@ renderProducts();updateCart();
     const files = Array.from(productFilesInput.files || []);
     productFilesInput.value = "";
     if (!files.length) return;
-    const remaining = 20 - uploadedProductImageUrls.length - Array.from(document.querySelectorAll("#newProductImagesList .new-product-image-url")).filter(input => input.value.trim()).length;
+    const remaining = 20 - Array.from(document.querySelectorAll("#newProductImagesList .new-product-image-url")).filter(input => input.value.trim()).length;
     if (files.length > remaining) { productUploadStatus.textContent = "You can add only " + Math.max(0, remaining) + " more image(s) to this product (20 maximum)."; productUploadStatus.classList.add("error"); return; }
     const allowed = ["image/jpeg","image/png","image/webp","image/avif"];
     const invalid = files.find(file => !allowed.includes(file.type) || file.size > 3 * 1024 * 1024);
