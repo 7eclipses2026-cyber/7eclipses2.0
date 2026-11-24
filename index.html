@@ -3222,7 +3222,7 @@ renderProducts();updateCart();
         return '<details class="stock-color-group"><summary class="stock-color-summary"><span>' + escapeOrderHtml(color) + '</span><span class="stock-colour-count">' + sizes.length + ' sizes</span></summary><div class="stock-size-list">' + sizeRows + '</div></details>';
       }).join("");
       const statusOptions = [["available","Available now"],["coming-soon","Coming Soon"],["pre-order","Pre-order"],["sold-out","Sold Out"],["hidden","Hidden / Draft"]];
-      const productPhotos = Array.from(new Set([...(Array.isArray(product.galleryImages) ? product.galleryImages : []), ...Object.values(product.images || {})].filter(url => typeof url === "string" && /^https?:\\/\\//i.test(url))));
+      const productPhotos = Array.from(new Set((Array.isArray(product.galleryImages) && product.galleryImages.length ? product.galleryImages : Object.values(product.images || {})).filter(url => typeof url === "string" && /^https?:\/\//i.test(url))));
       const photoManager = '<section class="stock-photo-manager" data-photo-manager="' + product.id + '" hidden><div class="stock-photo-manager-head"><strong>Product gallery</strong><span>' + productPhotos.length + ' / 20 photos</span></div><div class="stock-photo-grid">' + productPhotos.map((url,index) => '<figure><img src="' + escapeOrderHtml(url) + '" alt="' + escapeOrderHtml(product.name) + ' photo ' + (index+1) + '" loading="lazy"><button type="button" data-gallery-remove="' + product.id + '" data-photo-index="' + index + '" aria-label="Remove photo ' + (index+1) + '">×</button></figure>').join("") + '</div><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple data-product-photo-input="' + product.id + '" hidden><button type="button" class="stock-upload-button" data-gallery-upload="' + product.id + '">＋ Add photos from computer</button><p class="stock-upload-hint">Add up to 20 photos per product. JPG, PNG, WebP or AVIF; max 10 MB each. The first gallery photo becomes the main product photo.</p><p class="stock-photo-status" data-photo-status="' + product.id + '" aria-live="polite"></p></section>';
       return '<details class="stock-product-group"><summary class="stock-product-summary"><span class="stock-product-name">' + escapeOrderHtml(product.name) + '</span><span class="stock-product-price">' + rupee(Number(product.price || 599)) + '</span></summary><div class="stock-product-content">' +
         '<div class="stock-product-actions"><label>Status <select data-product-status="' + product.id + '">' + statusOptions.map(([v,label]) => '<option value="' + v + '"' + ((product.status || "available")===v ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
@@ -3249,7 +3249,7 @@ renderProducts();updateCart();
     const productId = Number(input.dataset.productPhotoInput), product = products.find(p => p.id === productId);
     const files = Array.from(input.files || []); input.value = "";
     if (!product || !files.length || !canManageStock()) return;
-    const existingPhotos = Array.from(new Set([...(Array.isArray(product.galleryImages) ? product.galleryImages : []), ...Object.values(product.images || {})].filter(url => typeof url === "string" && /^https?:\\/\\//i.test(url))));
+    const existingPhotos = Array.from(new Set((Array.isArray(product.galleryImages) && product.galleryImages.length ? product.galleryImages : Object.values(product.images || {})).filter(url => typeof url === "string" && /^https?:\/\//i.test(url))));
     const status = stockRows.querySelector('[data-photo-status="' + productId + '"]');
     const remaining = 20 - existingPhotos.length;
     if (files.length > remaining) { if(status) status.textContent = "You can add only " + Math.max(0,remaining) + " more photo(s)."; return; }
@@ -3297,7 +3297,7 @@ renderProducts();updateCart();
       if (!canManageStock()) return;
       const product = products.find(p => p.id === Number(removePhoto.dataset.galleryRemove));
       if (!product) return;
-      const photos = Array.from(new Set([...(Array.isArray(product.galleryImages) ? product.galleryImages : []), ...Object.values(product.images || {})].filter(url => typeof url === "string" && /^https?:\\/\\//i.test(url))));
+      const photos = Array.from(new Set((Array.isArray(product.galleryImages) && product.galleryImages.length ? product.galleryImages : Object.values(product.images || {})).filter(url => typeof url === "string" && /^https?:\/\//i.test(url))));
       const index = Number(removePhoto.dataset.photoIndex);
       if (photos.length <= 1) { stockMessage.textContent = "Keep at least one product photo."; return; }
       photos.splice(index,1);
