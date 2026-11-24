@@ -2533,7 +2533,6 @@ renderProducts();updateCart();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
   import {
     getAuth,
@@ -2569,7 +2568,6 @@ renderProducts();updateCart();
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-  const storage = getStorage(app);
 
   // Public product catalogue: owner-created products and launch settings sync to every visitor.
   onSnapshot(collection(db, "products"), snapshot => {
@@ -3042,39 +3040,36 @@ renderProducts();updateCart();
   const stockMessage = document.getElementById("stockManagerMessage");
   const stockRows = document.getElementById("stockManagerRows");
 
-  // Resumable uploads show real progress and cannot leave the UI stuck forever.
-  function uploadStockPhoto(file, metadata, onProgress) {
+  // Send product photos to the private server endpoint, which stores them in GitHub.
+  async function uploadImageToGitHub(file, onProgress) {
+    if (!currentUser) throw new Error("Please sign in with Stock Manager access.");
+    if (file.size > 3 * 1024 * 1024) throw new Error("Please choose an image smaller than 3 MB.");
+    const token = await currentUser.getIdToken();
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(offset, Math.min(offset + 0x8000, bytes.length)));
+    }
+    const base64 = btoa(binary);
     return new Promise((resolve, reject) => {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,"-").slice(-90) || "product-photo";
-      const path = "products/" + currentUser.uid + "/" + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "-" + safeName;
-      const task = uploadBytesResumable(storageRef(storage,path),file,metadata);
-      let settled = false, idleTimer, maxTimer;
-      const finish = (error, snapshot) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(idleTimer); clearTimeout(maxTimer);
-        if (error) reject(error); else resolve(snapshot.ref);
+      const request = new XMLHttpRequest();
+      request.open("POST", "/api/upload-product-image");
+      request.setRequestHeader("Content-Type", "application/json");
+      request.setRequestHeader("Authorization", "Bearer " + token);
+      request.timeout = 120000;
+      request.upload.onprogress = event => {
+        if (event.lengthComputable && onProgress) onProgress(event.loaded, event.total);
       };
-      const resetIdleTimer = () => {
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(() => {
-          task.cancel();
-          const error = new Error("Upload stopped because no progress was received for 45 seconds. Check your connection and try again.");
-          error.code = "storage/retry-limit-exceeded";
-          finish(error);
-        },45000);
+      request.onload = () => {
+        let result = {};
+        try { result = JSON.parse(request.responseText || "{}"); } catch {}
+        if (request.status >= 200 && request.status < 300 && result.url) resolve(result.url);
+        else reject(new Error(result.error || "The image could not be saved to GitHub."));
       };
-      maxTimer = setTimeout(() => {
-        task.cancel();
-        const error = new Error("Upload timed out after 3 minutes. Please try again with a smaller image or a stronger connection.");
-        error.code = "storage/retry-limit-exceeded";
-        finish(error);
-      },180000);
-      resetIdleTimer();
-      task.on("state_changed", snapshot => {
-        resetIdleTimer();
-        if (onProgress) onProgress(snapshot.bytesTransferred,snapshot.totalBytes);
-      }, error => finish(error), () => finish(null,task.snapshot));
+      request.onerror = () => reject(new Error("Network error while uploading. Please check your connection."));
+      request.ontimeout = () => reject(new Error("Upload timed out. Please try a smaller image."));
+      request.send(JSON.stringify({ fileName: file.name, contentType: file.type, base64 }));
     });
   }
   const stockRequestForm = document.getElementById("stockRequestForm");
@@ -3259,7 +3254,7 @@ renderProducts();updateCart();
       }).join("");
       const statusOptions = [["available","Available now"],["coming-soon","Coming Soon"],["pre-order","Pre-order"],["sold-out","Sold Out"],["hidden","Hidden / Draft"]];
       const productPhotos = Array.from(new Set((Array.isArray(product.galleryImages) && product.galleryImages.length ? product.galleryImages : Object.values(product.images || {})).filter(url => typeof url === "string" && /^https?:\/\//i.test(url))));
-      const photoManager = '<section class="stock-photo-manager" data-photo-manager="' + product.id + '" hidden><div class="stock-photo-manager-head"><strong>Product gallery</strong><span>' + productPhotos.length + ' / 20 photos</span></div><div class="stock-photo-grid">' + productPhotos.map((url,index) => '<figure><img src="' + escapeOrderHtml(url) + '" alt="' + escapeOrderHtml(product.name) + ' photo ' + (index+1) + '" loading="lazy"><div class="stock-photo-actions"><button type="button" data-gallery-replace="' + product.id + '" data-photo-index="' + index + '">Replace image</button><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" data-gallery-replace-input="' + product.id + '" data-photo-index="' + index + '" hidden><button type="button" data-gallery-remove="' + product.id + '" data-photo-index="' + index + '" aria-label="Remove photo ' + (index+1) + '">×</button></div></figure>').join("") + '</div><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple data-product-photo-input="' + product.id + '" hidden><button type="button" class="stock-upload-button" data-gallery-upload="' + product.id + '">＋ Add photos from computer</button><p class="stock-upload-hint">Add up to 20 photos per product. JPG, PNG, WebP or AVIF; max 10 MB each. The first gallery photo becomes the main product photo.</p><p class="stock-photo-status" data-photo-status="' + product.id + '" aria-live="polite"></p></section>';
+      const photoManager = '<section class="stock-photo-manager" data-photo-manager="' + product.id + '" hidden><div class="stock-photo-manager-head"><strong>Product gallery</strong><span>' + productPhotos.length + ' / 20 photos</span></div><div class="stock-photo-grid">' + productPhotos.map((url,index) => '<figure><img src="' + escapeOrderHtml(url) + '" alt="' + escapeOrderHtml(product.name) + ' photo ' + (index+1) + '" loading="lazy"><div class="stock-photo-actions"><button type="button" data-gallery-replace="' + product.id + '" data-photo-index="' + index + '">Replace image</button><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" data-gallery-replace-input="' + product.id + '" data-photo-index="' + index + '" hidden><button type="button" data-gallery-remove="' + product.id + '" data-photo-index="' + index + '" aria-label="Remove photo ' + (index+1) + '">×</button></div></figure>').join("") + '</div><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple data-product-photo-input="' + product.id + '" hidden><button type="button" class="stock-upload-button" data-gallery-upload="' + product.id + '">＋ Add photos from computer</button><p class="stock-upload-hint">Add up to 20 photos per product. JPG, PNG, WebP or AVIF; max 3 MB each. The first gallery photo becomes the main product photo.</p><p class="stock-photo-status" data-photo-status="' + product.id + '" aria-live="polite"></p></section>';
       return '<details class="stock-product-group"><summary class="stock-product-summary"><span class="stock-product-name">' + escapeOrderHtml(product.name) + '</span><span class="stock-product-price">' + rupee(Number(product.price || 599)) + '</span></summary><div class="stock-product-content">' +
         '<div class="stock-product-actions"><label>Status <select data-product-status="' + product.id + '">' + statusOptions.map(([v,label]) => '<option value="' + v + '"' + ((product.status || "available")===v ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
         '<label>Badges <select multiple size="4" data-product-badges="' + product.id + '">' + [["new-launch","New Launch"],["featured","Featured"],["limited-edition","Limited Edition"],["sale","Sale"]].map(([v,label]) => '<option value="' + v + '"' + ((product.badges||[]).includes(v) ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
@@ -3290,19 +3285,18 @@ renderProducts();updateCart();
       if (!product || !file || !canManageStock()) return;
       const status = stockRows.querySelector('[data-photo-status="' + productId + '"]');
       const allowed = ["image/jpeg","image/png","image/webp","image/avif"];
-      if (!allowed.includes(file.type) || file.size > 10*1024*1024) {
-        if (status) status.textContent = !allowed.includes(file.type) ? "Use JPG, PNG, WebP or AVIF images only." : "Each image must be 10 MB or smaller.";
+      if (!allowed.includes(file.type) || file.size > 3*1024*1024) {
+        if (status) status.textContent = !allowed.includes(file.type) ? "Use JPG, PNG, WebP or AVIF images only." : "Each image must be 3 MB or smaller.";
         return;
       }
       const replaceButton = stockRows.querySelector('[data-gallery-replace="' + productId + '"][data-photo-index="' + photoIndex + '"]');
       if (replaceButton) { replaceButton.disabled = true; replaceButton.textContent = "Uploading…"; }
       if (status) status.textContent = "Replacing photo…";
       try {
-        const target = await uploadStockPhoto(file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || "",productId:String(productId)}},(done,total)=>{
+        const url = await uploadImageToGitHub(file,(done,total)=>{
           if(status) status.textContent = "Uploading replacement… " + Math.round(done/total*100) + "%";
           if(replaceButton) replaceButton.textContent = "Uploading " + Math.round(done/total*100) + "%";
         });
-        const url = await getDownloadURL(target);
         const photos = Array.from(new Set((Array.isArray(product.galleryImages) && product.galleryImages.length ? product.galleryImages : Object.values(product.images || {})).filter(value => typeof value === "string" && /^https?:\/\//i.test(value))));
         if (photoIndex < 0 || photoIndex >= photos.length) throw new Error("The photo list changed. Please reopen Manage photos and try again.");
         photos[photoIndex] = url;
@@ -3327,18 +3321,18 @@ renderProducts();updateCart();
     const remaining = 20 - existingPhotos.length;
     if (files.length > remaining) { if(status) status.textContent = "You can add only " + Math.max(0,remaining) + " more photo(s)."; return; }
     const allowed = ["image/jpeg","image/png","image/webp","image/avif"];
-    const invalid = files.find(file => !allowed.includes(file.type) || file.size > 10*1024*1024);
-    if (invalid) { if(status) status.textContent = !allowed.includes(invalid.type) ? "Use JPG, PNG, WebP or AVIF images only." : "Each image must be 10 MB or smaller."; return; }
+    const invalid = files.find(file => !allowed.includes(file.type) || file.size > 3*1024*1024);
+    if (invalid) { if(status) status.textContent = !allowed.includes(invalid.type) ? "Use JPG, PNG, WebP or AVIF images only." : "Each image must be 3 MB or smaller."; return; }
     const uploadButton = stockRows.querySelector('[data-gallery-upload="' + productId + '"]');
     if(uploadButton) { uploadButton.disabled = true; uploadButton.textContent = "Uploading…"; }
     if(status) status.textContent = "Uploading " + files.length + " photo(s)…";
     try {
       const added = [];
       for (const file of files) {
-        const target = await uploadStockPhoto(file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || "",productId:String(productId)}},(done,total)=>{
+        const url = await uploadImageToGitHub(file,(done,total)=>{
           if(status) status.textContent = "Uploading " + (added.length+1) + "/" + files.length + "… " + Math.round(done/total*100) + "%";
         });
-        added.push(await getDownloadURL(target));
+        added.push(url);
       }
       const photos = [...existingPhotos,...added];
       await setDoc(doc(db,"products",String(productId)),{galleryImages:photos,image:photos[0],updatedAt:serverTimestamp(),updatedBy:currentUser.email},{merge:true});
@@ -3435,18 +3429,17 @@ renderProducts();updateCart();
     const remaining = 20 - uploadedProductImageUrls.length - Array.from(document.querySelectorAll("#newProductImagesList .new-product-image-url")).filter(input => input.value.trim()).length;
     if (files.length > remaining) { productUploadStatus.textContent = "You can add only " + Math.max(0, remaining) + " more image(s) to this product (20 maximum)."; productUploadStatus.classList.add("error"); return; }
     const allowed = ["image/jpeg","image/png","image/webp","image/avif"];
-    const invalid = files.find(file => !allowed.includes(file.type) || file.size > 10 * 1024 * 1024);
-    if (invalid) { productUploadStatus.textContent = !allowed.includes(invalid.type) ? "Use JPG, PNG, WebP or AVIF image files only." : "Each image must be 10 MB or smaller."; productUploadStatus.classList.add("error"); return; }
+    const invalid = files.find(file => !allowed.includes(file.type) || file.size > 3 * 1024 * 1024);
+    if (invalid) { productUploadStatus.textContent = !allowed.includes(invalid.type) ? "Use JPG, PNG, WebP or AVIF image files only." : "Each image must be 3 MB or smaller."; productUploadStatus.classList.add("error"); return; }
     if (!currentUser || !canManageStock()) { productUploadStatus.textContent = "Please sign in with Stock Manager access before uploading."; productUploadStatus.classList.add("error"); return; }
     uploadProductPhotosBtn.disabled = true;
     uploadProductPhotosBtn.textContent = "Uploading…";
     productUploadStatus.classList.remove("error");
     try {
       for (const file of files) {
-        const target = await uploadStockPhoto(file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || ""}},(done,total)=>{
+        const url = await uploadImageToGitHub(file,(done,total)=>{
           productUploadStatus.textContent = "Uploading " + (uploadedProductImageUrls.length+1) + "/" + files.length + "… " + Math.round(done/total*100) + "%";
         });
-        const url = await getDownloadURL(target);
         uploadedProductImageUrls.push(url);
         const urlLabel = document.createElement("label");
         urlLabel.textContent = "Uploaded product image";
