@@ -1454,7 +1454,7 @@ const rupee=n=>"₹"+n.toLocaleString("en-IN");
 const grid=document.getElementById("productGrid");
 
 function card(p){
-  let firstColor = p.colors[0], image = p.images[firstColor];
+  let firstColor = p.colors[0], image = (Array.isArray(p.galleryImages) && p.galleryImages.length ? p.galleryImages[0] : p.images[firstColor]);
 
   let swatches = p.colors.map(c =>
     `<button type="button" class="swatch" title="${c}" aria-label="Show ${c} ${p.name}" data-color="${c}" style="background:${({Black:"#101114",White:"#f4f1e9",Lavender:"#bca8cc",Brown:"#795443"})[c]}"></button>`
@@ -1538,7 +1538,8 @@ function showGallerySlide() {
 
 function updateChoiceImage() {
   const color = selectedColor;
-  if (selectedProduct?.isCustom) { const photos = Array.isArray(selectedProduct.galleryImages) && selectedProduct.galleryImages.length ? selectedProduct.galleryImages : [selectedProduct.images[color]]; gallerySlides = photos.map((src,index)=>({src,label:index===0?"MAIN VIEW":"PRODUCT VIEW "+(index+1)})); gallerySlideIndex = 0; showGallerySlide(); return; }
+  if (Array.isArray(selectedProduct?.galleryImages) && selectedProduct.galleryImages.length) { const photos = selectedProduct.galleryImages; gallerySlides = photos.map((src,index)=>({src,label:index===0?"MAIN VIEW":"PRODUCT VIEW "+(index+1)})); gallerySlideIndex = 0; showGallerySlide(); return; }
+  if (selectedProduct?.isCustom) { gallerySlides = [{src:selectedProduct.images[color],label:"MAIN VIEW"}]; gallerySlideIndex = 0; showGallerySlide(); return; }
 
   const backImageFiles = {
     Lavender: "Lavender back.jpg",
@@ -3221,10 +3222,12 @@ renderProducts();updateCart();
         return '<details class="stock-color-group"><summary class="stock-color-summary"><span>' + escapeOrderHtml(color) + '</span><span class="stock-colour-count">' + sizes.length + ' sizes</span></summary><div class="stock-size-list">' + sizeRows + '</div></details>';
       }).join("");
       const statusOptions = [["available","Available now"],["coming-soon","Coming Soon"],["pre-order","Pre-order"],["sold-out","Sold Out"],["hidden","Hidden / Draft"]];
+      const productPhotos = Array.from(new Set([...(Array.isArray(product.galleryImages) ? product.galleryImages : []), ...Object.values(product.images || {})].filter(url => typeof url === "string" && /^https?:\\/\\//i.test(url))));
+      const photoManager = '<section class="stock-photo-manager" data-photo-manager="' + product.id + '" hidden><div class="stock-photo-manager-head"><strong>Product gallery</strong><span>' + productPhotos.length + ' / 20 photos</span></div><div class="stock-photo-grid">' + productPhotos.map((url,index) => '<figure><img src="' + escapeOrderHtml(url) + '" alt="' + escapeOrderHtml(product.name) + ' photo ' + (index+1) + '" loading="lazy"><button type="button" data-gallery-remove="' + product.id + '" data-photo-index="' + index + '" aria-label="Remove photo ' + (index+1) + '">×</button></figure>').join("") + '</div><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple data-product-photo-input="' + product.id + '" hidden><button type="button" class="stock-upload-button" data-gallery-upload="' + product.id + '">＋ Add photos from computer</button><p class="stock-upload-hint">Add up to 20 photos per product. JPG, PNG, WebP or AVIF; max 10 MB each. The first gallery photo becomes the main product photo.</p><p class="stock-photo-status" data-photo-status="' + product.id + '" aria-live="polite"></p></section>';
       return '<details class="stock-product-group"><summary class="stock-product-summary"><span class="stock-product-name">' + escapeOrderHtml(product.name) + '</span><span class="stock-product-price">' + rupee(Number(product.price || 599)) + '</span></summary><div class="stock-product-content">' +
         '<div class="stock-product-actions"><label>Status <select data-product-status="' + product.id + '">' + statusOptions.map(([v,label]) => '<option value="' + v + '"' + ((product.status || "available")===v ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
         '<label>Badges <select multiple size="4" data-product-badges="' + product.id + '">' + [["new-launch","New Launch"],["featured","Featured"],["limited-edition","Limited Edition"],["sale","Sale"]].map(([v,label]) => '<option value="' + v + '"' + ((product.badges||[]).includes(v) ? " selected" : "") + '>' + label + '</option>').join("") + '</select></label>' +
-        '<button type="button" class="stock-hide" data-stock-toggle="' + product.id + '">' + (product.active===false ? "Show in shop" : "Hide from shop") + '</button></div><div class="stock-colour-list">' + variants + '</div></div></details>';
+        '<button type="button" class="stock-hide" data-stock-toggle="' + product.id + '">' + (product.active===false ? "Show in shop" : "Hide from shop") + '</button><button type="button" class="stock-upload-button" data-gallery-toggle="' + product.id + '">Manage photos (' + productPhotos.length + ')</button></div>' + photoManager + '<div class="stock-colour-list">' + variants + '</div></div></details>';
     }).join("");
   }  stockRows.addEventListener("change", async event => {
     const statusSelect = event.target.closest("[data-product-status]");
@@ -3240,7 +3243,72 @@ renderProducts();updateCart();
       stockMessage.textContent = "Updated " + product.name + ".";
     } catch(error) { stockMessage.textContent = "Could not update product: " + (error.message || "Please try again."); }
   });
+  stockRows.addEventListener("change", async event => {
+    const input = event.target.closest("[data-product-photo-input]");
+    if (!input) return;
+    const productId = Number(input.dataset.productPhotoInput), product = products.find(p => p.id === productId);
+    const files = Array.from(input.files || []); input.value = "";
+    if (!product || !files.length || !canManageStock()) return;
+    const existingPhotos = Array.from(new Set([...(Array.isArray(product.galleryImages) ? product.galleryImages : []), ...Object.values(product.images || {})].filter(url => typeof url === "string" && /^https?:\\/\\//i.test(url))));
+    const status = stockRows.querySelector('[data-photo-status="' + productId + '"]');
+    const remaining = 20 - existingPhotos.length;
+    if (files.length > remaining) { if(status) status.textContent = "You can add only " + Math.max(0,remaining) + " more photo(s)."; return; }
+    const allowed = ["image/jpeg","image/png","image/webp","image/avif"];
+    const invalid = files.find(file => !allowed.includes(file.type) || file.size > 10*1024*1024);
+    if (invalid) { if(status) status.textContent = !allowed.includes(invalid.type) ? "Use JPG, PNG, WebP or AVIF images only." : "Each image must be 10 MB or smaller."; return; }
+    const uploadButton = stockRows.querySelector('[data-gallery-upload="' + productId + '"]');
+    if(uploadButton) { uploadButton.disabled = true; uploadButton.textContent = "Uploading…"; }
+    if(status) status.textContent = "Uploading " + files.length + " photo(s)…";
+    try {
+      const added = [];
+      for (const file of files) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,"-").slice(-90) || "product-photo";
+        const path = "products/" + currentUser.uid + "/" + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "-" + safeName;
+        const target = storageRef(storage,path);
+        await uploadBytes(target,file,{contentType:file.type,customMetadata:{uploadedBy:currentUser.email || "",productId:String(productId)}});
+        added.push(await getDownloadURL(target));
+      }
+      const photos = [...existingPhotos,...added];
+      await setDoc(doc(db,"products",String(productId)),{galleryImages:photos,image:photos[0],updatedAt:serverTimestamp(),updatedBy:currentUser.email},{merge:true});
+      if(status) status.textContent = "Added " + added.length + " photo(s) to " + product.name + ".";
+      stockMessage.textContent = "Product gallery updated for " + product.name + ".";
+    } catch(error) {
+      console.error("Product gallery upload failed:",error);
+      if(status) status.textContent = error.code==="storage/unauthorized" ? "Upload blocked. Publish the Firebase Storage rules and check that Storage is enabled." : "Upload failed: " + (error.message || "Please try again.");
+    } finally {
+      if(uploadButton) { uploadButton.disabled = false; uploadButton.textContent = "＋ Add photos from computer"; }
+    }
+  });
   stockRows.addEventListener("click", async event => {
+    const galleryToggle = event.target.closest("[data-gallery-toggle]");
+    if (galleryToggle) {
+      const panel = stockRows.querySelector('[data-photo-manager="' + galleryToggle.dataset.galleryToggle + '"]');
+      if (panel) panel.hidden = !panel.hidden;
+      return;
+    }
+    const galleryUpload = event.target.closest("[data-gallery-upload]");
+    if (galleryUpload) {
+      if (!canManageStock()) return;
+      stockRows.querySelector('[data-product-photo-input="' + galleryUpload.dataset.galleryUpload + '"]')?.click();
+      return;
+    }
+    const removePhoto = event.target.closest("[data-gallery-remove]");
+    if (removePhoto) {
+      if (!canManageStock()) return;
+      const product = products.find(p => p.id === Number(removePhoto.dataset.galleryRemove));
+      if (!product) return;
+      const photos = Array.from(new Set([...(Array.isArray(product.galleryImages) ? product.galleryImages : []), ...Object.values(product.images || {})].filter(url => typeof url === "string" && /^https?:\\/\\//i.test(url))));
+      const index = Number(removePhoto.dataset.photoIndex);
+      if (photos.length <= 1) { stockMessage.textContent = "Keep at least one product photo."; return; }
+      photos.splice(index,1);
+      removePhoto.disabled = true;
+      try {
+        await setDoc(doc(db,"products",String(product.id)),{galleryImages:photos,image:photos[0],updatedAt:serverTimestamp(),updatedBy:currentUser.email},{merge:true});
+        stockMessage.textContent = "Photo removed from " + product.name + ".";
+      } catch(error) { stockMessage.textContent = "Could not remove photo: " + (error.message || "Please try again."); removePhoto.disabled = false; }
+      return;
+    }
+
     const toggle = event.target.closest("[data-stock-toggle]");
     if (toggle) {
       const product = products.find(p => p.id === Number(toggle.dataset.stockToggle));
@@ -4500,6 +4568,9 @@ a:focus-visible,
 #accountModal .account-box.stock-only-mode #stockPanel{display:block!important}
 #accountModal .account-box.stock-only-mode #loggedInArea{display:block!important}
 #accountModal .account-box.stock-only-mode .account-logout-tab{margin-top:18px}
+
+/* Product gallery manager inside Stock Manager */
+.stock-photo-manager{margin:12px 0;padding:14px;border:1px solid #d9e0e8;border-radius:12px;background:#f8fafc}.stock-photo-manager[hidden]{display:none}.stock-photo-manager-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px;color:#142b43}.stock-photo-manager-head span,.stock-photo-status{font-size:12px;color:#53677b}.stock-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:10px;margin:10px 0 14px}.stock-photo-grid figure{position:relative;margin:0;aspect-ratio:1;border:1px solid #dce3ea;border-radius:9px;overflow:hidden;background:#fff}.stock-photo-grid img{width:100%;height:100%;object-fit:cover}.stock-photo-grid figure button{position:absolute;top:4px;right:4px;width:25px;height:25px;border:0;border-radius:50%;background:#142b43;color:#fff;font-size:18px;line-height:1;cursor:pointer}.stock-photo-manager .stock-upload-hint{margin:8px 0 0}.stock-photo-status{min-height:18px;margin:8px 0 0}@media(max-width:600px){.stock-photo-manager{padding:10px}.stock-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 
 </body></html>
