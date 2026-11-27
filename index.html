@@ -1473,6 +1473,10 @@ function card(p){
       <div class="product-bottom">
         <div class="swatches">${swatches}</div>
         ${p.status === "coming-soon" ? '<span class="add-btn" aria-label="Coming soon">Coming Soon</span>' : p.status === "sold-out" ? '<span class="add-btn" aria-label="Sold out">Sold Out</span>' : p.status === "hidden" ? '' : '<button class="add-btn" data-add="' + p.id + '">' + (p.status === "pre-order" ? 'Pre-order +' : 'Add to Ocean +') + '</button>'}
+        <button type="button" class="share-btn" data-share="${p.id}" aria-label="Share ${p.name}" title="Share ${p.name}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Share</span>
+        </button>
       </div>
     </div>
   </article>`;
@@ -1504,6 +1508,32 @@ grid.querySelectorAll("[data-color]").forEach(b=>b.onclick=()=>{
 const card=b.closest(".product-card"),p=products.find(x=>x.id===Number(card.dataset.product)),color=b.dataset.color,img=card.querySelector(".product-photo");
 img.src=p.images[color];img.alt=`${p.name} - ${color}`;card.querySelectorAll("[data-color]").forEach(x=>x.style.outline=x===b?"2px solid #8ecfff":"none");
 });
+grid.querySelectorAll("[data-share]").forEach(button=>button.onclick=async event=>{
+  event.preventDefault();
+  event.stopPropagation();
+  const product=products.find(item=>String(item.id)===String(button.dataset.share));
+  if(!product)return;
+  const shareUrl=new URL(window.location.href);
+  shareUrl.searchParams.set("product",String(product.id));
+  shareUrl.hash="";
+  const shareData={title:product.name+" | 7ECLIPSES",text:"Check out "+product.name+" at 7ECLIPSES.",url:shareUrl.toString()};
+  if(navigator.share){
+    try{await navigator.share(shareData);return;}
+    catch(error){if(error?.name==="AbortError")return;}
+  }
+  try{
+    if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(shareData.url);}
+    else{throw new Error("Clipboard unavailable");}
+    notify("Product link copied — ready to share!");
+  }catch(error){
+    window.prompt("Copy this product link to share:",shareData.url);
+  }
+});
+const sharedProductId=new URLSearchParams(window.location.search).get("product");
+if(sharedProductId&&!window.__7eclSharedProductOpened){
+  const sharedProduct=products.find(item=>String(item.id)===sharedProductId);
+  if(sharedProduct){window.__7eclSharedProductOpened=true;openProductViewer(sharedProduct.id);}
+}
 }
 document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderProducts(b.dataset.filter)});
 let gallerySlides = [];
@@ -4595,6 +4625,12 @@ a:focus-visible,
 @media(prefers-reduced-motion:reduce){
  #shop .product-card,#shop .product-photo,#shop .wishlist-btn,#shop .add-btn{transition:none!important}
 }
+/* Product card sharing control — isolated to the product listing. */
+#shop .share-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;flex:0 0 auto!important;min-height:36px!important;padding:8px 10px!important;border:1px solid rgba(151,211,242,.38)!important;border-radius:999px!important;background:rgba(9,30,46,.72)!important;color:#c6e8fb!important;font-size:8px!important;font-weight:700!important;letter-spacing:.08em!important;cursor:pointer!important;white-space:nowrap!important;transition:background .2s ease,border-color .2s ease,transform .2s ease!important}
+#shop .share-btn svg{width:14px!important;height:14px!important;display:block!important}
+#shop .share-btn:hover{background:rgba(142,207,255,.14)!important;border-color:#8ecfff!important;transform:translateY(-1px)!important}
+@media(max-width:680px){#shop .share-btn{min-height:32px!important;padding:7px 8px!important;font-size:7px!important;gap:3px!important}#shop .share-btn svg{width:12px!important;height:12px!important}}
+@media(prefers-reduced-motion:reduce){#shop .share-btn{transition:none!important}}
 </style>
 
 <style id="7ecl-stock-requests">
